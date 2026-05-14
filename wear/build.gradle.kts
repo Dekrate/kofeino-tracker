@@ -6,16 +6,16 @@ plugins {
 }
 
 android {
-    namespace = "com.example.kofeinotracker"
+    namespace = "pl.dekrate.kofeino"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.kofeinotracker"
+        applicationId = "pl.dekrate.kofeino"
         minSdk = 30
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-        testInstrumentationRunner = "com.example.kofeinotracker.HiltTestRunner"
+        testInstrumentationRunner = "pl.dekrate.kofeino.HiltTestRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -47,6 +47,7 @@ android {
         }
     }
     buildFeatures {
+        buildConfig = true
         compose = true
     }
     packaging {
@@ -77,6 +78,7 @@ dependencies {
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.timber)
 
     debugImplementation(libs.compose.ui.tooling)
     debugImplementation(libs.compose.ui.test.manifest)
@@ -89,9 +91,12 @@ dependencies {
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.test.core)
 
+    androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.junit.ext)
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.compose.ui.test.junit4)
     androidTestImplementation(libs.mockk.android)
     androidTestImplementation(libs.kotlinx.coroutines.test)
+    androidTestImplementation(libs.hilt.android.testing)
+    kspAndroidTest(libs.hilt.compiler)
 }

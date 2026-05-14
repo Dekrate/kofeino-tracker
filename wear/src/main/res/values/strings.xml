@@ -1,13 +1,18 @@
 <resources>
-    <string name="app_name">KofeinoTracker</string>
+    <!-- App -->
+    <string name="app_name">Kofeino</string>
     <string name="today_caffeine">Dzisiejsza kofeina</string>
     <string name="mg_format">%d mg</string>
     <string name="add_drink">Dodaj napój</string>
     <string name="history">Historia</string>
+    <string name="drinks">Napoje</string>
+    <string name="settings">Ustawienia</string>
     <string name="safe_limit">Bezpieczny limit: 400 mg</string>
     <string name="limit_exceeded">Przekroczono bezpieczny limit!</string>
+
+    <!-- Predefined drinks -->
     <string name="espresso">Espresso</string>
-    <string name="double_espresso">Dwojne espresso</string>
+    <string name="double_espresso">Podwójne espresso</string>
     <string name="black_coffee">Czarna kawa</string>
     <string name="cappuccino">Cappuccino</string>
     <string name="latte">Latte</string>
@@ -15,12 +20,52 @@
     <string name="green_tea">Zielona herbata</string>
     <string name="energy_drink">Energy drink</string>
     <string name="cola">Cola</string>
-    <string name="no_drinks_today">Brak napojow dzisiaj</string>
+
+    <!-- General UI -->
+    <string name="no_drinks_today">Brak napojów dzisiaj</string>
     <string name="drink_added">Dodano!</string>
-    <string name="remaining">Pozostalo: %d mg</string>
+    <string name="remaining">Pozostało: %d mg</string>
     <string name="percent_format">%.0f%%</string>
     <string name="back">Wstecz</string>
-    <string name="select_drink">Wybierz napoj</string>
+    <string name="select_drink">Wybierz napój</string>
     <string name="total_today">Suma dzisiaj</string>
-    <string name="drink_details">%s - %d mg</string>
+    <string name="drink_details" formatted="false">%s - %d mg</string>
+    <string name="save">Zapisz</string>
+    <string name="delete">Usuń</string>
+    <string name="edit">Edytuj</string>
+    <string name="cancel">Anuluj</string>
+    <string name="confirm">Potwierdź</string>
+
+    <!-- Drink management -->
+    <string name="manage_drinks">Zarządzaj napojami</string>
+    <string name="add_new_drink">Dodaj nowy napój</string>
+    <string name="edit_drink">Edytuj napój</string>
+    <string name="drink_name">Nazwa napoju</string>
+    <string name="drink_name_hint">Wpisz nazwę napoju</string>
+    <string name="caffeine_amount">Ilość kofeiny (mg)</string>
+    <string name="volume">Objętość</string>
+    <string name="delete_drink_confirm">Usunąć ten napój?</string>
+    <string name="no_drinks_defined">Brak zdefiniowanych napojów</string>
+    <string name="drinks_subtitle">Dodawaj, edytuj i usuwaj napoje</string>
+
+    <!-- Record management -->
+    <string name="edit_intake">Edytuj wpis</string>
+    <string name="delete_intake">Usuń wpis</string>
+    <string name="delete_intake_confirm">Usunąć ten wpis?</string>
+    <string name="select_date">Wybierz datę</string>
+    <string name="change_date">Zmień datę</string>
+
+    <!-- Date picker -->
+    <string name="today">Dzisiaj</string>
+    <string name="yesterday">Wczoraj</string>
+    <string name="next_day">Następny dzień</string>
+    <string name="previous_day">Poprzedni dzień</string>
+
+    <!-- Logging tag -->
+    <string name="log_tag">Kofeino</string>
+
+    <!-- Validation -->
+    <string name="field_required">To pole jest wymagane</string>
+    <string name="invalid_caffeine">Nieprawidłowa wartość kofeiny</string>
+    <string name="invalid_volume">Nieprawidłowa objętość</string>
 </resources>

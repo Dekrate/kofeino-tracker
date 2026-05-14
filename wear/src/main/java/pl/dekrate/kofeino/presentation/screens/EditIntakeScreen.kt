@@ -1,0 +1,167 @@
+package pl.dekrate.kofeino.presentation.screens
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.wear.compose.material3.Button
+import androidx.wear.compose.material3.ButtonDefaults
+import androidx.wear.compose.material3.MaterialTheme
+import androidx.wear.compose.material3.ScreenScaffold
+import androidx.wear.compose.material3.Text
+import pl.dekrate.kofeino.R
+import pl.dekrate.kofeino.domain.model.CaffeineIntake
+import pl.dekrate.kofeino.presentation.viewmodel.CaffeineViewModel
+
+@Composable
+fun EditIntakeScreen(
+    intakeId: Long,
+    onDeleted: () -> Unit,
+    onSaved: () -> Unit,
+    viewModel: CaffeineViewModel = hiltViewModel()
+) {
+    val state by viewModel.uiState.collectAsState()
+    val intake = remember(intakeId, state.dateIntakes) {
+        state.dateIntakes.find { it.id == intakeId }
+    }
+
+    if (intake == null) {
+        ScreenScaffold {
+            Text(
+                text = "Nie znaleziono wpisu",
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+        return
+    }
+
+    var caffeineMg by remember(intake) { mutableIntStateOf(intake.caffeineMg) }
+    var volumeMl by remember(intake) { mutableIntStateOf(intake.volumeMl) }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
+
+    ScreenScaffold {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = intake.drinkName,
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            Text(
+                text = "Kofeina: $caffeineMg mg",
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            // Caffeine adjustment buttons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Button(
+                    onClick = { if (caffeineMg > 0) caffeineMg -= 5 },
+                    modifier = Modifier.weight(1f).padding(end = 4.dp)
+                ) {
+                    Text("-5")
+                }
+                Button(
+                    onClick = { caffeineMg += 5 },
+                    modifier = Modifier.weight(1f).padding(start = 4.dp)
+                ) {
+                    Text("+5")
+                }
+            }
+
+            // Volume adjustment buttons
+            Text(
+                text = "${stringResource(R.string.volume)}: ${volumeMl}ml",
+                style = MaterialTheme.typography.bodySmall
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Button(
+                    onClick = { if (volumeMl >= 10) volumeMl -= 10 },
+                    modifier = Modifier.weight(1f).padding(end = 4.dp)
+                ) {
+                    Text("-10")
+                }
+                Button(
+                    onClick = { volumeMl += 10 },
+                    modifier = Modifier.weight(1f).padding(start = 4.dp)
+                ) {
+                    Text("+10")
+                }
+            }
+
+            // Save button
+            Button(
+                onClick = {
+                    viewModel.updateIntake(intake.copy(caffeineMg = caffeineMg, volumeMl = volumeMl))
+                    onSaved()
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Text(stringResource(R.string.save))
+            }
+
+            // Delete button
+            if (!showDeleteConfirm) {
+                Button(
+                    onClick = { showDeleteConfirm = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text(stringResource(R.string.delete))
+                }
+            } else {
+                Text(
+                    text = stringResource(R.string.delete_intake_confirm),
+                    style = MaterialTheme.typography.labelMedium
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    Button(onClick = { showDeleteConfirm = false }) {
+                        Text(stringResource(R.string.cancel))
+                    }
+                    Button(
+                        onClick = {
+                            viewModel.deleteIntake(intake)
+                            onDeleted()
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error
+                        )
+                    ) {
+                        Text(stringResource(R.string.confirm))
+                    }
+                }
+            }
+        }
+    }
+}
