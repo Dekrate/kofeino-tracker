@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">KofeinoTracker</string>
+    <string name="today_caffeine">Dzisiejsza kofeina</string>
+    <string name="mg_format">%d mg</string>
+    <string name="add_drink">Dodaj napój</string>
+    <string name="history">Historia</string>
+    <string name="safe_limit">Bezpieczny limit: 400 mg</string>
+    <string name="limit_exceeded">Przekroczono bezpieczny limit!</string>
+    <string name="espresso">Espresso</string>
+    <string name="double_espresso">Dwojne espresso</string>
+    <string name="black_coffee">Czarna kawa</string>
+    <string name="cappuccino">Cappuccino</string>
+    <string name="latte">Latte</string>
+    <string name="tea">Herbata</string>
+    <string name="green_tea">Zielona herbata</string>
+    <string name="energy_drink">Energy drink</string>
+    <string name="cola">Cola</string>
+    <string name="no_drinks_today">Brak napojow dzisiaj</string>
+    <string name="drink_added">Dodano!</string>
+    <string name="remaining">Pozostalo: %d mg</string>
+    <string name="percent_format">%.0f%%</string>
+    <string name="back">Wstecz</string>
+    <string name="select_drink">Wybierz napoj</string>
+    <string name="total_today">Suma dzisiaj</string>
+    <string name="drink_details">%s - %d mg</string>
+</resources>

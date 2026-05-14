@@ -1,0 +1,1 @@
+-keep,allowobfuscation,allowshrinking class com.example.kofeinotracker.presentation.viewmodel.CaffeineViewModel

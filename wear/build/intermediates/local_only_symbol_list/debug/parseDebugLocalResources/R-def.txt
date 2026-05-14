@@ -1,0 +1,34 @@
+R_DEF: Internal format may change without notice
+local
+color black
+color ic_launcher_background
+color kofeino_green
+color kofeino_light_green
+color warning_red
+color white
+drawable ic_launcher_foreground
+mipmap ic_launcher
+string add_drink
+string app_name
+string back
+string black_coffee
+string cappuccino
+string cola
+string double_espresso
+string drink_added
+string drink_details
+string energy_drink
+string espresso
+string green_tea
+string history
+string latte
+string limit_exceeded
+string mg_format
+string no_drinks_today
+string percent_format
+string remaining
+string safe_limit
+string select_drink
+string tea
+string today_caffeine
+string total_today
