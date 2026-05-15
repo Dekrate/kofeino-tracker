@@ -1,5 +1,10 @@
 package pl.dekrate.kofeino.presentation.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -117,19 +122,25 @@ fun ManageDrinksScreen(
                 }
             } else {
                 items(drinks, key = { it.id }) { drink ->
-                    Button(
-                        onClick = { editingDrinkId = drink.id },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                            contentColor = MaterialTheme.colorScheme.onSurface
-                        ),
-                        modifier = Modifier.padding(horizontal = 8.dp)
+                    AnimatedVisibility(
+                        visible = true,
+                        enter = fadeIn() + slideInVertically { -it / 4 },
+                        exit = fadeOut() + slideOutVertically { it / 4 }
                     ) {
-                        Text(
-                            text = "${drink.name}  ${drink.caffeineMg} mg · ${drink.volumeMl} ml",
-                            style = MaterialTheme.typography.bodySmall,
-                            maxLines = 1
-                        )
+                        Button(
+                            onClick = { editingDrinkId = drink.id },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                                contentColor = MaterialTheme.colorScheme.onSurface
+                            ),
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                        ) {
+                            Text(
+                                text = "${drink.name}  ${drink.caffeineMg} mg · ${drink.volumeMl} ml",
+                                style = MaterialTheme.typography.bodySmall,
+                                maxLines = 1
+                            )
+                        }
                     }
                 }
             }

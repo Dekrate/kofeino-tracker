@@ -1,5 +1,10 @@
 package pl.dekrate.kofeino.presentation.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -115,16 +120,22 @@ fun HistoryScreen(
                 }
             } else {
                 items(state.dateIntakes, key = { it.id }) { intake ->
-                    val time = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(intake.timestamp))
-                    Button(
-                        onClick = { onEditIntake(intake.id) },
-                        modifier = Modifier.padding(horizontal = 8.dp)
+                    AnimatedVisibility(
+                        visible = true,
+                        enter = fadeIn() + slideInVertically { -it / 4 },
+                        exit = fadeOut() + slideOutVertically { it / 4 }
                     ) {
-                        Text(
-                            text = "$time  ${intake.drinkName}  ${intake.caffeineMg} mg",
-                            style = MaterialTheme.typography.bodySmall,
-                            maxLines = 1
-                        )
+                        val time = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(intake.timestamp))
+                        Button(
+                            onClick = { onEditIntake(intake.id) },
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                        ) {
+                            Text(
+                                text = "$time  ${intake.drinkName}  ${intake.caffeineMg} mg",
+                                style = MaterialTheme.typography.bodySmall,
+                                maxLines = 1
+                            )
+                        }
                     }
                 }
             }

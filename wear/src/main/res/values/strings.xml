@@ -65,6 +65,9 @@
     <string name="log_tag">Kofeino</string>
 
     <!-- Validation -->
+    <string name="error_name_required">Nazwa napoju jest wymagana</string>
+    <string name="error_caffeine_invalid">Ilość kofeiny musi być większa lub równa 0</string>
+    <string name="error_volume_invalid">Objętość musi być większa lub równa 0</string>
     <string name="field_required">To pole jest wymagane</string>
     <string name="invalid_caffeine">Nieprawidłowa wartość kofeiny</string>
     <string name="invalid_volume">Nieprawidłowa objętość</string>

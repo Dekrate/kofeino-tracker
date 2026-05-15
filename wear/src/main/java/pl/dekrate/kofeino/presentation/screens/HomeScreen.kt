@@ -1,13 +1,13 @@
 package pl.dekrate.kofeino.presentation.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -22,12 +22,10 @@ import androidx.wear.compose.foundation.lazy.items
 import androidx.wear.compose.foundation.lazy.rememberTransformingLazyColumnState
 import androidx.wear.compose.material3.Button
 import androidx.wear.compose.material3.ButtonDefaults
-import androidx.wear.compose.material3.CircularProgressIndicator
 import androidx.wear.compose.material3.EdgeButton
 import androidx.wear.compose.material3.EdgeButtonSize
 import androidx.wear.compose.material3.ListHeader
 import androidx.wear.compose.material3.MaterialTheme
-import androidx.wear.compose.material3.ProgressIndicatorDefaults
 import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.Text
 import pl.dekrate.kofeino.R
@@ -83,8 +81,13 @@ fun HomeScreen(
                 )
             }
 
+            // Coffee cup indicator (animated fill)
             item {
-                CaffeineProgress(state.totalCaffeineMg, state.progress, state.isLimitExceeded)
+                CoffeeCupIndicator(
+                    total = state.totalCaffeineMg,
+                    progress = state.progress,
+                    exceeded = state.isLimitExceeded
+                )
             }
 
             // Action buttons
@@ -116,76 +119,31 @@ fun HomeScreen(
                     )
                 }
             } else {
+                // Animated list items
                 items(state.dateIntakes, key = { it.id }) { intake ->
-                    val time = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(intake.timestamp))
-                    Button(
-                        onClick = { onEditIntake(intake.id) },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                            contentColor = MaterialTheme.colorScheme.onSurface
-                        ),
-                        modifier = Modifier.padding(horizontal = 8.dp)
+                    AnimatedVisibility(
+                        visible = true,
+                        enter = fadeIn() + slideInVertically { -it / 4 },
+                        exit = fadeOut() + slideOutVertically { it / 4 }
                     ) {
-                        Text(
-                            text = "$time  ${intake.drinkName}  ${intake.caffeineMg} mg",
-                            style = MaterialTheme.typography.bodySmall,
-                            maxLines = 1
-                        )
+                        val time = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(intake.timestamp))
+                        Button(
+                            onClick = { onEditIntake(intake.id) },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                                contentColor = MaterialTheme.colorScheme.onSurface
+                            ),
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                        ) {
+                            Text(
+                                text = "$time  ${intake.drinkName}  ${intake.caffeineMg} mg",
+                                style = MaterialTheme.typography.bodySmall,
+                                maxLines = 1
+                            )
+                        }
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun CaffeineProgress(total: Int, progress: Float, exceeded: Boolean) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.padding(vertical = 8.dp)
-    ) {
-        Box(contentAlignment = Alignment.Center) {
-            CircularProgressIndicator(
-                progress = { progress.coerceIn(0f, 1f) },
-                modifier = Modifier.size(80.dp),
-                strokeWidth = 6.dp,
-                colors = if (exceeded) {
-                    ProgressIndicatorDefaults.colors(
-                        indicatorColor = MaterialTheme.colorScheme.error,
-                        trackColor = MaterialTheme.colorScheme.surfaceContainer
-                    )
-                } else {
-                    ProgressIndicatorDefaults.colors(
-                        indicatorColor = MaterialTheme.colorScheme.primary,
-                        trackColor = MaterialTheme.colorScheme.surfaceContainer
-                    )
-                }
-            )
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = "$total",
-                    style = MaterialTheme.typography.displaySmall
-                )
-                Text(
-                    text = "mg",
-                    style = MaterialTheme.typography.labelSmall
-                )
-            }
-        }
-        Spacer(modifier = Modifier.height(4.dp))
-        if (exceeded) {
-            Text(
-                text = stringResource(R.string.limit_exceeded),
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.labelMedium,
-                textAlign = TextAlign.Center
-            )
-        } else {
-            Text(
-                text = stringResource(R.string.safe_limit),
-                style = MaterialTheme.typography.labelMedium,
-                textAlign = TextAlign.Center
-            )
         }
     }
 }
