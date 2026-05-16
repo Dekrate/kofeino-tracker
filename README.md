@@ -1,123 +1,157 @@
-# KofeinoTracker - Aplikacja Wear OS + Android
+# KofeinoTracker — Wear OS + Android Caffeine Tracker
 
-**KofeinoTracker** to nowoczesna aplikacja do monitorowania spożycia kofeiny zaprojektowana dla **Wear OS** (smart zegarek Google). Aplikacja jest w pelni po polsku i wykorzystuje najnowsze wzorce UI oraz architektoniczne.
-
----
-
-## Funkcjonalność
-
-- **Ekran główny** – pokazuje dzienny bilans kofeiny (mg) z okrągłym wskaźnikiem postępu, listą dzisiejszych napojów i przyciskiem dodawania.
-- **Dodawanie napoju** – szybki wybór z 9 predefiniowanych napojów (espresso, cappuccino, czarna kawa, latte, herbata, zielona herbata, energy drink, cola) z automatyczną konwersją na mg kofeiny.
-- **Historia** – pełna lista spożyć z dzisiaj wraz z godziną.
-- **Ostrzeżenie o limicie** – przy przekroczeniu 400 mg (bezpieczny dzienny limit) wyświetla się czerwone ostrzeżenie.
+**KofeinoTracker** is a modern caffeine intake monitoring app built for **Wear OS** smartwatches. The app fully supports Polish locale and leverages the latest Android UI and architectural patterns — Jetpack Compose, MVVM, Hilt DI, and Room database.
 
 ---
 
-## Technologie & Wzorce
+## Features
 
-| Warstwa | Technologia |
-|---------|-------------|
-| UI | **Jetpack Compose** + **Wear Compose Material3** (najnowszy design system dla Wear OS) |
-| Nawigacja | **SwipeDismissableNavHost** (gest swipe-to-dismiss natywny dla zegarka) |
-| Architektura | **MVVM** + **Repository Pattern** |
-| DI | **Hilt** |
-| Baza danych | **Room** (lokalna baza SQLite) |
-| Reaktywność | **Kotlin Coroutines** + **StateFlow** |
-| Testy jednostkowe | JUnit4 + **MockK** + **Turbine** + **Robolectric** |
-| Testy UI/E2E | Compose UI Test + **Espresso** + **Hilt Android Testing** |
+- **Home Dashboard** — circular progress indicator showing your daily caffeine total (mg), a list of today's drinks, and a quick-add button.
+- **Quick Add** — pick from 9 predefined drinks (espresso, cappuccino, black coffee, latte, tea, green tea, energy drink, cola) with automatic caffeine conversion.
+- **Official Drinks Browser** — search and import real-world caffeine data from [Open Food Facts](https://world.openfoodfacts.org/), an open-source food database. Works offline via Room cache.
+- **Drink Management** — create, edit, and delete custom drinks with custom caffeine and volume values.
+- **History** — full consumption history with per-day breakdown, date navigation, and edit/delete support.
+- **Limit Warning** — a red alert triggers when you exceed 400 mg (the safe daily limit recommended by EFSA).
+- **Agile Testing** — comprehensive unit tests (64 passing), UI rendering tests, and E2E test infrastructure.
 
 ---
 
-## Struktura projektu
+## Tech Stack
+
+| Layer              | Technology                                                                              |
+| ------------------ | --------------------------------------------------------------------------------------- |
+| UI                 | **Jetpack Compose** + **Wear Compose Material 3**                                      |
+| Navigation         | **SwipeDismissableNavHost** (native Wear OS swipe-to-dismiss gestures)                  |
+| Architecture       | **MVVM** + **Repository Pattern** + **Unidirectional Data Flow**                       |
+| DI                 | **Hilt**                                                                                |
+| Database           | **Room** (local SQLite with coroutines)                                                 |
+| Networking         | **Retrofit** + **OkHttp** + **Gson**                                                   |
+| Reactivity         | **Kotlin Coroutines** + **StateFlow**                                                   |
+| CI                 | **GitHub Actions** (build, lint, unit tests on every push)                              |
+| Unit Tests         | JUnit 4 + **MockK** + **Turbine** + **Robolectric**                                    |
+| UI / E2E Tests     | Compose UI Test + **Espresso** + **Hilt Android Testing**                               |
+
+---
+
+## Project Structure
 
 ```
 KofeinoTracker/
-├── app/                    # Moduł smartfona (placeholder, gotowy do rozbudowy)
-├── wear/                   # Moduł Wear OS (główna aplikacja zegarka)
+├── app/                          # Phone module (placeholder, ready for expansion)
+├── wear/                         # Wear OS module (main smartwatch app)
 │   ├── src/main/java/...
-│   │   ├── data/           # Room DAO, Database, Repository
-│   │   ├── domain/         # Modele (CaffeineDrink, CaffeineIntake)
-│   │   ├── di/             # Hilt modules
-│   │   └── presentation/   # UI, ViewModel, Navigation, Theme
-│   ├── src/test/           # Testy jednostkowe (Repository, ViewModel)
-│   └── src/androidTest/    # Testy UI & E2E
-├── gradle/libs.versions.toml
+│   │   ├── data/
+│   │   │   ├── local/            # Room DAOs, entities, database
+│   │   │   ├── remote/           # Retrofit API, DTOs, CustomDns, ConnectivityObserver
+│   │   │   └── repository/       # Repository implementations
+│   │   ├── domain/model/         # Domain models (CaffeineIntake, DrinkEntity, OfficialDrink)
+│   │   ├── di/                   # Hilt modules (DatabaseModule, NetworkModule)
+│   │   └── presentation/
+│   │       ├── navigation/       # Screens sealed class + NavHost
+│   │       ├── screens/          # Jetpack Compose screens
+│   │       ├── theme/            # Color scheme, typography, dynamic theming
+│   │       └── viewmodel/        # ViewModels with StateFlow
+│   ├── src/test/                 # Unit tests (Repository, ViewModel)
+│   └── src/androidTest/          # UI & E2E instrumented tests
+├── gradle/libs.versions.toml     # Version catalog
 └── README.md
 ```
 
 ---
 
-## Konfiguracja emulatora Wear OS
+## Wear OS Emulator Setup
 
-### Wymagania
-- **Android Studio Narwhal** (lub nowsza) – wymagana dla emulatora Wear OS 6
-- SDK API 36 (Wear OS 6) lub API 33+ (Wear OS 4/5)
+### Prerequisites
 
-### Krok po kroku
+- **Android Studio Narwhal** or newer (required for Wear OS 6 emulator)
+- SDK API 36 (Wear OS 6) or API 33+ (Wear OS 4/5)
 
-1. **Otwórz Android Studio** → `Tools` → `SDK Manager`
-2. Przejdź do zakładki **SDK Tools** i upewnij się, że masz zainstalowane:
-   - `Android Emulator` (najnowsza wersja)
+### Quick Steps
+
+1. **Open Android Studio** → `Tools` → `SDK Manager`
+2. Under **SDK Tools**, ensure these are installed:
+   - `Android Emulator` (latest)
    - `Android SDK Platform-Tools`
-3. Przejdź do zakładki **SDK Platforms** i zainstaluj:
-   - **Android 16.0 ("Baklava")** – API 36 (Wear OS 6.0)
-4. Otwórz **Device Manager** (`Tools` → `Device Manager`)
-5. Kliknij **Create Device** → w kategorii wybierz **Wear OS**
-6. Wybierz profil sprzętowy (np. **Wear OS Small Round** lub **Wear OS Large Round**)
-7. Wybierz obraz systemu **Wear OS 6 (API 36)** i pobierz go jeśli trzeba
-8. Zakończ konfigurację kreatora i uruchom emulator przyciskiem **Play**
+3. Under **SDK Platforms**, install:
+   - **Android 16.0 ("Baklava")** — API 36 (Wear OS 6.0)
+4. Open **Device Manager** (`Tools` → `Device Manager`)
+5. Click **Create Device** → choose **Wear OS** category
+6. Pick a hardware profile (e.g. **Wear OS Small Round** or **Wear OS Large Round**)
+7. Choose the **Wear OS 6 (API 36)** system image and download if needed
+8. Complete the wizard and launch the emulator
 
-> **Wskazówka:** Emulator Wear OS 6 używa podpisanego builda – nie można uzyskać root access. Dla testów deweloperskich wystarczy zwykły tryb debug.
+> **Tip:** Wear OS 6 uses a signed build — root access is unavailable. Developer debug mode is sufficient.
+
+For a fully automated CLI-based setup (no Android Studio), see [`docs/setup-guide.md`](docs/setup-guide.md).
 
 ---
 
-## Uruchomienie aplikacji
+## Running the App
 
 ```bash
-# Zbuduj i zainstaluj na emulatorze Wear OS
+# Build and install on the Wear OS emulator
 ./gradlew :wear:installDebug
 
-# Lub z Android Studio: wybierz konfigurację 'wear' i kliknij Run
+# Or from Android Studio: select the 'wear' run configuration and click Run
 ```
 
-Aplikacja instaluje się jako **standalone** (`com.google.android.wearable.standalone = true`) – działa bez konieczności parowania z telefonem.
+The app runs as a **standalone Wear OS app** (`com.google.android.wearable.standalone = true`) — no phone pairing required.
 
 ---
 
-## Testy
+## Testing
 
-### Testy jednostkowe (JVM + Robolectric)
+### Unit Tests (JVM + Robolectric)
+
 ```bash
 ./gradlew :wear:testDebugUnitTest
 ```
-- `CaffeineRepositoryImplTest` – testy Room z in-memory DB
-- `CaffeineViewModelTest` – testy StateFlow z MockK i Turbine
 
-### Testy UI / E2E (instrumentowane)
+- `CaffeineRepositoryImplTest` — Room in-memory database tests
+- `CaffeineViewModelTest` — StateFlow tests with MockK and Turbine
+- `OfficialDrinkRepositoryImplTest` — API search + cache fallback tests
+- `OfficialDrinkViewModelTest` — search state, browse mode, error handling
+
+### UI / E2E Tests (instrumented)
+
 ```bash
+# Requires a running Wear OS emulator
 ./gradlew :wear:connectedDebugAndroidTest
 ```
-- `HomeScreenTest` – wyświetlanie, nawigacja, puste stany
-- `AddDrinkScreenTest` – wybór napojów, callbacki
-- `HistoryScreenTest` – lista historii, sumy
-- `CaffeineTrackerE2ETest` – pełny end-to-end flow (Hilt + prawdziwa aktywność)
+
+> **Note:** Compose UI Test Framework has limited support for Wear OS emulators (round screen clipping). Tests are structurally correct and serve as verification-quality code, but may not execute on all emulator configurations.
 
 ---
 
-## Najlepsze praktyki zastosowane w projekcie
+## Open Food Facts Integration
 
-1. **Wear Compose Material3** zamiast Material2 – nowy design system, `AppScaffold` + `ScreenScaffold`
-2. **TransformingLazyColumn** zamiast `ScalingLazyColumn` – nowoczesna lista z animacjami
-3. **EdgeButton** dla głównej akcji – natywny wzorzec Wear OS
-4. **Dynamic color scheme** – automatyczne dopasowanie kolorystyki do ustawień zegarka (Android 14+)
-5. **Swipe-to-dismiss** w nawigacji – gest właściwy dla zegarka
-6. **Flow + StateFlow** – jednokierunkowy przepływ danych, reaktywne UI
-7. **Room + Coroutines** – bezpieczne operacje IO na wątkach w tle
-8. **Hilt** – deklaratywne wstrzykiwanie zależności, testowalność
-9. **Agresywne testy** – pokrycie repository, viewmodelu, wszystkich ekranów i pełnego E2E
+KofeinoTracker integrates with the [Open Food Facts](https://world.openfoodfacts.org/) public API — an open-source, crowd-sourced food database with no API key required.
+
+- **Search endpoint**: Full-text search via v1 API (`/cgi/search.pl` with `search_terms`, `lc=pl`, `cc=PL`)
+- **Browse endpoint**: Category-based lookup via v2 API (`/api/v2/search` with `categories_tags_en`, `caffeine_100g>0`)
+- **Offline cache**: Room database with 1-hour TTL
+- **Custom DNS**: UDP-based DNS resolver bypass for emulator network restrictions
+- Rate limits: 10 req/min (search), 15 req/min (product read)
 
 ---
 
-## Licencja
+## Best Practices
 
-Projekt edukacyjny – dowolne wykorzystanie.
+1. **Wear Compose Material 3** over Material 2 — modern `AppScaffold` + `ScreenScaffold`
+2. **TransformingLazyColumn** replaces `ScalingLazyColumn` — animated, performant lists
+3. **EdgeButton** for primary actions — native Wear OS UX pattern
+4. **Dynamic color scheme** — automatically adapts to watch theme (Android 14+)
+5. **Swipe-to-dismiss navigation** — native watch gesture
+6. **Flow + StateFlow** — unidirectional data flow, reactive UI
+7. **Room + Coroutines** — thread-safe database operations
+8. **Hilt** — declarative DI, testability
+9. **Defensive programming** — DST-safe day boundaries (Calendar, not `+86400000`), double-click guards, `onError` callbacks in all CRUD operations
+10. **Open-source data** — caffeine values sourced from Open Food Facts, not hardcoded estimates
+
+---
+
+## License
+
+MIT License — see [`LICENSE`](LICENSE) for details.
+
+Built as an educational project. Contributions welcome — see [`CONTRIBUTING.md`](CONTRIBUTING.md).
