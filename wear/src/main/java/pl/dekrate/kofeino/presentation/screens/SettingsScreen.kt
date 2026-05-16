@@ -3,6 +3,7 @@ package pl.dekrate.kofeino.presentation.screens
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import pl.dekrate.kofeino.KofeinoTrackerApplication
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -97,6 +98,7 @@ fun SettingsScreen(
                             }
                             prefs.setLanguage(newLang)
                             currentLang = newLang
+                            (context.applicationContext as? KofeinoTrackerApplication)?.refreshLocale()
                             activity?.recreate()
                         },
                         colors = ButtonDefaults.buttonColors(

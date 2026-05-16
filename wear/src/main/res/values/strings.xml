@@ -58,7 +58,7 @@
     <!-- Date picker -->
     <string name="today">Today</string>
     <string name="yesterday">Yesterday</string>
-    <string name="day_after_tomorrow">Tomorrow</string>
+    <string name="tomorrow">Tomorrow</string>
     <string name="next_day">Next day</string>
     <string name="previous_day">Previous day</string>
 

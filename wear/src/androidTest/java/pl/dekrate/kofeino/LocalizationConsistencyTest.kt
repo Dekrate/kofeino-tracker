@@ -81,14 +81,16 @@ class LocalizationConsistencyTest {
 
     @Test
     fun defaultLocaleIsEnglish() {
-        val defaultLocale = context.resources.configuration.locales[0].language
-        // The default resource set (values/) is English.
-        // When device is set to an unsupported locale, Android falls back to values/.
-        // We verify by checking that R.string.today returns "Today" in a default-config context.
-        val defaultResources = context.resources
-        val todayString = defaultResources.getString(R.string.today)
-        // Note: this test passes only when device locale is "en" or an unsupported locale
-        // (which falls back to values/ = English). If device is "pl", this will return "Dzisiaj".
-        println("Default locale: $defaultLocale, today = $todayString")
+        // Create a context with a neutral (unsupported) locale to force
+        // Android's resource fallback to values/ (which is English).
+        val neutralConfig = Configuration(context.resources.configuration).apply {
+            setLocale(Locale("de"))
+        }
+        val neutralContext = context.createConfigurationContext(neutralConfig)
+        val todayString = neutralContext.resources.getString(R.string.today)
+        assertEquals(
+            "Default resource set (values/) should be English when device is in an unsupported locale",
+            "Today", todayString
+        )
     }
 }

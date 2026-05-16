@@ -19,6 +19,8 @@ class LanguagePreferencesTest {
     @Before
     fun setup() {
         editor = mockk(relaxed = true)
+        // putString() returns Editor, so chain it to return the same mock for .apply()
+        every { editor.putString(any(), any()) } returns editor
         prefs = mockk(relaxed = true) {
             every { edit() } returns editor
         }

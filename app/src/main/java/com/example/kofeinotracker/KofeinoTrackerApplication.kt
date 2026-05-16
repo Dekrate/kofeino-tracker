@@ -17,7 +17,8 @@ class KofeinoTrackerApplication : Application() {
     }
 
     companion object {
-        private const val PREFS_NAME = "kofeino_tracker_prefs"
+        // Uses the same file name as the wear module for consistency
+        private const val PREFS_NAME = "kofeino_language_prefs"
         private const val KEY_LANGUAGE = "selected_language"
 
         fun getLanguage(context: Context): String {

@@ -84,7 +84,7 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
                 (it.brand?.lowercase()?.contains(lower) == true)
         }
         if (filtered.isEmpty()) {
-            return Result.failure(Exception("No drinks found for: $query"))
+            return Result.success(emptyList())
         }
         return Result.success(filtered.map { it.toOfficialDrink() })
     }
@@ -149,7 +149,7 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
     private suspend fun loadFromCache(): Result<List<OfficialDrink>> {
         val cached = cacheDao.getAllCached()
         if (cached.isEmpty()) {
-            return Result.failure(Exception("Brak danych w cache i brak połączenia"))
+            return Result.failure(Exception("No cached data and no connection"))
         }
         Timber.d("Loaded ${cached.size} drinks from local cache")
         return Result.success(cached.map { it.toOfficialDrink() })
@@ -166,7 +166,7 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
         val displayName = when {
             !productName.isNullOrBlank() -> productName
             !brands.isNullOrBlank() -> brands
-            else -> "Napój #${code?.takeLast(6) ?: "???"}"
+            else -> "Drink #${code?.takeLast(6) ?: "???"}"
         }
         return OfficialDrink(
             barcode = code ?: "unknown",

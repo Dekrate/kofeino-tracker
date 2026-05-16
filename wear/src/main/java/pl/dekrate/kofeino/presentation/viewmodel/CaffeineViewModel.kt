@@ -179,7 +179,7 @@ class CaffeineViewModel @Inject constructor(
         return when (millis) {
             today -> context.getString(R.string.today)
             yesterday -> context.getString(R.string.yesterday)
-            tomorrow -> context.getString(R.string.day_after_tomorrow)
+            tomorrow -> context.getString(R.string.tomorrow)
             else -> SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(Date(millis))
         }
     }

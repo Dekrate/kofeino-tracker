@@ -55,8 +55,14 @@ class CaffeineViewModelTest {
     fun setup() {
         repository = mockk(relaxed = true)
         context = mockk(relaxed = true)
-        every { context.getString(any<Int>()) } returns "Today"
-        every { context.getString(any<Int>(), *anyVararg<Any>()) } returns "Error"
+        every { context.getString(any<Int>()) } answers {
+            "string_${firstArg<Int>()}"
+        }
+        every { context.getString(any<Int>(), *anyVararg<Any>()) } answers {
+            val resId = firstArg<Int>()
+            val formatArgs = args.drop(1).joinToString(",")
+            "string_${resId}_args($formatArgs)"
+        }
         // Default mocks for flows used in init
         every { repository.getIntakesForDate(any()) } returns flowOf(emptyList())
         every { repository.getTotalCaffeineForDate(any()) } returns flowOf(0)
