@@ -65,6 +65,8 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - name: Make gradlew executable
         run: chmod +x gradlew
+      - name: Remove local machine config (CI safe)
+        run: rm -f local.properties
       - name: Run lint
         run: ./gradlew lintDebug
       - uses: actions/upload-artifact@v4
