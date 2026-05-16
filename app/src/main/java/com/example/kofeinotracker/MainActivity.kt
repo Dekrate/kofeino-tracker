@@ -1,8 +1,11 @@
 package com.example.kofeinotracker
 
+import android.content.Context
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import java.util.Locale
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,6 +22,16 @@ import androidx.compose.ui.unit.dp
 import com.example.kofeinotracker.ui.theme.KofeinoTrackerPhoneTheme
 
 class MainActivity : ComponentActivity() {
+
+    override fun attachBaseContext(newBase: Context) {
+        val lang = KofeinoTrackerApplication.getLanguage(newBase)
+        val locale = Locale(lang)
+        Locale.setDefault(locale)
+        val config = Configuration(newBase.resources.configuration)
+        config.setLocale(locale)
+        super.attachBaseContext(newBase.createConfigurationContext(config))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -46,7 +59,7 @@ fun PhoneMainScreen() {
             textAlign = TextAlign.Center
         )
         Text(
-            text = "Aplikacja towarzyszaca dla Wear OS. Zainstaluj modul wear na zegarku, aby korzystac z monitorowania kofeiny.",
+            text = stringResource(R.string.wear_companion_description),
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = 16.dp)

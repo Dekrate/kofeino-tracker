@@ -1,89 +1,110 @@
 <resources>
     <!-- App -->
     <string name="app_name">Kofeino</string>
-    <string name="today_caffeine">Dzisiejsza kofeina</string>
+    <string name="today_caffeine">Today\'s caffeine</string>
     <string name="mg_format">%d mg</string>
-    <string name="add_drink">Dodaj napój</string>
-    <string name="history">Historia</string>
-    <string name="drinks">Napoje</string>
-    <string name="settings">Ustawienia</string>
-    <string name="safe_limit">Bezpieczny limit: 400 mg</string>
-    <string name="limit_exceeded">Przekroczono bezpieczny limit!</string>
+    <string name="add_drink">Add drink</string>
+    <string name="history">History</string>
+    <string name="drinks">Drinks</string>
+    <string name="settings">Settings</string>
+    <string name="safe_limit">Safe limit: 400 mg</string>
+    <string name="limit_exceeded">Safe limit exceeded!</string>
 
     <!-- Predefined drinks -->
     <string name="espresso">Espresso</string>
-    <string name="double_espresso">Podwójne espresso</string>
-    <string name="black_coffee">Czarna kawa</string>
+    <string name="double_espresso">Double espresso</string>
+    <string name="black_coffee">Black coffee</string>
     <string name="cappuccino">Cappuccino</string>
     <string name="latte">Latte</string>
-    <string name="tea">Herbata</string>
-    <string name="green_tea">Zielona herbata</string>
+    <string name="tea">Tea</string>
+    <string name="green_tea">Green tea</string>
     <string name="energy_drink">Energy drink</string>
     <string name="cola">Cola</string>
 
     <!-- General UI -->
-    <string name="no_drinks_today">Brak napojów dzisiaj</string>
-    <string name="drink_added">Dodano!</string>
-    <string name="remaining">Pozostało: %d mg</string>
+    <string name="no_drinks_today">No drinks today</string>
+    <string name="drink_added">Added!</string>
+    <string name="remaining">Remaining: %d mg</string>
     <string name="percent_format">%.0f%%</string>
-    <string name="back">Wstecz</string>
-    <string name="select_drink">Wybierz napój</string>
-    <string name="total_today">Suma dzisiaj</string>
+    <string name="back">Back</string>
+    <string name="select_drink">Select drink</string>
+    <string name="total_today">Total today</string>
     <string name="drink_details" formatted="false">%s - %d mg</string>
-    <string name="save">Zapisz</string>
-    <string name="delete">Usuń</string>
-    <string name="edit">Edytuj</string>
-    <string name="cancel">Anuluj</string>
-    <string name="confirm">Potwierdź</string>
+    <string name="save">Save</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+    <string name="cancel">Cancel</string>
+    <string name="confirm">Confirm</string>
 
     <!-- Drink management -->
-    <string name="manage_drinks">Zarządzaj napojami</string>
-    <string name="add_new_drink">Dodaj nowy napój</string>
-    <string name="edit_drink">Edytuj napój</string>
-    <string name="drink_name">Nazwa napoju</string>
-    <string name="drink_name_hint">Wpisz nazwę napoju</string>
-    <string name="caffeine_amount">Ilość kofeiny (mg)</string>
-    <string name="volume">Objętość</string>
-    <string name="delete_drink_confirm">Usunąć ten napój?</string>
-    <string name="no_drinks_defined">Brak zdefiniowanych napojów</string>
-    <string name="drinks_subtitle">Dodawaj, edytuj i usuwaj napoje</string>
+    <string name="manage_drinks">Manage drinks</string>
+    <string name="add_new_drink">Add new drink</string>
+    <string name="edit_drink">Edit drink</string>
+    <string name="drink_name">Drink name</string>
+    <string name="drink_name_hint">Enter drink name</string>
+    <string name="caffeine_amount">Caffeine amount (mg)</string>
+    <string name="volume">Volume</string>
+    <string name="delete_drink_confirm">Delete this drink?</string>
+    <string name="no_drinks_defined">No drinks defined</string>
+    <string name="drinks_subtitle">Add, edit and remove drinks</string>
 
     <!-- Record management -->
-    <string name="edit_intake">Edytuj wpis</string>
-    <string name="delete_intake">Usuń wpis</string>
-    <string name="delete_intake_confirm">Usunąć ten wpis?</string>
-    <string name="select_date">Wybierz datę</string>
-    <string name="change_date">Zmień datę</string>
+    <string name="edit_intake">Edit entry</string>
+    <string name="delete_intake">Delete entry</string>
+    <string name="delete_intake_confirm">Delete this entry?</string>
+    <string name="select_date">Select date</string>
+    <string name="change_date">Change date</string>
 
     <!-- Date picker -->
-    <string name="today">Dzisiaj</string>
-    <string name="yesterday">Wczoraj</string>
-    <string name="next_day">Następny dzień</string>
-    <string name="previous_day">Poprzedni dzień</string>
+    <string name="today">Today</string>
+    <string name="yesterday">Yesterday</string>
+    <string name="tomorrow">Tomorrow</string>
+    <string name="next_day">Next day</string>
+    <string name="previous_day">Previous day</string>
 
     <!-- Logging tag -->
     <string name="log_tag">Kofeino</string>
 
     <!-- Official drinks -->
-    <string name="official_drinks_button">Oficjalne napoje</string>
-    <string name="official_drinks_title">Oficjalne napoje z kofeiną</string>
-    <string name="official_drinks_loading">Pobieranie danych…</string>
-    <string name="official_drinks_error">Nie udało się pobrać danych. Sprawdź połączenie.</string>
-    <string name="official_drinks_retry">Spróbuj ponownie</string>
-    <string name="official_drinks_empty">Brak oficjalnych napojów w bazie. Spróbuj później.</string>
-    <string name="official_drinks_import">Importuj do moich</string>
-    <string name="official_drinks_imported">Zaimportowano!</string>
-    <string name="official_drinks_search">Szukaj napoju…</string>
-    <string name="official_drinks_search_button">Szukaj</string>
-    <string name="official_drinks_search_results">Wyniki wyszukiwania</string>
-    <string name="official_drinks_clear_search">Wyczyść</string>
-    <string name="official_drinks_no_results">Brak wyników. Spróbuj innej nazwy.</string>
+    <string name="official_drinks_button">Official drinks</string>
+    <string name="official_drinks_title">Official caffeinated drinks</string>
+    <string name="official_drinks_loading">Loading data…</string>
+    <string name="official_drinks_error">Could not load data. Check connection.</string>
+    <string name="official_drinks_retry">Try again</string>
+    <string name="official_drinks_empty">No official drinks available. Try again later.</string>
+    <string name="official_drinks_import">Import to mine</string>
+    <string name="official_drinks_imported">Imported!</string>
+    <string name="official_drinks_search">Search drink…</string>
+    <string name="official_drinks_search_button">Search</string>
+    <string name="official_drinks_search_results">Search results</string>
+    <string name="official_drinks_clear_search">Clear</string>
+    <string name="official_drinks_no_results">No results. Try a different name.</string>
 
     <!-- Validation -->
-    <string name="error_name_required">Nazwa napoju jest wymagana</string>
-    <string name="error_caffeine_invalid">Ilość kofeiny musi być większa lub równa 0</string>
-    <string name="error_volume_invalid">Objętość musi być większa lub równa 0</string>
-    <string name="field_required">To pole jest wymagane</string>
-    <string name="invalid_caffeine">Nieprawidłowa wartość kofeiny</string>
-    <string name="invalid_volume">Nieprawidłowa objętość</string>
+    <string name="error_name_required">Drink name is required</string>
+    <string name="error_caffeine_invalid">Caffeine amount must be 0 or more</string>
+    <string name="error_volume_invalid">Volume must be 0 or more</string>
+    <string name="field_required">This field is required</string>
+    <string name="invalid_caffeine">Invalid caffeine amount</string>
+    <string name="invalid_volume">Invalid volume</string>
+
+    <!-- Intake screen -->
+    <string name="intake_not_found">Entry not found</string>
+    <string name="caffeine_label">Caffeine: %d mg</string>
+    <string name="saving">Saving…</string>
+    <string name="deleting">Deleting…</string>
+
+    <!-- Error messages (ViewModel) -->
+    <string name="error_add_failed">Failed to add entry</string>
+    <string name="error_save_failed">Failed to save changes</string>
+    <string name="error_delete_failed">Failed to delete entry</string>
+    <string name="error_load_failed">Failed to load data</string>
+    <string name="error_no_results">No results</string>
+    <string name="error_search_failed">Search failed</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="language">Language</string>
+    <string name="polish">Polish</string>
+    <string name="english">English</string>
 </resources>

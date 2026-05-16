@@ -40,13 +40,13 @@ interface CaffeineApiService {
     ): OpenFoodFactsSearchResponse
 
     /**
-     * Wyszukiwanie pełnotekstowe (v1 search — jedyny endpoint wspierający search_terms).
+     * Full-text search via v1 search endpoint (the only one supporting search_terms).
      *
-     * @param query Fraza wyszukiwania (np. "red bull", "coca cola")
-     * @param pageSize Liczba wyników
-     * @param fields Pola do zwrócenia
-     * @param locale Język (pl, en, fr, de...)
-     * @param country Kraj (PL, US, FR, DE...)
+     * @param query Search phrase (e.g. "red bull", "coca cola")
+     * @param pageSize Number of results
+     * @param fields Fields to return
+     * @param locale Language (pl, en, fr, de...)
+     * @param country Country (PL, US, FR, DE...)
      */
     @GET("../../cgi/search.pl")
     suspend fun searchProducts(

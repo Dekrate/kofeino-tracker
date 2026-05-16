@@ -56,7 +56,7 @@ fun EditIntakeScreen(
     if (intake == null) {
         ScreenScaffold {
             Text(
-                text = "Nie znaleziono wpisu",
+                text = stringResource(R.string.intake_not_found),
                 modifier = Modifier.padding(16.dp)
             )
         }
@@ -83,7 +83,7 @@ fun EditIntakeScreen(
             )
 
             Text(
-                text = "Kofeina: $caffeineMg mg",
+                text = stringResource(R.string.caffeine_label, caffeineMg),
                 style = MaterialTheme.typography.bodyMedium
             )
 
@@ -151,7 +151,7 @@ fun EditIntakeScreen(
                 if (isSaving) {
                     CircularProgressIndicator(modifier = Modifier.padding(end = 4.dp))
                 }
-                Text(if (isSaving) "Zapisywanie…" else stringResource(R.string.save))
+                Text(if (isSaving) stringResource(R.string.saving) else stringResource(R.string.save))
             }
 
             // Delete button
@@ -196,7 +196,7 @@ fun EditIntakeScreen(
                         if (isDeleting) {
                             CircularProgressIndicator(modifier = Modifier.padding(end = 4.dp))
                         }
-                        Text(if (isDeleting) "Usuwanie…" else stringResource(R.string.confirm))
+                        Text(if (isDeleting) stringResource(R.string.deleting) else stringResource(R.string.confirm))
                     }
                 }
             }

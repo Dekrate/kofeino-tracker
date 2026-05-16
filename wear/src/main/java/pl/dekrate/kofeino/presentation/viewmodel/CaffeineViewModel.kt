@@ -1,18 +1,20 @@
 package pl.dekrate.kofeino.presentation.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import pl.dekrate.kofeino.R
 import pl.dekrate.kofeino.data.repository.CaffeineRepository
 import pl.dekrate.kofeino.domain.model.CaffeineIntake
 import pl.dekrate.kofeino.domain.model.DrinkEntity
-import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
@@ -27,7 +29,8 @@ import javax.inject.Inject
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class CaffeineViewModel @Inject constructor(
-    private val repository: CaffeineRepository
+    private val repository: CaffeineRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _selectedDateMillis = MutableStateFlow(getStartOfToday())
@@ -102,7 +105,7 @@ class CaffeineViewModel @Inject constructor(
                 repository.addIntake(intake)
             } catch (e: Exception) {
                 Timber.e(e, "Failed to add intake")
-                _uiState.update { it.copy(error = "Nie udało się dodać wpisu") }
+                _uiState.update { it.copy(error = context.getString(R.string.error_add_failed)) }
             }
         }
     }
@@ -120,7 +123,7 @@ class CaffeineViewModel @Inject constructor(
                 onComplete()
             } catch (e: Exception) {
                 Timber.e(e, "Failed to update intake")
-                _uiState.update { it.copy(error = "Nie udało się zapisać zmian") }
+                _uiState.update { it.copy(error = context.getString(R.string.error_save_failed)) }
                 onError()
             }
         }
@@ -139,7 +142,7 @@ class CaffeineViewModel @Inject constructor(
                 onComplete()
             } catch (e: Exception) {
                 Timber.e(e, "Failed to delete intake")
-                _uiState.update { it.copy(error = "Nie udało się usunąć wpisu") }
+                _uiState.update { it.copy(error = context.getString(R.string.error_delete_failed)) }
                 onError()
             }
         }
@@ -174,10 +177,10 @@ class CaffeineViewModel @Inject constructor(
         val yesterday = startOfDayOffset(today, -1)
         val tomorrow = startOfDayOffset(today, +1)
         return when (millis) {
-            today -> "Dzisiaj"
-            yesterday -> "Wczoraj"
-            tomorrow -> "Jutro"
-            else -> SimpleDateFormat("dd.MM.yyyy", Locale.forLanguageTag("pl")).format(Date(millis))
+            today -> context.getString(R.string.today)
+            yesterday -> context.getString(R.string.yesterday)
+            tomorrow -> context.getString(R.string.tomorrow)
+            else -> SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(Date(millis))
         }
     }
 

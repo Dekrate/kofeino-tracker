@@ -1,14 +1,17 @@
 package pl.dekrate.kofeino.presentation.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import pl.dekrate.kofeino.R
 import pl.dekrate.kofeino.data.repository.OfficialDrinkRepository
 import pl.dekrate.kofeino.domain.model.OfficialDrink
 import timber.log.Timber
@@ -24,7 +27,8 @@ data class OfficialDrinkUiState(
 
 @HiltViewModel
 class OfficialDrinkViewModel @Inject constructor(
-    private val repository: OfficialDrinkRepository
+    private val repository: OfficialDrinkRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(OfficialDrinkUiState())
@@ -54,7 +58,7 @@ class OfficialDrinkViewModel @Inject constructor(
                     Timber.e(error, "Failed to load official drinks")
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = error.message ?: "Nie udało się pobrać danych"
+                        error = error.message ?: context.getString(R.string.error_load_failed)
                     )
                 }
         }
@@ -96,14 +100,14 @@ class OfficialDrinkViewModel @Inject constructor(
                     _uiState.value = _uiState.value.copy(
                         drinks = drinks,
                         isLoading = false,
-                        error = if (drinks.isEmpty()) "Brak wyników" else null
+                        error = if (drinks.isEmpty()) context.getString(R.string.error_no_results) else null
                     )
                 }
                 .onFailure { error ->
                     Timber.e(error, "Search failed for: $query")
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = error.message ?: "Wyszukiwanie nie powiodło się"
+                        error = error.message ?: context.getString(R.string.error_search_failed)
                     )
                 }
         }

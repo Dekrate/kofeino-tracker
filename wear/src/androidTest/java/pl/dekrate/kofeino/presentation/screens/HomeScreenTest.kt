@@ -159,19 +159,20 @@ class HomeScreenTest {
 
     @Test
     fun homeScreen_showsDateLabel() {
-        val fakeViewModel = createFakeViewModel(CaffeineUiState(dateLabel = "Dzisiaj"))
+        val fakeViewModel = createFakeViewModel(CaffeineUiState(dateLabel = context.getString(R.string.today)))
         composeTestRule.setContent {
             KofeinoTrackerTheme {
                 HomeScreen(
                     onNavigateToAddDrink = {},
                     onNavigateToHistory = {},
                     onNavigateToManageDrinks = {},
+                    onNavigateToSettings = {},
                     onEditIntake = {},
                     viewModel = fakeViewModel
                 )
             }
         }
-        composeTestRule.onNodeWithText("Dzisiaj").assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(R.string.today)).assertIsDisplayed()
     }
 
     @Test

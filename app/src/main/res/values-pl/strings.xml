@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">KofeinoTracker</string>
+    <string name="wear_companion_description">Aplikacja towarzysząca dla Wear OS. Zainstaluj moduł wear na zegarku, aby korzystać z monitorowania kofeiny.</string>
+</resources>

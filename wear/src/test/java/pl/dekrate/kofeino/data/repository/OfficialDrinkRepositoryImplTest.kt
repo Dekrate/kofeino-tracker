@@ -189,7 +189,7 @@ class OfficialDrinkRepositoryImplTest {
     }
 
     @Test
-    fun `searchOfficialDrinks when offline and no cache match should fail`() = runTest {
+    fun `searchOfficialDrinks when offline and no cache match should return empty list`() = runTest {
         every { connectivityObserver.isOnline } returns false
         cacheDao.insertAll(
             listOf(
@@ -199,7 +199,8 @@ class OfficialDrinkRepositoryImplTest {
 
         val result = repository.searchOfficialDrinks("coca cola")
 
-        assertTrue(result.isFailure)
+        assertTrue(result.isSuccess)
+        assertEquals(0, result.getOrThrow().size)
     }
 
     @Test

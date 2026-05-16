@@ -1,10 +1,12 @@
 package pl.dekrate.kofeino.presentation.viewmodel
 
 import app.cash.turbine.test
+import android.content.Context
 import pl.dekrate.kofeino.data.repository.OfficialDrinkRepository
 import pl.dekrate.kofeino.domain.model.OfficialDrink
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -39,6 +41,7 @@ class OfficialDrinkViewModelTest {
     }
 
     private lateinit var repository: OfficialDrinkRepository
+    private lateinit var context: Context
     private lateinit var viewModel: OfficialDrinkViewModel
 
     private val sampleDrinks = listOf(
@@ -50,13 +53,16 @@ class OfficialDrinkViewModelTest {
     @Before
     fun setup() {
         repository = mockk(relaxed = true)
+        context = mockk(relaxed = true)
+        every { context.getString(any<Int>()) } returns "Error"
+        every { context.getString(any<Int>(), *anyVararg<Any>()) } returns "Error"
         coEvery { repository.getOfficialDrinks() } returns Result.success(sampleDrinks)
         coEvery { repository.searchOfficialDrinks(any()) } returns Result.success(emptyList())
     }
 
     @Test
     fun `initial state should load and show drinks`() = runTest {
-        viewModel = OfficialDrinkViewModel(repository)
+        viewModel = OfficialDrinkViewModel(repository, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -72,7 +78,7 @@ class OfficialDrinkViewModelTest {
     fun `loadOfficialDrinks should set error on failure`() = runTest {
         coEvery { repository.getOfficialDrinks() } returns Result.failure(Exception("No network"))
 
-        viewModel = OfficialDrinkViewModel(repository)
+        viewModel = OfficialDrinkViewModel(repository, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -86,7 +92,7 @@ class OfficialDrinkViewModelTest {
 
     @Test
     fun `refresh should call repository again`() = runTest {
-        viewModel = OfficialDrinkViewModel(repository)
+        viewModel = OfficialDrinkViewModel(repository, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.refresh()
@@ -97,7 +103,7 @@ class OfficialDrinkViewModelTest {
 
     @Test
     fun `state should emit final loaded state`() = runTest {
-        viewModel = OfficialDrinkViewModel(repository)
+        viewModel = OfficialDrinkViewModel(repository, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -114,7 +120,7 @@ class OfficialDrinkViewModelTest {
     @Test
     fun `onSearchQueryChanged should enable search mode`() = runTest {
         coEvery { repository.searchOfficialDrinks("Kawa") } returns Result.success(sampleDrinks.take(1))
-        viewModel = OfficialDrinkViewModel(repository)
+        viewModel = OfficialDrinkViewModel(repository, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.onSearchQueryChanged("Kawa")
@@ -134,7 +140,7 @@ class OfficialDrinkViewModelTest {
 
     @Test
     fun `clearSearch should reset to initial browse mode`() = runTest {
-        viewModel = OfficialDrinkViewModel(repository)
+        viewModel = OfficialDrinkViewModel(repository, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.onSearchQueryChanged("Cola")
@@ -155,7 +161,7 @@ class OfficialDrinkViewModelTest {
     @Test
     fun `refresh in search mode should call searchOfficialDrinks`() = runTest {
         coEvery { repository.searchOfficialDrinks(any()) } returns Result.success(sampleDrinks)
-        viewModel = OfficialDrinkViewModel(repository)
+        viewModel = OfficialDrinkViewModel(repository, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.onSearchQueryChanged("Herbata")
@@ -171,7 +177,7 @@ class OfficialDrinkViewModelTest {
 
     @Test
     fun `empty search query should reload official drinks`() = runTest {
-        viewModel = OfficialDrinkViewModel(repository)
+        viewModel = OfficialDrinkViewModel(repository, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.onSearchQueryChanged("")
@@ -186,7 +192,7 @@ class OfficialDrinkViewModelTest {
     fun `search should show error on failure`() = runTest {
         coEvery { repository.searchOfficialDrinks(any()) } returns
             Result.failure(Exception("Not found"))
-        viewModel = OfficialDrinkViewModel(repository)
+        viewModel = OfficialDrinkViewModel(repository, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.search("xyz")
