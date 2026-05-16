@@ -36,6 +36,9 @@ jobs:
             ~/.android/cache
           key: android-sdk-${{ runner.os }}
 
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
       - name: Build debug APKs
         run: ./gradlew assembleDebug
 
@@ -60,7 +63,10 @@ jobs:
           java-version: 21
           distribution: temurin
       - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew lintDebug
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+      - name: Run lint
+        run: ./gradlew lintDebug
       - uses: actions/upload-artifact@v4
         if: always()
         with:
