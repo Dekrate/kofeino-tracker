@@ -1,5 +1,7 @@
 # Uruchomienie Wear OS emulatora i aplikacji z CLI (Windows PowerShell)
 
+> ⚠️ **Ten plik jest nieaktualny.** Zaktualizowana wersja znajduje się w `docs/setup-guide.md`.
+
 Ten przewodnik pokazuje, jak w pelni zainstalować Android SDK, utworzyć emulator Wear OS i zbudować/zainstalować aplikacje **KofeinoTracker** bez otwierania Android Studio (czyste CLI).
 
 ---
@@ -68,7 +70,7 @@ sdkmanager.bat "system-images;android-36;android-wear;x86_64"
 
 ```powershell
 # Utworz urzadzenie wirtualne Wear OS
-$avdName = "Wear_OS_6_API_36"
+$avdName = "Wear_OS_6_Kofeino"
 avdmanager.bat create avd `
     --name $avdName `
     --device "wearos_small_round" `
@@ -167,7 +169,7 @@ $ErrorActionPreference = "Stop"
 $env:ANDROID_SDK_ROOT = "$env:USERPROFILE\Android\Sdk"
 $env:PATH = "$env:ANDROID_SDK_ROOT\cmdline-tools\latest\bin;$env:ANDROID_SDK_ROOT\platform-tools;$env:ANDROID_SDK_ROOT\emulator;$env:PATH"
 
-$avdName = "Wear_OS_6_API_36"
+$avdName = "Wear_OS_6_Kofeino"
 
 # Sprawdz czy AVD istnieje
 $avdList = avdmanager.bat list avd | Out-String
@@ -206,7 +208,7 @@ Write-Host "Gotowe! Sprawdz logi: adb logcat -s KofeinoTracker:D"
 adb emu kill
 
 # Usun AVD
-avdmanager.bat delete avd --name "Wear_OS_6_API_36"
+avdmanager.bat delete avd --name "Wear_OS_6_Kofeino"
 
 # Usun obraz systemu (zaoszczedz miejsce)
 sdkmanager.bat --uninstall "system-images;android-36;android-wear;x86_64"
@@ -222,7 +224,7 @@ sdkmanager.bat --uninstall "system-images;android-36;android-wear;x86_64"
 | `adb devices` pokazuje `unauthorized` | Na emulatorze zaakceptuj debugowanie USB (okno dialogowe) |
 | Gradle wrapper nie istnieje | `gradle wrapper --gradle-version 8.11` lub `.\gradlew.bat wrapper` |
 | `JAVA_HOME` nie ustawione | `$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-21"` |
-| Emulator bardzo wolny | Zwieksz RAM w AVD: `avdmanager.bat create avd ... --ram 2048` lub edytuj `config.ini` w `%USERPROFILE%\.android\avd\Wear_OS_6_API_36.avd\` |
+| Emulator bardzo wolny | Zwieksz RAM w AVD: `avdmanager.bat create avd ... --ram 2048` lub edytuj `config.ini` w `%USERPROFILE%\.android\avd\Wear_OS_6_Kofeino.avd\` |
 
 ---
 
@@ -232,7 +234,7 @@ sdkmanager.bat --uninstall "system-images;android-36;android-wear;x86_64"
 # Wszystko w jednym podejsciu:
 # 1. Zainstaluj SDK + emulator (raz)
 # 2. Utworz AVD (raz)
-# 3. Uruchom emulator: emulator.bat -avd Wear_OS_6_API_36
+# 3. Uruchom emulator: emulator.bat -avd Wear_OS_6_Kofeino
 # 4. Zbuduj i zainstaluj: .\gradlew.bat :wear:installDebug
 # 5. Testy: .\gradlew.bat :wear:testDebugUnitTest
 ```

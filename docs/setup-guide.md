@@ -68,7 +68,7 @@ sdkmanager.bat "system-images;android-36;android-wear;x86_64"
 
 ```powershell
 # Utworz urzadzenie wirtualne Wear OS
-$avdName = "Wear_OS_6_API_36"
+$avdName = "Wear_OS_6_Kofeino"
 avdmanager.bat create avd `
     --name $avdName `
     --device "wearos_small_round" `
@@ -167,7 +167,7 @@ $ErrorActionPreference = "Stop"
 $env:ANDROID_SDK_ROOT = "$env:USERPROFILE\Android\Sdk"
 $env:PATH = "$env:ANDROID_SDK_ROOT\cmdline-tools\latest\bin;$env:ANDROID_SDK_ROOT\platform-tools;$env:ANDROID_SDK_ROOT\emulator;$env:PATH"
 
-$avdName = "Wear_OS_6_API_36"
+$avdName = "Wear_OS_6_Kofeino"
 
 # Sprawdz czy AVD istnieje
 $avdList = avdmanager.bat list avd | Out-String
@@ -206,7 +206,7 @@ Write-Host "Gotowe! Sprawdz logi: adb logcat -s KofeinoTracker:D"
 adb emu kill
 
 # Usun AVD
-avdmanager.bat delete avd --name "Wear_OS_6_API_36"
+avdmanager.bat delete avd --name "Wear_OS_6_Kofeino"
 
 # Usun obraz systemu (zaoszczedz miejsce)
 sdkmanager.bat --uninstall "system-images;android-36;android-wear;x86_64"
@@ -222,7 +222,29 @@ sdkmanager.bat --uninstall "system-images;android-36;android-wear;x86_64"
 | `adb devices` pokazuje `unauthorized` | Na emulatorze zaakceptuj debugowanie USB (okno dialogowe) |
 | Gradle wrapper nie istnieje | `gradle wrapper --gradle-version 8.11` lub `.\gradlew.bat wrapper` |
 | `JAVA_HOME` nie ustawione | `$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-21"` |
-| Emulator bardzo wolny | Zwieksz RAM w AVD: `avdmanager.bat create avd ... --ram 2048` lub edytuj `config.ini` w `%USERPROFILE%\.android\avd\Wear_OS_6_API_36.avd\` |
+| Emulator bardzo wolny | Zwieksz RAM w AVD: `avdmanager.bat create avd ... --ram 2048` lub edytuj `config.ini` w `%USERPROFILE%\.android\avd\Wear_OS_6_Kofeino.avd\` |
+
+---
+
+## 12. Ustawienie języka polskiego w emulatorze
+
+Aby aplikacja poprawnie wyświetlała polskie napisy, emulator musi mieć ustawioną **polską lokalizację**:
+
+```powershell
+# Tymczasowo (na czas sesji):
+adb shell settings put global system_locale pl-PL
+# Wymaga restartu emulatora (cold boot):
+adb emu kill
+
+# Trwale — dodaj do config.ini AVD przed cold bootem:
+$configPath = "$env:USERPROFILE\.android\avd\Wear_OS_6_Kofeino.avd\config.ini"
+Add-Content -Path $configPath -Value "hw.locale=pl-PL"
+
+# Uruchom z cold bootem (bez snapshotu):
+emulator.bat -avd Wear_OS_6_Kofeino -no-snapshot-load
+```
+
+Po ustawieniu locale na `pl-PL` aplikacja wyświetla polskie komunikaty, daty i formatowanie liczb zgodne z regionalnymi ustawieniami.
 
 ---
 
@@ -232,7 +254,7 @@ sdkmanager.bat --uninstall "system-images;android-36;android-wear;x86_64"
 # Wszystko w jednym podejsciu:
 # 1. Zainstaluj SDK + emulator (raz)
 # 2. Utworz AVD (raz)
-# 3. Uruchom emulator: emulator.bat -avd Wear_OS_6_API_36
+# 3. Uruchom emulator: emulator.bat -avd Wear_OS_6_Kofeino
 # 4. Zbuduj i zainstaluj: .\gradlew.bat :wear:installDebug
 # 5. Testy: .\gradlew.bat :wear:testDebugUnitTest
 ```
