@@ -98,7 +98,7 @@ class HistoryScreenTest {
 
     @Test
     fun historyScreen_showsDateLabel() {
-        val fakeViewModel = createFakeViewModel(CaffeineUiState(dateLabel = "Dzisiaj"))
+        val fakeViewModel = createFakeViewModel(CaffeineUiState(dateLabel = context.getString(R.string.today)))
         composeTestRule.setContent {
             KofeinoTrackerTheme {
                 HistoryScreen(
@@ -107,12 +107,12 @@ class HistoryScreenTest {
                 )
             }
         }
-        composeTestRule.onNodeWithText("Dzisiaj").assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(R.string.today)).assertIsDisplayed()
     }
 
     @Test
     fun historyScreen_showsDateLabel_forYesterday() {
-        val fakeViewModel = createFakeViewModel(CaffeineUiState(dateLabel = "Wczoraj"))
+        val fakeViewModel = createFakeViewModel(CaffeineUiState(dateLabel = context.getString(R.string.yesterday)))
         composeTestRule.setContent {
             KofeinoTrackerTheme {
                 HistoryScreen(
@@ -121,14 +121,14 @@ class HistoryScreenTest {
                 )
             }
         }
-        composeTestRule.onNodeWithText("Wczoraj").assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(R.string.yesterday)).assertIsDisplayed()
     }
 
     @Test
     fun historyScreen_navigatesPreviousDay() {
         val fakeViewModel = mockk<CaffeineViewModel>(relaxed = true)
         every { fakeViewModel.uiState } returns MutableStateFlow(
-            CaffeineUiState(dateLabel = "Dzisiaj")
+            CaffeineUiState(dateLabel = context.getString(R.string.today))
         ) as StateFlow<CaffeineUiState>
 
         composeTestRule.setContent {
@@ -147,7 +147,7 @@ class HistoryScreenTest {
     fun historyScreen_navigatesNextDay() {
         val fakeViewModel = mockk<CaffeineViewModel>(relaxed = true)
         every { fakeViewModel.uiState } returns MutableStateFlow(
-            CaffeineUiState(dateLabel = "Dzisiaj")
+            CaffeineUiState(dateLabel = context.getString(R.string.today))
         ) as StateFlow<CaffeineUiState>
 
         composeTestRule.setContent {
@@ -166,7 +166,7 @@ class HistoryScreenTest {
     fun historyScreen_showsTodayButton_whenNotToday() {
         val fakeViewModel = mockk<CaffeineViewModel>(relaxed = true)
         every { fakeViewModel.uiState } returns MutableStateFlow(
-            CaffeineUiState(dateLabel = "Wczoraj")
+            CaffeineUiState(dateLabel = context.getString(R.string.yesterday))
         ) as StateFlow<CaffeineUiState>
         every { fakeViewModel.isToday() } returns false
 

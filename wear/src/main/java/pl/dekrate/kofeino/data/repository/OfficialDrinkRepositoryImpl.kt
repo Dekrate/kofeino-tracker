@@ -84,7 +84,7 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
                 (it.brand?.lowercase()?.contains(lower) == true)
         }
         if (filtered.isEmpty()) {
-            return Result.failure(Exception("Nie znaleziono napojów dla: $query"))
+            return Result.failure(Exception("No drinks found for: $query"))
         }
         return Result.success(filtered.map { it.toOfficialDrink() })
     }

@@ -39,6 +39,7 @@ fun HomeScreen(
     onNavigateToAddDrink: () -> Unit,
     onNavigateToHistory: () -> Unit,
     onNavigateToManageDrinks: () -> Unit,
+    onNavigateToSettings: () -> Unit = {},
     onEditIntake: (Long) -> Unit,
     viewModel: CaffeineViewModel = hiltViewModel()
 ) {
@@ -106,6 +107,15 @@ fun HomeScreen(
                     modifier = Modifier.padding(horizontal = 8.dp)
                 ) {
                     Text(stringResource(R.string.manage_drinks))
+                }
+            }
+
+            item {
+                Button(
+                    onClick = onNavigateToSettings,
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                ) {
+                    Text(stringResource(R.string.settings))
                 }
             }
 

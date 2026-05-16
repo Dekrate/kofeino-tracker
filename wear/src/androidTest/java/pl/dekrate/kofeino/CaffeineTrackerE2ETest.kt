@@ -98,15 +98,15 @@ class CaffeineTrackerE2ETest {
         composeRule.onNodeWithText(context.getString(pl.dekrate.kofeino.R.string.history)).performClick()
         composeRule.waitForIdle()
 
-        // Should show "Dzisiaj"
-        composeRule.onNodeWithText("Dzisiaj").assertIsDisplayed()
+        // Should show today label
+        composeRule.onNodeWithText(context.getString(R.string.today)).assertIsDisplayed()
 
         // Navigate to yesterday
         composeRule.onNodeWithText("◀").performClick()
         composeRule.waitForIdle()
 
-        // Should show "Wczoraj" and no drinks
-        composeRule.onNodeWithText("Wczoraj").assertIsDisplayed()
+        // Should show yesterday label and no drinks
+        composeRule.onNodeWithText(context.getString(R.string.yesterday)).assertIsDisplayed()
         composeRule.onNodeWithText(
             context.getString(pl.dekrate.kofeino.R.string.no_drinks_today)
         ).assertIsDisplayed()

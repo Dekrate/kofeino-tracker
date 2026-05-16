@@ -12,6 +12,7 @@ import pl.dekrate.kofeino.presentation.screens.HistoryScreen
 import pl.dekrate.kofeino.presentation.screens.HomeScreen
 import pl.dekrate.kofeino.presentation.screens.ManageDrinksScreen
 import pl.dekrate.kofeino.presentation.screens.OfficialDrinksScreen
+import pl.dekrate.kofeino.presentation.screens.SettingsScreen
 import pl.dekrate.kofeino.presentation.viewmodel.DrinkViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
 import timber.log.Timber
@@ -29,6 +30,7 @@ fun WearNavHost(navController: NavHostController) {
                 onNavigateToAddDrink = { navController.navigate(Screen.AddDrink.route) },
                 onNavigateToHistory = { navController.navigate(Screen.History.route) },
                 onNavigateToManageDrinks = { navController.navigate(Screen.ManageDrinks.route) },
+                onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
                 onEditIntake = { intakeId ->
                     navController.navigate(Screen.editIntake(intakeId))
                 }
@@ -77,6 +79,11 @@ fun WearNavHost(navController: NavHostController) {
                 intakeId = intakeId,
                 onDeleted = { navController.popBackStack() },
                 onSaved = { navController.popBackStack() }
+            )
+        }
+        composable(Screen.Settings.route) {
+            SettingsScreen(
+                onBack = { navController.popBackStack() }
             )
         }
     }
