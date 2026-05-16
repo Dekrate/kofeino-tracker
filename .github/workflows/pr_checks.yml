@@ -39,8 +39,8 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x gradlew
 
-      - name: Build debug APKs
-        run: ./gradlew assembleDebug
+      - name: Build debug APK (wear only)
+        run: ./gradlew :wear:assembleDebug
 
       - name: Run unit tests
         run: ./gradlew :wear:testDebugUnitTest
