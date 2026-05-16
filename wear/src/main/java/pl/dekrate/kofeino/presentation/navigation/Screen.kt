@@ -5,6 +5,7 @@ sealed class Screen(val route: String) {
     data object AddDrink : Screen("add_drink")
     data object History : Screen("history")
     data object ManageDrinks : Screen("manage_drinks")
+    data object OfficialDrinks : Screen("official_drinks")
     data object EditIntake : Screen("edit_intake/{intakeId}")
 
     companion object {

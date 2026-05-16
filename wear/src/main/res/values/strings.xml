@@ -64,6 +64,21 @@
     <!-- Logging tag -->
     <string name="log_tag">Kofeino</string>
 
+    <!-- Official drinks -->
+    <string name="official_drinks_button">Oficjalne napoje</string>
+    <string name="official_drinks_title">Oficjalne napoje z kofeiną</string>
+    <string name="official_drinks_loading">Pobieranie danych…</string>
+    <string name="official_drinks_error">Nie udało się pobrać danych. Sprawdź połączenie.</string>
+    <string name="official_drinks_retry">Spróbuj ponownie</string>
+    <string name="official_drinks_empty">Brak oficjalnych napojów w bazie. Spróbuj później.</string>
+    <string name="official_drinks_import">Importuj do moich</string>
+    <string name="official_drinks_imported">Zaimportowano!</string>
+    <string name="official_drinks_search">Szukaj napoju…</string>
+    <string name="official_drinks_search_button">Szukaj</string>
+    <string name="official_drinks_search_results">Wyniki wyszukiwania</string>
+    <string name="official_drinks_clear_search">Wyczyść</string>
+    <string name="official_drinks_no_results">Brak wyników. Spróbuj innej nazwy.</string>
+
     <!-- Validation -->
     <string name="error_name_required">Nazwa napoju jest wymagana</string>
     <string name="error_caffeine_invalid">Ilość kofeiny musi być większa lub równa 0</string>

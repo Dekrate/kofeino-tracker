@@ -5,6 +5,7 @@ import androidx.room.Room
 import pl.dekrate.kofeino.data.local.CaffeineDatabase
 import pl.dekrate.kofeino.data.local.CaffeineIntakeDao
 import pl.dekrate.kofeino.data.local.DrinkDao
+import pl.dekrate.kofeino.data.local.OfficialDrinkCacheDao
 import pl.dekrate.kofeino.data.repository.CaffeineRepository
 import pl.dekrate.kofeino.data.repository.CaffeineRepositoryImpl
 import pl.dekrate.kofeino.domain.model.DrinkEntity
@@ -41,6 +42,11 @@ object DatabaseModule {
     @Provides
     fun provideDrinkDao(database: CaffeineDatabase): DrinkDao {
         return database.drinkDao()
+    }
+
+    @Provides
+    fun provideOfficialDrinkCacheDao(database: CaffeineDatabase): OfficialDrinkCacheDao {
+        return database.officialDrinkCacheDao()
     }
 
     @Provides

@@ -6,11 +6,12 @@ import pl.dekrate.kofeino.domain.model.CaffeineIntake
 import pl.dekrate.kofeino.domain.model.DrinkEntity
 
 @Database(
-    entities = [CaffeineIntake::class, DrinkEntity::class],
-    version = 2,
+    entities = [CaffeineIntake::class, DrinkEntity::class, OfficialDrinkCacheEntity::class],
+    version = 3,
     exportSchema = false
 )
 abstract class CaffeineDatabase : RoomDatabase() {
     abstract fun caffeineIntakeDao(): CaffeineIntakeDao
     abstract fun drinkDao(): DrinkDao
+    abstract fun officialDrinkCacheDao(): OfficialDrinkCacheDao
 }

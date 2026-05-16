@@ -7,9 +7,10 @@ import kotlinx.coroutines.flow.Flow
 interface CaffeineRepository {
 
     // --- Intake operations ---
-    suspend fun addIntake(intake: CaffeineIntake)
+    suspend fun addIntake(intake: CaffeineIntake): Long
     suspend fun updateIntake(intake: CaffeineIntake)
     suspend fun deleteIntake(intake: CaffeineIntake)
+    suspend fun getIntakeById(id: Long): CaffeineIntake?
     fun getIntakesForDate(dateMillis: Long): Flow<List<CaffeineIntake>>
     fun getTotalCaffeineForDate(dateMillis: Long): Flow<Int>
     suspend fun clearAll()

@@ -25,3 +25,4 @@ out/
 ~$*.ppt*
 wear/build/
 app/build/
+/screen*.png

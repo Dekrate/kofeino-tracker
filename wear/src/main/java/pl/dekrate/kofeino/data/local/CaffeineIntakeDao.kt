@@ -23,6 +23,9 @@ interface CaffeineIntakeDao {
     @Query("SELECT * FROM caffeine_intakes WHERE timestamp >= :startOfDay AND timestamp < :endOfDay ORDER BY timestamp DESC")
     fun getIntakesByDate(startOfDay: Long, endOfDay: Long): Flow<List<CaffeineIntake>>
 
+    @Query("SELECT * FROM caffeine_intakes WHERE id = :id")
+    suspend fun getIntakeById(id: Long): CaffeineIntake?
+
     @Query("DELETE FROM caffeine_intakes")
     suspend fun deleteAll()
 

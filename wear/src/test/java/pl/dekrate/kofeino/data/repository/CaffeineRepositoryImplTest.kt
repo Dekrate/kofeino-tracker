@@ -222,7 +222,161 @@ class CaffeineRepositoryImplTest {
         assertEquals(null, after)
     }
 
+    // ===== DST safety tests =====
+
+    @Test
+    fun `dayBounds should cover 25h on DST fall-back day`() = runTest {
+        // Symulacja "cofnięcia" zegara (fall back) — 2025-10-26 w strefie EU
+        // W Polsce zmiana: 03:00 → 02:00, dzień ma 25h
+        val fallBackNoon = java.util.Calendar.getInstance().apply {
+            set(2025, java.util.Calendar.OCTOBER, 26, 12, 0, 0)
+            set(java.util.Calendar.MILLISECOND, 0)
+        }.timeInMillis
+
+        repository.addIntake(createIntake(caffeineMg = 50, timestamp = fallBackNoon))
+        // Dodaj intake o 02:30 CET (po cofnięciu, ale wciąż ten sam dzień kalendarzowy)
+        val afterFallBack = java.util.Calendar.getInstance().apply {
+            set(2025, java.util.Calendar.OCTOBER, 26, 2, 30, 0)
+            set(java.util.Calendar.MILLISECOND, 0)
+        }.timeInMillis
+        repository.addIntake(createIntake(caffeineMg = 30, timestamp = afterFallBack))
+
+        val dayStart = testDayStart(fallBackNoon)
+        repository.getIntakesForDate(dayStart).test {
+            val list = awaitItem()
+            assertEquals("Both intakes on same DST day", 2, list.size)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `dayBounds should handle DST spring-forward correctly`() = runTest {
+        // Symulacja "przeskoku" (spring forward) — 2026-03-29 w strefie EU
+        // W Polsce zmiana: 02:00 → 03:00, dzień ma 23h
+        val springForwardNoon = java.util.Calendar.getInstance().apply {
+            set(2026, java.util.Calendar.MARCH, 29, 10, 0, 0)
+            set(java.util.Calendar.MILLISECOND, 0)
+        }.timeInMillis
+
+        repository.addIntake(createIntake(caffeineMg = 100, timestamp = springForwardNoon))
+        // Dzień wcześniej o 23:00 — powinien być w INNYM dniu
+        val prevDay = java.util.Calendar.getInstance().apply {
+            set(2026, java.util.Calendar.MARCH, 28, 23, 0, 0)
+            set(java.util.Calendar.MILLISECOND, 0)
+        }.timeInMillis
+        repository.addIntake(createIntake(caffeineMg = 200, timestamp = prevDay))
+
+        val dayStart = testDayStart(springForwardNoon)
+        repository.getIntakesForDate(dayStart).test {
+            val list = awaitItem()
+            assertEquals(1, list.size)
+            assertEquals(100, list[0].caffeineMg)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `dayBounds should not overlap between consecutive days`() = runTest {
+        val calendar = java.util.Calendar.getInstance().apply {
+            set(2026, java.util.Calendar.JUNE, 15, 12, 0, 0)
+            set(java.util.Calendar.MILLISECOND, 0)
+        }
+        val day1 = calendar.timeInMillis
+        calendar.add(java.util.Calendar.DAY_OF_YEAR, 1)
+        val day2 = calendar.timeInMillis
+
+        repository.addIntake(createIntake(caffeineMg = 10, timestamp = day1))
+        repository.addIntake(createIntake(caffeineMg = 20, timestamp = day2))
+
+        val start1 = testDayStart(day1)
+        val start2 = testDayStart(day2)
+
+        // Dzień 1
+        repository.getIntakesForDate(start1).test {
+            val list = awaitItem()
+            assertEquals(1, list.size)
+            assertEquals(10, list[0].caffeineMg)
+            cancelAndIgnoreRemainingEvents()
+        }
+
+        // Dzień 2
+        repository.getIntakesForDate(start2).test {
+            val list = awaitItem()
+            assertEquals(1, list.size)
+            assertEquals(20, list[0].caffeineMg)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    // ===== getIntakeById tests =====
+
+    @Test
+    fun `getIntakeById should return added intake`() = runTest {
+        val intake = createIntake(caffeineMg = 75)
+        val id = repository.addIntake(intake)
+
+        val loaded = repository.getIntakeById(id)
+        assertEquals(75, loaded?.caffeineMg)
+    }
+
+    @Test
+    fun `getIntakeById should return null for non-existent id`() = runTest {
+        val loaded = repository.getIntakeById(99999L)
+        assertEquals(null, loaded)
+    }
+
+    @Test
+    fun `getIntakeById should return null after deletion`() = runTest {
+        val intake = createIntake(caffeineMg = 50)
+        val id = repository.addIntake(intake)
+
+        val beforeDelete = repository.getIntakeById(id)
+        assertEquals(50, beforeDelete?.caffeineMg)
+
+        repository.deleteIntake(beforeDelete!!)
+        val afterDelete = repository.getIntakeById(id)
+        assertEquals(null, afterDelete)
+    }
+
+    @Test
+    fun `getIntakeById should return correct intake when multiple exist`() = runTest {
+        repository.addIntake(createIntake(caffeineMg = 10))
+        repository.addIntake(createIntake(caffeineMg = 20))
+        repository.addIntake(createIntake(caffeineMg = 30))
+
+        val now = startOfDay(System.currentTimeMillis())
+        val intakes = repository.getIntakesForDate(now).let {
+            var result = listOf<CaffeineIntake>()
+            repository.getIntakesForDate(now).test {
+                result = awaitItem()
+                cancelAndIgnoreRemainingEvents()
+            }
+            result
+        }
+
+        for (intake in intakes) {
+            val loaded = repository.getIntakeById(intake.id)
+            assertEquals(intake.caffeineMg, loaded?.caffeineMg)
+            assertEquals(intake.drinkName, loaded?.drinkName)
+        }
+    }
+
     // --- Helpers ---
+
+    /**
+     * Replikuje logikę CaffeineRepositoryImpl.dayBounds dla testów.
+     * Zwraca początek dnia (północ) dla podanego timestampu.
+     */
+    private fun testDayStart(millis: Long): Long {
+        val cal = java.util.Calendar.getInstance().apply {
+            timeInMillis = millis
+            set(java.util.Calendar.HOUR_OF_DAY, 0)
+            set(java.util.Calendar.MINUTE, 0)
+            set(java.util.Calendar.SECOND, 0)
+            set(java.util.Calendar.MILLISECOND, 0)
+        }
+        return cal.timeInMillis
+    }
 
     private fun createIntake(
         caffeineMg: Int = 63,

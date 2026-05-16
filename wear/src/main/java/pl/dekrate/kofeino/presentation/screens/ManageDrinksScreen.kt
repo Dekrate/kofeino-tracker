@@ -34,6 +34,7 @@ import pl.dekrate.kofeino.presentation.viewmodel.DrinkViewModel
 @Composable
 fun ManageDrinksScreen(
     onBack: () -> Unit,
+    onOfficialDrinks: () -> Unit = {},
     viewModel: DrinkViewModel = hiltViewModel()
 ) {
     val drinks by viewModel.allDrinks.collectAsState()
@@ -100,6 +101,15 @@ fun ManageDrinksScreen(
                     modifier = Modifier.padding(horizontal = 8.dp)
                 ) {
                     Text(stringResource(R.string.add_new_drink))
+                }
+            }
+
+            item {
+                Button(
+                    onClick = onOfficialDrinks,
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                ) {
+                    Text(stringResource(R.string.official_drinks_button))
                 }
             }
 

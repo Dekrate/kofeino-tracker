@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -20,12 +21,13 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.wear.compose.material3.Button
 import androidx.wear.compose.material3.ButtonDefaults
+import androidx.wear.compose.material3.CircularProgressIndicator
 import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.Text
 import pl.dekrate.kofeino.R
-import pl.dekrate.kofeino.domain.model.CaffeineIntake
 import pl.dekrate.kofeino.presentation.viewmodel.CaffeineViewModel
+import pl.dekrate.kofeino.domain.model.CaffeineIntake
 
 @Composable
 fun EditIntakeScreen(
@@ -34,9 +36,21 @@ fun EditIntakeScreen(
     onSaved: () -> Unit,
     viewModel: CaffeineViewModel = hiltViewModel()
 ) {
-    val state by viewModel.uiState.collectAsState()
-    val intake = remember(intakeId, state.dateIntakes) {
-        state.dateIntakes.find { it.id == intakeId }
+    // Ładujemy intake bezpośrednio z DB, a nie z listy bieżącego dnia
+    var intake by remember { mutableStateOf<CaffeineIntake?>(null) }
+    var isLoading by remember { mutableStateOf(true) }
+
+    LaunchedEffect(intakeId) {
+        isLoading = true
+        intake = viewModel.getIntakeById(intakeId)
+        isLoading = false
+    }
+
+    if (isLoading) {
+        ScreenScaffold {
+            CircularProgressIndicator(modifier = Modifier.padding(16.dp))
+        }
+        return
     }
 
     if (intake == null) {
@@ -49,9 +63,13 @@ fun EditIntakeScreen(
         return
     }
 
-    var caffeineMg by remember(intake) { mutableIntStateOf(intake.caffeineMg) }
-    var volumeMl by remember(intake) { mutableIntStateOf(intake.volumeMl) }
+    val currentIntake = intake!!
+
+    var caffeineMg by remember(currentIntake.id) { mutableIntStateOf(currentIntake.caffeineMg) }
+    var volumeMl by remember(currentIntake.id) { mutableIntStateOf(currentIntake.volumeMl) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
+    var isSaving by remember { mutableStateOf(false) }
+    var isDeleting by remember { mutableStateOf(false) }
 
     ScreenScaffold {
         Column(
@@ -60,7 +78,7 @@ fun EditIntakeScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = intake.drinkName,
+                text = currentIntake.drinkName,
                 style = MaterialTheme.typography.titleMedium
             )
 
@@ -112,18 +130,28 @@ fun EditIntakeScreen(
                 }
             }
 
-            // Save button
+            // Save button — blokada przed double-click, callback po zapisie do DB
             Button(
                 onClick = {
-                    viewModel.updateIntake(intake.copy(caffeineMg = caffeineMg, volumeMl = volumeMl))
-                    onSaved()
+                    if (!isSaving) {
+                        isSaving = true
+                        viewModel.updateIntake(
+                            currentIntake.copy(caffeineMg = caffeineMg, volumeMl = volumeMl),
+                            onComplete = onSaved,
+                            onError = { isSaving = false }
+                        )
+                    }
                 },
+                enabled = !isSaving,
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary
                 )
             ) {
-                Text(stringResource(R.string.save))
+                if (isSaving) {
+                    CircularProgressIndicator(modifier = Modifier.padding(end = 4.dp))
+                }
+                Text(if (isSaving) "Zapisywanie…" else stringResource(R.string.save))
             }
 
             // Delete button
@@ -151,14 +179,24 @@ fun EditIntakeScreen(
                     }
                     Button(
                         onClick = {
-                            viewModel.deleteIntake(intake)
-                            onDeleted()
+                            if (!isDeleting) {
+                                isDeleting = true
+                                viewModel.deleteIntake(
+                                    currentIntake,
+                                    onComplete = onDeleted,
+                                    onError = { isDeleting = false }
+                                )
+                            }
                         },
+                        enabled = !isDeleting,
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.error
                         )
                     ) {
-                        Text(stringResource(R.string.confirm))
+                        if (isDeleting) {
+                            CircularProgressIndicator(modifier = Modifier.padding(end = 4.dp))
+                        }
+                        Text(if (isDeleting) "Usuwanie…" else stringResource(R.string.confirm))
                     }
                 }
             }

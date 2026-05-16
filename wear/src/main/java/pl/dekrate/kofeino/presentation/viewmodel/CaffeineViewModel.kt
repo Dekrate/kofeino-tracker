@@ -91,29 +91,62 @@ class CaffeineViewModel @Inject constructor(
     fun addDrink(drink: DrinkEntity) {
         Timber.d("Adding drink: ${drink.name} (${drink.caffeineMg} mg)")
         viewModelScope.launch {
-            val intake = CaffeineIntake(
-                drinkId = drink.id,
-                drinkName = drink.name,
-                caffeineMg = drink.caffeineMg,
-                volumeMl = drink.volumeMl,
-                timestamp = System.currentTimeMillis()
-            )
-            repository.addIntake(intake)
+            try {
+                val intake = CaffeineIntake(
+                    drinkId = drink.id,
+                    drinkName = drink.name,
+                    caffeineMg = drink.caffeineMg,
+                    volumeMl = drink.volumeMl,
+                    timestamp = System.currentTimeMillis()
+                )
+                repository.addIntake(intake)
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to add intake")
+                _uiState.update { it.copy(error = "Nie udało się dodać wpisu") }
+            }
         }
     }
 
-    fun updateIntake(intake: CaffeineIntake) {
+    /**
+     * Aktualizuje wpis.
+     * onComplete — wywoływane po udanym zapisie (UI może nawigować wstecz).
+     * onError — wywoływane po błędzie (UI może odblokować przyciski).
+     */
+    fun updateIntake(intake: CaffeineIntake, onComplete: () -> Unit = {}, onError: () -> Unit = {}) {
         Timber.d("Updating intake id=${intake.id}")
         viewModelScope.launch {
-            repository.updateIntake(intake)
+            try {
+                repository.updateIntake(intake)
+                onComplete()
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to update intake")
+                _uiState.update { it.copy(error = "Nie udało się zapisać zmian") }
+                onError()
+            }
         }
     }
 
-    fun deleteIntake(intake: CaffeineIntake) {
+    /**
+     * Usuwa wpis.
+     * onComplete — wywoływane po udanym usunięciu.
+     * onError — wywoływane po błędzie (UI może odblokować przyciski).
+     */
+    fun deleteIntake(intake: CaffeineIntake, onComplete: () -> Unit = {}, onError: () -> Unit = {}) {
         Timber.d("Deleting intake id=${intake.id}")
         viewModelScope.launch {
-            repository.deleteIntake(intake)
+            try {
+                repository.deleteIntake(intake)
+                onComplete()
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to delete intake")
+                _uiState.update { it.copy(error = "Nie udało się usunąć wpisu") }
+                onError()
+            }
         }
+    }
+
+    suspend fun getIntakeById(id: Long): CaffeineIntake? {
+        return repository.getIntakeById(id)
     }
 
     // --- Utility ---
@@ -138,12 +171,27 @@ class CaffeineViewModel @Inject constructor(
 
     private fun formatDateLabel(millis: Long): String {
         val today = getStartOfToday()
+        val yesterday = startOfDayOffset(today, -1)
+        val tomorrow = startOfDayOffset(today, +1)
         return when (millis) {
             today -> "Dzisiaj"
-            today - 86_400_000L -> "Wczoraj"
-            today + 86_400_000L -> "Jutro"
+            yesterday -> "Wczoraj"
+            tomorrow -> "Jutro"
             else -> SimpleDateFormat("dd.MM.yyyy", Locale.forLanguageTag("pl")).format(Date(millis))
         }
+    }
+
+    /** Zwraca początek dnia oddalonego o `days` od podanego timestampu (DST-safe). */
+    private fun startOfDayOffset(millis: Long, days: Int): Long {
+        val cal = Calendar.getInstance().apply {
+            timeInMillis = millis
+            add(Calendar.DAY_OF_YEAR, days)
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        return cal.timeInMillis
     }
 
     companion object {
@@ -158,5 +206,6 @@ data class CaffeineUiState(
     val isLimitExceeded: Boolean = false,
     val progress: Float = 0f,
     val drinks: List<DrinkEntity> = emptyList(),
-    val dateLabel: String = ""
+    val dateLabel: String = "",
+    val error: String? = null
 )

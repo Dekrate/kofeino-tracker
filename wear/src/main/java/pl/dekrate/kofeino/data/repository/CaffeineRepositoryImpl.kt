@@ -17,8 +17,8 @@ class CaffeineRepositoryImpl @Inject constructor(
 
     // --- Intake operations ---
 
-    override suspend fun addIntake(intake: CaffeineIntake) {
-        intakeDao.insert(intake)
+    override suspend fun addIntake(intake: CaffeineIntake): Long {
+        return intakeDao.insert(intake)
     }
 
     override suspend fun updateIntake(intake: CaffeineIntake) {
@@ -37,6 +37,10 @@ class CaffeineRepositoryImpl @Inject constructor(
     override fun getTotalCaffeineForDate(dateMillis: Long): Flow<Int> {
         val (start, end) = dayBounds(dateMillis)
         return intakeDao.getTotalCaffeineByDate(start, end)
+    }
+
+    override suspend fun getIntakeById(id: Long): CaffeineIntake? {
+        return intakeDao.getIntakeById(id)
     }
 
     override suspend fun clearAll() {
@@ -65,7 +69,14 @@ class CaffeineRepositoryImpl @Inject constructor(
         drinkDao.delete(drink)
     }
 
-    /** Zwraca parę (początekDnia, koniecDnia) dla podanego timestampu. */
+    /**
+     * Zwraca parę (początekDnia, koniecDnia) dla podanego timestampu.
+     *
+     * Używa Calendar.add(DAY_OF_YEAR, 1) zamiast +86400000,
+     * aby poprawnie obsłużyć zmiany czasu (DST).
+     * W dni "cofnięcia" (fall back, 25h) obejmuje wszystkie 25h,
+     * w dni "przeskoku" (spring forward, 23h) nie wychodzi poza dobę.
+     */
     private fun dayBounds(millis: Long): Pair<Long, Long> {
         val calendar = Calendar.getInstance().apply {
             timeInMillis = millis
@@ -75,7 +86,8 @@ class CaffeineRepositoryImpl @Inject constructor(
             set(Calendar.MILLISECOND, 0)
         }
         val start = calendar.timeInMillis
-        val end = start + 86_400_000L
+        calendar.add(Calendar.DAY_OF_YEAR, 1)
+        val end = calendar.timeInMillis
         return start to end
     }
 }

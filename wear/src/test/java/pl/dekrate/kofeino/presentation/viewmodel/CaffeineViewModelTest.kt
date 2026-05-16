@@ -22,6 +22,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -89,7 +90,7 @@ class CaffeineViewModelTest {
 
     @Test
     fun `adding drink should call repository addIntake`() = runTest {
-        coEvery { repository.addIntake(any()) } just Runs
+        coEvery { repository.addIntake(any()) } returns 1L
 
         viewModel = CaffeineViewModel(repository)
         testDispatcher.scheduler.advanceUntilIdle()
@@ -107,7 +108,7 @@ class CaffeineViewModelTest {
 
     @Test
     fun `adding drink with DrinkEntity should set correct fields`() = runTest {
-        coEvery { repository.addIntake(any()) } just Runs
+        coEvery { repository.addIntake(any()) } returns 1L
 
         viewModel = CaffeineViewModel(repository)
         testDispatcher.scheduler.advanceUntilIdle()
@@ -194,6 +195,74 @@ class CaffeineViewModelTest {
     }
 
     @Test
+    fun `updateIntake onComplete should fire after successful save`() = runTest {
+        coEvery { repository.updateIntake(any()) } just Runs
+
+        viewModel = CaffeineViewModel(repository)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        var callbackFired = false
+        val intake = CaffeineIntake(1, drinkId = 1, "Test", 50, 200, System.currentTimeMillis())
+
+        viewModel.updateIntake(intake, onComplete = { callbackFired = true })
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue("onComplete should fire after successful update", callbackFired)
+    }
+
+    @Test
+    fun `updateIntake onError should fire when save fails`() = runTest {
+        coEvery { repository.updateIntake(any()) } throws RuntimeException("DB error")
+
+        viewModel = CaffeineViewModel(repository)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        var onCompleteFired = false
+        var onErrorFired = false
+        val intake = CaffeineIntake(1, drinkId = 1, "Test", 50, 200, System.currentTimeMillis())
+
+        viewModel.updateIntake(
+            intake,
+            onComplete = { onCompleteFired = true },
+            onError = { onErrorFired = true }
+        )
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertFalse("onComplete should NOT fire on error", onCompleteFired)
+        assertTrue("onError should fire on DB error", onErrorFired)
+    }
+
+    @Test
+    fun `updateIntake onComplete should NOT fire when save fails`() = runTest {
+        coEvery { repository.updateIntake(any()) } throws RuntimeException("DB error")
+
+        viewModel = CaffeineViewModel(repository)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        var callbackFired = false
+        val intake = CaffeineIntake(1, drinkId = 1, "Test", 50, 200, System.currentTimeMillis())
+
+        viewModel.updateIntake(intake, onComplete = { callbackFired = true })
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertFalse("onComplete should NOT fire when update fails", callbackFired)
+    }
+
+    @Test
+    fun `updateIntake should set error state on failure`() = runTest {
+        coEvery { repository.updateIntake(any()) } throws RuntimeException("DB error")
+
+        viewModel = CaffeineViewModel(repository)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val intake = CaffeineIntake(1, drinkId = 1, "Test", 50, 200, System.currentTimeMillis())
+        viewModel.updateIntake(intake)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertNotNull(viewModel.uiState.value.error)
+    }
+
+    @Test
     fun `deleteIntake should call repository deleteIntake`() = runTest {
         coEvery { repository.deleteIntake(any()) } just Runs
 
@@ -205,6 +274,71 @@ class CaffeineViewModelTest {
         testDispatcher.scheduler.advanceUntilIdle()
 
         coVerify { repository.deleteIntake(intake) }
+    }
+
+    @Test
+    fun `deleteIntake onComplete should fire after successful delete`() = runTest {
+        coEvery { repository.deleteIntake(any()) } just Runs
+
+        viewModel = CaffeineViewModel(repository)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        var callbackFired = false
+        val intake = CaffeineIntake(1, drinkId = 1, "Test", 50, 200, System.currentTimeMillis())
+
+        viewModel.deleteIntake(intake, onComplete = { callbackFired = true })
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue("onComplete should fire after successful delete", callbackFired)
+    }
+
+    @Test
+    fun `deleteIntake onError should fire when delete fails`() = runTest {
+        coEvery { repository.deleteIntake(any()) } throws RuntimeException("DB error")
+
+        viewModel = CaffeineViewModel(repository)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        var onCompleteFired = false
+        var onErrorFired = false
+        val intake = CaffeineIntake(1, drinkId = 1, "Test", 50, 200, System.currentTimeMillis())
+
+        viewModel.deleteIntake(
+            intake,
+            onComplete = { onCompleteFired = true },
+            onError = { onErrorFired = true }
+        )
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertFalse("onComplete should NOT fire on delete error", onCompleteFired)
+        assertTrue("onError should fire on DB error", onErrorFired)
+    }
+
+    // ===== getIntakeById tests =====
+
+    @Test
+    fun `getIntakeById should return intake from repository`() = runTest {
+        val intake = CaffeineIntake(1, drinkId = 1, "Test", 50, 200, System.currentTimeMillis())
+        coEvery { repository.getIntakeById(1L) } returns intake
+
+        viewModel = CaffeineViewModel(repository)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val result = viewModel.getIntakeById(1L)
+        assertEquals(50, result?.caffeineMg)
+        assertEquals("Test", result?.drinkName)
+        coVerify { repository.getIntakeById(1L) }
+    }
+
+    @Test
+    fun `getIntakeById should return null for non-existent id`() = runTest {
+        coEvery { repository.getIntakeById(999L) } returns null
+
+        viewModel = CaffeineViewModel(repository)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val result = viewModel.getIntakeById(999L)
+        assertEquals(null, result)
     }
 
     // ===== Date navigation tests =====
@@ -294,6 +428,21 @@ class CaffeineViewModelTest {
     }
 
     // ===== Combination test =====
+
+    @Test
+    fun `addDrink should set error state on failure`() = runTest {
+        coEvery { repository.addIntake(any()) } throws RuntimeException("DB error")
+
+        viewModel = CaffeineViewModel(repository)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val drink = DrinkEntity(id = 1, name = "Espresso", caffeineMg = 63, volumeMl = 30)
+        viewModel.addDrink(drink)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val error = viewModel.uiState.value.error
+        assertNotNull("Error should be set when addDrink fails", error)
+    }
 
     @Test
     fun `state should react to repository emission changes`() = runTest {

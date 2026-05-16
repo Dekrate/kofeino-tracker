@@ -11,9 +11,15 @@ import pl.dekrate.kofeino.presentation.screens.EditIntakeScreen
 import pl.dekrate.kofeino.presentation.screens.HistoryScreen
 import pl.dekrate.kofeino.presentation.screens.HomeScreen
 import pl.dekrate.kofeino.presentation.screens.ManageDrinksScreen
+import pl.dekrate.kofeino.presentation.screens.OfficialDrinksScreen
+import pl.dekrate.kofeino.presentation.viewmodel.DrinkViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import timber.log.Timber
 
 @Composable
 fun WearNavHost(navController: NavHostController) {
+    val drinkViewModel: DrinkViewModel = hiltViewModel()
+
     SwipeDismissableNavHost(
         navController = navController,
         startDestination = Screen.Home.route
@@ -42,7 +48,22 @@ fun WearNavHost(navController: NavHostController) {
         }
         composable(Screen.ManageDrinks.route) {
             ManageDrinksScreen(
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                onOfficialDrinks = { navController.navigate(Screen.OfficialDrinks.route) }
+            )
+        }
+        composable(Screen.OfficialDrinks.route) {
+            OfficialDrinksScreen(
+                onBack = { navController.popBackStack() },
+                onDrinkSelected = { drink ->
+                    Timber.d("Importing official drink: ${drink.name} (${drink.caffeineMgPer100ml} mg/100ml)")
+                    drinkViewModel.addDrink(
+                        name = drink.name,
+                        caffeineMg = kotlin.math.round(drink.caffeineMgPer100ml).toInt(),
+                        volumeMl = 100
+                    )
+                    navController.popBackStack()
+                }
             )
         }
         composable(
