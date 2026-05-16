@@ -1,7 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
-import type { Locale } from '../types';
+import type { Locale, I18nMessages } from '../types';
 import { getMessages, detectBrowserLocale } from '../i18n';
-import type { I18nMessages } from '../types';
 
 const STORAGE_KEY = 'kofeino-locale';
 

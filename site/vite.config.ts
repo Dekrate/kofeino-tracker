@@ -7,7 +7,7 @@ export default defineConfig({
   base: '/KofeinoTracker/',
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    sourcemap: false,
   },
   test: {
     globals: true,

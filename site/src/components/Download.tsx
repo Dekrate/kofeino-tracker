@@ -10,13 +10,13 @@ export default function Download({ messages }: DownloadProps) {
       <div className="container">
         <span className="section-label">{messages.download.heading}</span>
         <p>{messages.download.description}</p>
-        <div>
-          {messages.download.steps.map((step, i) => (
-            <p key={i} style={{ marginBottom: '0.5rem' }}>
-              <strong>{i + 1}.</strong> {step}
-            </p>
+        <ol style={{ paddingLeft: '1.5rem', margin: 0 }}>
+          {messages.download.steps.map((step) => (
+            <li key={step} style={{ marginBottom: '0.5rem' }}>
+              {step}
+            </li>
           ))}
-        </div>
+        </ol>
         <a
           href="https://github.com/dekrate/KofeinoTracker"
           target="_blank"

@@ -118,7 +118,7 @@ const pl: I18nMessages = {
     heading: 'Na twoim nadgarstku',
   },
   download: {
-    heading: 'Zbuduj z źródła',
+    heading: 'Zbuduj ze źródła',
     description:
       'KofeinoTracker ma otwarte źródło. Sklonuj repozytorium, otwórz w Android Studio i wdróż na swoim Wear OS.',
     steps: [

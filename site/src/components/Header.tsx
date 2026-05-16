@@ -67,13 +67,13 @@ export default function Header({
       <div className={styles.inner}>
         <span className={styles.logo}>KofeinoTracker</span>
         <nav className={styles.nav}>
-          <a href="#features" className={styles.navLink}>
+          <a href="#features" className={styles.navLink} aria-label={messages.nav.features}>
             <span>{messages.nav.features}</span>
           </a>
-          <a href="#tech" className={styles.navLink}>
+          <a href="#tech" className={styles.navLink} aria-label={messages.nav.tech}>
             <span>{messages.nav.tech}</span>
           </a>
-          <a href="#download" className={styles.navLink}>
+          <a href="#download" className={styles.navLink} aria-label={messages.nav.download}>
             <span>{messages.nav.download}</span>
           </a>
           <button

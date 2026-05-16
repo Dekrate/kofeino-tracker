@@ -16,9 +16,8 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
-    "forceConsistentCasingInFileNames": true,
-    "types": ["vitest/globals"]
+    "forceConsistentCasingInFileNames": true
   },
   "include": ["src"],
-  "exclude": ["src/__tests__"]
+  "exclude": ["src/__tests__", "src/setupTests.ts"]
 }

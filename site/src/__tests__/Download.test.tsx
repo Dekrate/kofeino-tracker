@@ -32,9 +32,11 @@ describe('Download', () => {
 
   it('renders all steps as list items', () => {
     render(<Download messages={mockMessages} />);
-    expect(screen.getByText('1.')).toBeDefined();
-    expect(screen.getByText('2.')).toBeDefined();
-    expect(screen.getByText('3.')).toBeDefined();
+    const items = screen.getAllByRole('listitem');
+    expect(items).toHaveLength(3);
+    expect(items[0]).toHaveTextContent('Step A');
+    expect(items[1]).toHaveTextContent('Step B');
+    expect(items[2]).toHaveTextContent('Step C');
   });
 
   it('renders step content', () => {
