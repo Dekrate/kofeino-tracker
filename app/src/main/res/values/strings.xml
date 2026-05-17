@@ -1,4 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">KofeinoTracker</string>
-    <string name="wear_companion_description">Companion app for Wear OS. Install the wear module on your watch to start tracking caffeine.</string>
+    <string name="home_title">Today\'s Caffeine</string>
+    <string name="add_drink_title">Add Drink</string>
+    <string name="history_title">History</string>
+    <string name="manage_drinks_title">Manage Drinks</string>
+    <string name="official_drinks_title">Official Drinks</string>
+    <string name="settings_title">Settings</string>
+    <string name="error_add_failed">Failed to add intake</string>
+    <string name="error_save_failed">Failed to save changes</string>
+    <string name="error_delete_failed">Failed to delete intake</string>
+    <string name="error_load_failed">Failed to load data</string>
+    <string name="error_search_failed">Search failed</string>
+    <string name="error_no_results">No results found</string>
+    <string name="today">Today</string>
+    <string name="yesterday">Yesterday</string>
+    <string name="tomorrow">Tomorrow</string>
 </resources>

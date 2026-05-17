@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Skeleton phone module — uses built-in theme, no appcompat dependency needed. -->
     <style name="Theme.KofeinoTracker" parent="android:Theme.Material.Light.NoActionBar" />
 </resources>
