@@ -16,4 +16,9 @@
     <string name="today">Dziś</string>
     <string name="yesterday">Wczoraj</string>
     <string name="tomorrow">Jutro</string>
+    <string name="previous_day">Poprzedni dzień</string>
+    <string name="next_day">Następny dzień</string>
+    <string name="go_to_today">Przejdź do dziś</string>
+    <string name="daily_total">Dzienna suma</string>
+    <string name="no_intakes_for_date">Brak wpisów dla tego dnia</string>
 </resources>
