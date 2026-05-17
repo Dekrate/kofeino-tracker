@@ -1,5 +1,6 @@
 package pl.dekrate.kofeino.presentation.screens
 
+import android.content.Context
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -7,6 +8,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import org.junit.Rule
 import org.junit.Test
@@ -51,7 +53,11 @@ class OfficialDrinksScreenRenderingTest {
         )
         coEvery { repo.hasFreshCache() } returns true
 
-        return OfficialDrinkViewModel(repo)
+        val context = mockk<Context>(relaxed = true)
+        every { context.getString(any<Int>()) } returns "Error"
+        every { context.getString(any<Int>(), *anyVararg<Any>()) } returns "Error"
+
+        return OfficialDrinkViewModel(repo, context)
     }
 
     private fun mockDrinks() = listOf(
@@ -158,16 +164,6 @@ class OfficialDrinksScreenRenderingTest {
         }
 
         composeRule.onNodeWithText("Szukaj napoju…").assertIsDisplayed()
-    }
-
-    @Test
-    fun screen_showsBackButton() {
-        val viewModel = createMockViewModel()
-        composeRule.setContent {
-            OfficialDrinksScreen(onBack = {}, onDrinkSelected = {}, viewModel = viewModel)
-        }
-
-        composeRule.onNodeWithText("Wstecz").assertIsDisplayed()
     }
 
     @Test

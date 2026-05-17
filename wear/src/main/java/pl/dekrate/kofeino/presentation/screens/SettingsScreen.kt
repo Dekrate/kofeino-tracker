@@ -16,6 +16,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.wear.compose.foundation.lazy.TransformingLazyColumn
@@ -39,6 +41,7 @@ fun SettingsScreen(
     var currentLang by remember { mutableStateOf(prefs.getLanguage()) }
 
     val listScrollState = rememberTransformingLazyColumnState()
+    val languageDesc = stringResource(R.string.language)
 
     ScreenScaffold(scrollState = listScrollState) { contentPadding ->
         TransformingLazyColumn(
@@ -55,16 +58,6 @@ fun SettingsScreen(
                         text = stringResource(R.string.settings_title),
                         style = MaterialTheme.typography.titleMedium
                     )
-                }
-            }
-
-            // Back button
-            item {
-                Button(
-                    onClick = onBack,
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                ) {
-                    Text(stringResource(R.string.back))
                 }
             }
 
@@ -103,7 +96,8 @@ fun SettingsScreen(
                         },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary
-                        )
+                        ),
+                        modifier = Modifier.semantics { contentDescription = languageDesc }
                     ) {
                         Text(
                             text = when (currentLang) {

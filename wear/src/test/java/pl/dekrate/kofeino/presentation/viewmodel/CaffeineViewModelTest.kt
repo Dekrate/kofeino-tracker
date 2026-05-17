@@ -25,6 +25,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -439,6 +440,40 @@ class CaffeineViewModelTest {
             assertEquals("Espresso", state.drinks[0].name)
             cancelAndIgnoreRemainingEvents()
         }
+    }
+
+    // ===== clearError tests =====
+
+    @Test
+    fun `clearError should set error to null`() = runTest {
+        coEvery { repository.addIntake(any()) } throws RuntimeException("DB error")
+
+        viewModel = CaffeineViewModel(repository, context)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val drink = DrinkEntity(id = 1, name = "Espresso", caffeineMg = 63, volumeMl = 30)
+        viewModel.addDrink(drink)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertNotNull("Error should be set after failed addDrink", viewModel.uiState.value.error)
+
+        viewModel.clearError()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertNull("Error should be null after clearError", viewModel.uiState.value.error)
+    }
+
+    @Test
+    fun `clearError should be idempotent when error is null`() = runTest {
+        viewModel = CaffeineViewModel(repository, context)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertNull("Error should be null initially", viewModel.uiState.value.error)
+
+        viewModel.clearError()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertNull("Error should remain null after clearError on clean state", viewModel.uiState.value.error)
     }
 
     // ===== Combination test =====

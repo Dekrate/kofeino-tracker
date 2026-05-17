@@ -1,5 +1,6 @@
 package pl.dekrate.kofeino.presentation.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,7 +17,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.wear.compose.material3.Button
@@ -64,6 +68,23 @@ fun EditIntakeScreen(
     }
 
     val currentIntake = intake!!
+    val context = LocalContext.current
+    val state by viewModel.uiState.collectAsState()
+
+    // Show Toast on errors
+    LaunchedEffect(state.error) {
+        state.error?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            viewModel.clearError()
+        }
+    }
+
+    // Pre-resolve strings for accessibility
+    val caffeineDesc = stringResource(R.string.caffeine_amount)
+    val saveDesc = stringResource(R.string.save)
+    val deleteDesc = stringResource(R.string.delete)
+    val cancelDesc = stringResource(R.string.cancel)
+    val confirmDesc = stringResource(R.string.confirm)
 
     var caffeineMg by remember(currentIntake.id) { mutableIntStateOf(currentIntake.caffeineMg) }
     var volumeMl by remember(currentIntake.id) { mutableIntStateOf(currentIntake.volumeMl) }
@@ -93,14 +114,21 @@ fun EditIntakeScreen(
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 Button(
-                    onClick = { if (caffeineMg > 0) caffeineMg -= 5 },
-                    modifier = Modifier.weight(1f).padding(end = 4.dp)
+                    onClick = { if (caffeineMg >= 5) caffeineMg -= 5 },
+                    enabled = caffeineMg >= 5,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 4.dp)
+                        .semantics { contentDescription = "$caffeineDesc -5" }
                 ) {
                     Text("-5")
                 }
                 Button(
                     onClick = { caffeineMg += 5 },
-                    modifier = Modifier.weight(1f).padding(start = 4.dp)
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 4.dp)
+                        .semantics { contentDescription = "$caffeineDesc +5" }
                 ) {
                     Text("+5")
                 }
@@ -118,13 +146,20 @@ fun EditIntakeScreen(
             ) {
                 Button(
                     onClick = { if (volumeMl >= 10) volumeMl -= 10 },
-                    modifier = Modifier.weight(1f).padding(end = 4.dp)
+                    enabled = volumeMl >= 10,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 4.dp)
+                        .semantics { contentDescription = "Volume -10 ml" }
                 ) {
                     Text("-10")
                 }
                 Button(
                     onClick = { volumeMl += 10 },
-                    modifier = Modifier.weight(1f).padding(start = 4.dp)
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 4.dp)
+                        .semantics { contentDescription = "Volume +10 ml" }
                 ) {
                     Text("+10")
                 }
@@ -137,13 +172,18 @@ fun EditIntakeScreen(
                         isSaving = true
                         viewModel.updateIntake(
                             currentIntake.copy(caffeineMg = caffeineMg, volumeMl = volumeMl),
-                            onComplete = onSaved,
+                            onComplete = {
+                                Toast.makeText(context, R.string.drink_added, Toast.LENGTH_SHORT).show()
+                                onSaved()
+                            },
                             onError = { isSaving = false }
                         )
                     }
                 },
                 enabled = !isSaving,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .semantics { contentDescription = saveDesc },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary
                 )
@@ -158,7 +198,9 @@ fun EditIntakeScreen(
             if (!showDeleteConfirm) {
                 Button(
                     onClick = { showDeleteConfirm = true },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .semantics { contentDescription = deleteDesc },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.error
                     )
@@ -174,7 +216,10 @@ fun EditIntakeScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    Button(onClick = { showDeleteConfirm = false }) {
+                    Button(
+                        onClick = { showDeleteConfirm = false },
+                        modifier = Modifier.semantics { contentDescription = cancelDesc }
+                    ) {
                         Text(stringResource(R.string.cancel))
                     }
                     Button(
@@ -183,7 +228,10 @@ fun EditIntakeScreen(
                                 isDeleting = true
                                 viewModel.deleteIntake(
                                     currentIntake,
-                                    onComplete = onDeleted,
+                                    onComplete = {
+                                        Toast.makeText(context, R.string.delete_intake, Toast.LENGTH_SHORT).show()
+                                        onDeleted()
+                                    },
                                     onError = { isDeleting = false }
                                 )
                             }
@@ -191,7 +239,8 @@ fun EditIntakeScreen(
                         enabled = !isDeleting,
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.error
-                        )
+                        ),
+                        modifier = Modifier.semantics { contentDescription = "$confirmDesc $deleteDesc" }
                     ) {
                         if (isDeleting) {
                             CircularProgressIndicator(modifier = Modifier.padding(end = 4.dp))

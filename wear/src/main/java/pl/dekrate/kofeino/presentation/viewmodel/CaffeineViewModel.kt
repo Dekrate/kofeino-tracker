@@ -71,6 +71,10 @@ class CaffeineViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
+    fun clearError() {
+        _uiState.update { it.copy(error = null) }
+    }
+
     // --- Date navigation ---
 
     fun previousDay() {

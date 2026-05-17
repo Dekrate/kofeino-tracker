@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import pl.dekrate.kofeino.R
 import pl.dekrate.kofeino.data.repository.OfficialDrinkRepository
 import pl.dekrate.kofeino.domain.model.OfficialDrink
@@ -45,22 +46,32 @@ class OfficialDrinkViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(isLoading = true, error = null, isSearchMode = false)
             Timber.d("Loading official drinks...")
 
-            repository.getOfficialDrinks()
-                .onSuccess { drinks ->
-                    Timber.d("Loaded ${drinks.size} official drinks")
-                    _uiState.value = _uiState.value.copy(
-                        drinks = drinks,
-                        isLoading = false,
-                        error = null
-                    )
+            try {
+                withTimeout(10_000L) {
+                    repository.getOfficialDrinks()
+                        .onSuccess { drinks ->
+                            Timber.d("Loaded ${drinks.size} official drinks")
+                            _uiState.value = _uiState.value.copy(
+                                drinks = drinks,
+                                isLoading = false,
+                                error = null
+                            )
+                        }
+                        .onFailure { error ->
+                            Timber.e(error, "Failed to load official drinks")
+                            _uiState.value = _uiState.value.copy(
+                                isLoading = false,
+                                error = error.message ?: context.getString(R.string.error_load_failed)
+                            )
+                        }
                 }
-                .onFailure { error ->
-                    Timber.e(error, "Failed to load official drinks")
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        error = error.message ?: context.getString(R.string.error_load_failed)
-                    )
-                }
+            } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
+                Timber.e(e, "Timeout loading official drinks")
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = context.getString(R.string.error_load_failed)
+                )
+            }
         }
     }
 
@@ -94,22 +105,32 @@ class OfficialDrinkViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
             Timber.d("Searching official drinks for: $query")
 
-            repository.searchOfficialDrinks(query)
-                .onSuccess { drinks ->
-                    Timber.d("Found ${drinks.size} drinks for: $query")
-                    _uiState.value = _uiState.value.copy(
-                        drinks = drinks,
-                        isLoading = false,
-                        error = if (drinks.isEmpty()) context.getString(R.string.error_no_results) else null
-                    )
+            try {
+                withTimeout(10_000L) {
+                    repository.searchOfficialDrinks(query)
+                        .onSuccess { drinks ->
+                            Timber.d("Found ${drinks.size} drinks for: $query")
+                            _uiState.value = _uiState.value.copy(
+                                drinks = drinks,
+                                isLoading = false,
+                                error = if (drinks.isEmpty()) context.getString(R.string.error_no_results) else null
+                            )
+                        }
+                        .onFailure { error ->
+                            Timber.e(error, "Search failed for: $query")
+                            _uiState.value = _uiState.value.copy(
+                                isLoading = false,
+                                error = error.message ?: context.getString(R.string.error_search_failed)
+                            )
+                        }
                 }
-                .onFailure { error ->
-                    Timber.e(error, "Search failed for: $query")
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        error = error.message ?: context.getString(R.string.error_search_failed)
-                    )
-                }
+            } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
+                Timber.e(e, "Timeout searching official drinks")
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = context.getString(R.string.error_search_failed)
+                )
+            }
         }
     }
 

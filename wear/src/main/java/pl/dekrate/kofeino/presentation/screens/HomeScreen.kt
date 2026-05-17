@@ -1,5 +1,6 @@
 package pl.dekrate.kofeino.presentation.screens
 
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -9,11 +10,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -26,6 +31,7 @@ import androidx.wear.compose.material3.EdgeButton
 import androidx.wear.compose.material3.EdgeButtonSize
 import androidx.wear.compose.material3.ListHeader
 import androidx.wear.compose.material3.MaterialTheme
+import androidx.wear.compose.material3.OutlinedButton
 import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.Text
 import pl.dekrate.kofeino.R
@@ -45,13 +51,32 @@ fun HomeScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val scrollState = rememberTransformingLazyColumnState()
+    val context = LocalContext.current
+
+    // Show Toast on errors
+    LaunchedEffect(state.error) {
+        state.error?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            viewModel.clearError()
+        }
+    }
+
+    // Pre-resolve strings for accessibility (semantics blocks are not @Composable)
+    val addDrinkDesc = stringResource(R.string.add_drink)
+    val todayCaffeineDesc = stringResource(R.string.today_caffeine)
+    val historyDesc = stringResource(R.string.history)
+    val manageDrinksDesc = stringResource(R.string.manage_drinks)
+    val settingsDesc = stringResource(R.string.settings)
 
     ScreenScaffold(
         scrollState = scrollState,
         edgeButton = {
             EdgeButton(
                 onClick = onNavigateToAddDrink,
-                buttonSize = EdgeButtonSize.Small
+                buttonSize = EdgeButtonSize.Small,
+                modifier = Modifier.semantics {
+                    contentDescription = addDrinkDesc
+                }
             ) {
                 Text(text = "+")
             }
@@ -67,7 +92,10 @@ fun HomeScreen(
                 ListHeader {
                     Text(
                         text = stringResource(R.string.today_caffeine),
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.semantics {
+                            contentDescription = todayCaffeineDesc
+                        }
                     )
                 }
             }
@@ -95,7 +123,9 @@ fun HomeScreen(
             item {
                 Button(
                     onClick = onNavigateToHistory,
-                    modifier = Modifier.padding(horizontal = 8.dp)
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .semantics { contentDescription = historyDesc }
                 ) {
                     Text(stringResource(R.string.history))
                 }
@@ -104,16 +134,20 @@ fun HomeScreen(
             item {
                 Button(
                     onClick = onNavigateToManageDrinks,
-                    modifier = Modifier.padding(horizontal = 8.dp)
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .semantics { contentDescription = manageDrinksDesc }
                 ) {
                     Text(stringResource(R.string.manage_drinks))
                 }
             }
 
             item {
-                Button(
+                OutlinedButton(
                     onClick = onNavigateToSettings,
-                    modifier = Modifier.padding(horizontal = 8.dp)
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .semantics { contentDescription = settingsDesc }
                 ) {
                     Text(stringResource(R.string.settings))
                 }
@@ -143,7 +177,11 @@ fun HomeScreen(
                                 containerColor = MaterialTheme.colorScheme.surfaceContainer,
                                 contentColor = MaterialTheme.colorScheme.onSurface
                             ),
-                            modifier = Modifier.padding(horizontal = 8.dp)
+                            modifier = Modifier
+                                .padding(horizontal = 8.dp)
+                                .semantics {
+                                    contentDescription = "${intake.drinkName} ${intake.caffeineMg} mg, $time"
+                                }
                         ) {
                             Text(
                                 text = "$time  ${intake.drinkName}  ${intake.caffeineMg} mg",

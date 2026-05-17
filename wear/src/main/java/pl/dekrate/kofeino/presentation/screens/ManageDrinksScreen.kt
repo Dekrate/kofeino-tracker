@@ -17,6 +17,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.wear.compose.foundation.lazy.TransformingLazyColumn
@@ -79,6 +81,8 @@ fun ManageDrinksScreen(
     }
 
     val listScrollState = rememberTransformingLazyColumnState()
+    val addNewDrinkDesc = stringResource(R.string.add_new_drink)
+    val officialDrinksDesc = stringResource(R.string.official_drinks_button)
     ScreenScaffold(scrollState = listScrollState) { contentPadding ->
         TransformingLazyColumn(
             state = listScrollState,
@@ -98,7 +102,9 @@ fun ManageDrinksScreen(
             item {
                 Button(
                     onClick = { showAddForm = true },
-                    modifier = Modifier.padding(horizontal = 8.dp)
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .semantics { contentDescription = addNewDrinkDesc }
                 ) {
                     Text(stringResource(R.string.add_new_drink))
                 }
@@ -107,18 +113,11 @@ fun ManageDrinksScreen(
             item {
                 Button(
                     onClick = onOfficialDrinks,
-                    modifier = Modifier.padding(horizontal = 8.dp)
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .semantics { contentDescription = officialDrinksDesc }
                 ) {
                     Text(stringResource(R.string.official_drinks_button))
-                }
-            }
-
-            item {
-                Button(
-                    onClick = onBack,
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                ) {
-                    Text(stringResource(R.string.back))
                 }
             }
 
@@ -143,7 +142,11 @@ fun ManageDrinksScreen(
                                 containerColor = MaterialTheme.colorScheme.surfaceContainer,
                                 contentColor = MaterialTheme.colorScheme.onSurface
                             ),
-                            modifier = Modifier.padding(horizontal = 8.dp)
+                            modifier = Modifier
+                                .padding(horizontal = 8.dp)
+                                .semantics {
+                                    contentDescription = "${drink.name} ${drink.caffeineMg} mg, ${drink.volumeMl} ml"
+                                }
                         ) {
                             Text(
                                 text = "${drink.name}  ${drink.caffeineMg} mg · ${drink.volumeMl} ml",

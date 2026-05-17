@@ -3,16 +3,19 @@ package pl.dekrate.kofeino.presentation.screens
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -23,6 +26,8 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.material3.Text
@@ -55,9 +60,17 @@ fun CoffeeCupIndicator(
         else -> CoffeeColors.darkRoast
     }
 
+    val contentDesc = if (exceeded) {
+        "${stringResource(R.string.limit_exceeded)}: $total mg"
+    } else {
+        "$total mg ${stringResource(R.string.safe_limit)}"
+    }
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier.padding(vertical = 8.dp)
+        modifier = modifier
+            .padding(vertical = 8.dp)
+            .semantics { contentDescription = contentDesc }
     ) {
         Box(contentAlignment = Alignment.Center) {
             Canvas(modifier = Modifier.size(120.dp)) {
@@ -68,12 +81,20 @@ fun CoffeeCupIndicator(
                     coffeeFill = coffeeFill
                 )
             }
-            // Overlay text for caffeine amount
-            Text(
-                text = "$total",
-                style = MaterialTheme.typography.displaySmall,
-                color = Color.White
-            )
+            // Dark pill background behind the caffeine counter for contrast
+            Box(
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(Color.Black.copy(alpha = 0.5f))
+                    .padding(horizontal = 12.dp, vertical = 4.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "$total",
+                    style = MaterialTheme.typography.displaySmall,
+                    color = Color.White
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(4.dp))

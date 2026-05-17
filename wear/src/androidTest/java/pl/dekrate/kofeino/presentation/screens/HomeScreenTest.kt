@@ -4,6 +4,7 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.platform.app.InstrumentationRegistry
@@ -214,6 +215,63 @@ class HomeScreenTest {
         }
         composeTestRule.onNodeWithText("Test", substring = true).performClick()
         assert(editedId == 42L)
+    }
+
+    // ===== Accessibility content description tests =====
+
+    @Test
+    fun homeScreen_addDrinkButton_hasContentDescription() {
+        val fakeViewModel = createFakeViewModel(CaffeineUiState())
+        composeTestRule.setContent {
+            KofeinoTrackerTheme {
+                HomeScreen(
+                    onNavigateToAddDrink = {},
+                    onNavigateToHistory = {},
+                    onNavigateToManageDrinks = {},
+                    onEditIntake = {},
+                    viewModel = fakeViewModel
+                )
+            }
+        }
+        composeTestRule.onNodeWithContentDescription(context.getString(R.string.add_drink))
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun homeScreen_historyButton_hasContentDescription() {
+        val fakeViewModel = createFakeViewModel(CaffeineUiState())
+        composeTestRule.setContent {
+            KofeinoTrackerTheme {
+                HomeScreen(
+                    onNavigateToAddDrink = {},
+                    onNavigateToHistory = {},
+                    onNavigateToManageDrinks = {},
+                    onEditIntake = {},
+                    viewModel = fakeViewModel
+                )
+            }
+        }
+        composeTestRule.onNodeWithContentDescription(context.getString(R.string.history))
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun homeScreen_settingsButton_hasContentDescription() {
+        val fakeViewModel = createFakeViewModel(CaffeineUiState())
+        composeTestRule.setContent {
+            KofeinoTrackerTheme {
+                HomeScreen(
+                    onNavigateToAddDrink = {},
+                    onNavigateToHistory = {},
+                    onNavigateToManageDrinks = {},
+                    onNavigateToSettings = {},
+                    onEditIntake = {},
+                    viewModel = fakeViewModel
+                )
+            }
+        }
+        composeTestRule.onNodeWithContentDescription(context.getString(R.string.settings))
+            .assertIsDisplayed()
     }
 
     private fun createFakeViewModel(state: CaffeineUiState): CaffeineViewModel {
