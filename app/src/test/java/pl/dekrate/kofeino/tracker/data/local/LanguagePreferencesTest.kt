@@ -30,16 +30,18 @@ class LanguagePreferencesTest {
 
     @Test
     fun `getLanguage returns default when no preference saved`() {
-        every { prefs.getString("selected_language", "en") } returns "en"
+        every { prefs.getString(any(), any()) } returns null
 
         val lang = languagePreferences.getLanguage()
 
-        assert(lang == "en") { "Expected 'en', got '$lang'" }
+        assert(lang == LanguagePreferences.DEFAULT_LANGUAGE) {
+            "Expected '${LanguagePreferences.DEFAULT_LANGUAGE}', got '$lang'"
+        }
     }
 
     @Test
     fun `getLanguage returns saved preference`() {
-        every { prefs.getString("selected_language", "en") } returns "pl"
+        every { prefs.getString(any(), any()) } returns "pl"
 
         val lang = languagePreferences.getLanguage()
 
@@ -56,18 +58,18 @@ class LanguagePreferencesTest {
 
     @Test
     fun `static getLanguage returns default when no preference`() {
-        every { context.getSharedPreferences("kofeino_language_prefs", Context.MODE_PRIVATE) } returns prefs
-        every { prefs.getString("selected_language", "en") } returns "en"
+        every { prefs.getString(any(), any()) } returns null
 
         val lang = LanguagePreferences.getLanguage(context)
 
-        assert(lang == "en") { "Expected 'en', got '$lang'" }
+        assert(lang == LanguagePreferences.DEFAULT_LANGUAGE) {
+            "Expected '${LanguagePreferences.DEFAULT_LANGUAGE}', got '$lang'"
+        }
     }
 
     @Test
     fun `static getLanguage returns saved preference`() {
-        every { context.getSharedPreferences("kofeino_language_prefs", Context.MODE_PRIVATE) } returns prefs
-        every { prefs.getString("selected_language", "en") } returns "pl"
+        every { prefs.getString(any(), any()) } returns "pl"
 
         val lang = LanguagePreferences.getLanguage(context)
 
@@ -75,12 +77,22 @@ class LanguagePreferencesTest {
     }
 
     @Test
-    fun `DEFAULT_LANGUAGE is en`() {
-        assert(LanguagePreferences.DEFAULT_LANGUAGE == "en")
+    fun `DEFAULT_LANGUAGE is system (empty string)`() {
+        assert(LanguagePreferences.DEFAULT_LANGUAGE == LanguagePreferences.LANGUAGE_SYSTEM)
     }
 
     @Test
     fun `LANGUAGE_PL is pl`() {
         assert(LanguagePreferences.LANGUAGE_PL == "pl")
+    }
+
+    @Test
+    fun `LANGUAGE_EN is en`() {
+        assert(LanguagePreferences.LANGUAGE_EN == "en")
+    }
+
+    @Test
+    fun `LANGUAGE_SYSTEM is empty string`() {
+        assert(LanguagePreferences.LANGUAGE_SYSTEM == "")
     }
 }

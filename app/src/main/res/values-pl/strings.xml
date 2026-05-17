@@ -54,4 +54,27 @@
     <string name="tap_add_to_start">Dotknij +, aby dodać pierwszy napój</string>
     <string name="safe_limit">Bezpieczny limit: 400 mg</string>
     <string name="limit_exceeded">Przekroczono bezpieczny limit!</string>
+
+    <!-- SettingsScreen -->
+    <string name="language">Język</string>
+    <string name="app_language">Język aplikacji</string>
+    <string name="language_system">Domyślny systemu</string>
+    <string name="polish">Polski</string>
+    <string name="english">English</string>
+    <string name="language_switch_description">Zmień język na %s</string>
+    <string name="language_system_description">Użyj języka systemowego</string>
+
+    <!-- Theme -->
+    <string name="theme">Motyw</string>
+    <string name="app_theme">Motyw aplikacji</string>
+    <string name="theme_system">Domyślny systemu</string>
+    <string name="theme_light">Jasny</string>
+    <string name="theme_dark">Ciemny</string>
+    <string name="theme_system_description">Użyj motywu systemowego</string>
+    <string name="theme_light_description">Użyj jasnego motywu</string>
+    <string name="theme_dark_description">Użyj ciemnego motywu</string>
+
+    <!-- About -->
+    <string name="about">O aplikacji</string>
+    <string name="version_format">Wersja %s</string>
 </resources>

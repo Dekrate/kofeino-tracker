@@ -10,6 +10,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import pl.dekrate.kofeino.tracker.data.local.ThemePreferences
 
 private val DarkColorScheme = darkColorScheme(
     primary = Color(0xFFBB86FC),
@@ -25,16 +26,21 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun KofeinoTrackerPhoneTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    themeMode: String = ThemePreferences.THEME_SYSTEM,
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
+    val isDarkTheme = when (themeMode) {
+        ThemePreferences.THEME_DARK -> true
+        ThemePreferences.THEME_LIGHT -> false
+        else -> isSystemInDarkTheme()
+    }
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            if (isDarkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-        darkTheme -> DarkColorScheme
+        isDarkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
 
