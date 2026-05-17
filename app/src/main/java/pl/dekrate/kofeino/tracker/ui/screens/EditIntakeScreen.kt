@@ -44,6 +44,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import pl.dekrate.kofeino.tracker.R
+import pl.dekrate.kofeino.tracker.presentation.viewmodel.EditIntakeError
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.EditIntakeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -64,96 +65,35 @@ fun EditIntakeScreen(
         viewModel.loadIntake(intakeId)
     }
 
+    // Resolve error message to localized string in @Composable context
+    val errorMessage = state.error?.let { error ->
+        when (error) {
+            EditIntakeError.NotFound -> stringResource(R.string.intake_not_found)
+            EditIntakeError.LoadFailed -> stringResource(R.string.error_load_failed)
+            EditIntakeError.SaveFailed -> stringResource(R.string.error_save_failed)
+            EditIntakeError.DeleteFailed -> stringResource(R.string.error_delete_failed)
+        }
+    }
+
     // Show snackbar on error
-    LaunchedEffect(state.error) {
-        state.error?.let {
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let {
             snackbarHostState.showSnackbar(it)
             viewModel.clearError()
         }
     }
 
-    // --- Loading state ---
-    if (state.isLoading) {
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text(stringResource(R.string.edit_intake_title)) },
-                    navigationIcon = {
-                        IconButton(onClick = onNavigateBack) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = stringResource(R.string.back)
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    )
-                )
-            }
-        ) { innerPadding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                CircularProgressIndicator()
-            }
-        }
-        return
+    // Title text based on current state
+    val topBarTitle = when {
+        state.isLoading || state.intake == null -> stringResource(R.string.edit_intake_title)
+        else -> state.drinkName
     }
 
-    // --- Not found state ---
-    if (state.intake == null) {
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text(stringResource(R.string.edit_intake_title)) },
-                    navigationIcon = {
-                        IconButton(onClick = onNavigateBack) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = stringResource(R.string.back)
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    )
-                )
-            }
-        ) { innerPadding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(32.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = stringResource(R.string.intake_not_found),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.error,
-                    textAlign = TextAlign.Center
-                )
-            }
-        }
-        return
-    }
-
-    // --- Edit form ---
+    // Single Scaffold covering all states so snackbarHost is always present
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        text = state.drinkName,
-                        maxLines = 1
-                    )
-                },
+                title = { Text(text = topBarTitle, maxLines = 1) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
@@ -169,182 +109,217 @@ fun EditIntakeScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // --- Caffeine section ---
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-            ) {
+        when {
+            state.isLoading -> {
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
+                        .fillMaxSize()
+                        .padding(innerPadding),
+                    verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(
-                        text = stringResource(R.string.caffeine_label, state.caffeineMg),
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        OutlinedButton(
-                            onClick = { viewModel.updateCaffeineMg(-5) },
-                            enabled = state.caffeineMg >= 5,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text("-5 mg")
-                        }
-                        Button(
-                            onClick = { viewModel.updateCaffeineMg(5) },
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text("+5 mg")
-                        }
-                    }
+                    CircularProgressIndicator()
                 }
             }
 
-            // --- Volume section ---
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-            ) {
+            state.intake == null -> {
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                        .padding(32.dp),
+                    verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = stringResource(R.string.volume_label, state.volumeMl),
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
+                        text = stringResource(R.string.intake_not_found),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.error,
+                        textAlign = TextAlign.Center
                     )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        OutlinedButton(
-                            onClick = { viewModel.updateVolumeMl(-10) },
-                            enabled = state.volumeMl >= 10,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text("-10 ml")
-                        }
-                        Button(
-                            onClick = { viewModel.updateVolumeMl(10) },
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text("+10 ml")
-                        }
-                    }
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f))
+            else -> {
+                // --- Edit form ---
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // --- Caffeine section ---
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = stringResource(R.string.caffeine_label, state.caffeineMg),
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold
+                            )
 
-            HorizontalDivider()
+                            Spacer(modifier = Modifier.height(12.dp))
 
-            // --- Save button ---
-            Button(
-                onClick = {
-                    if (!isSaving) {
-                        isSaving = true
-                        viewModel.save(
-                            onComplete = {
-                                isSaving = false
-                                onNavigateBack()
-                            },
-                            onError = { isSaving = false }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                OutlinedButton(
+                                    onClick = { viewModel.updateCaffeineMg(-5) },
+                                    enabled = state.caffeineMg >= 5,
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(stringResource(R.string.caffeine_adjustment_decrease, 5))
+                                }
+                                Button(
+                                    onClick = { viewModel.updateCaffeineMg(5) },
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(stringResource(R.string.caffeine_adjustment_increase, 5))
+                                }
+                            }
+                        }
+                    }
+
+                    // --- Volume section ---
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = stringResource(R.string.volume_label, state.volumeMl),
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                OutlinedButton(
+                                    onClick = { viewModel.updateVolumeMl(-10) },
+                                    enabled = state.volumeMl >= 10,
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(stringResource(R.string.volume_adjustment_decrease, 10))
+                                }
+                                Button(
+                                    onClick = { viewModel.updateVolumeMl(10) },
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(stringResource(R.string.volume_adjustment_increase, 10))
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    HorizontalDivider()
+
+                    // --- Save button ---
+                    Button(
+                        onClick = {
+                            if (!isSaving) {
+                                isSaving = true
+                                viewModel.save(
+                                    onComplete = {
+                                        isSaving = false
+                                        onNavigateBack()
+                                    },
+                                    onError = { isSaving = false }
+                                )
+                            }
+                        },
+                        enabled = !isSaving,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
                         )
+                    ) {
+                        if (isSaving) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.padding(end = 8.dp),
+                                strokeWidth = 2.dp
+                            )
+                        }
+                        Text(if (isSaving) stringResource(R.string.saving) else stringResource(R.string.save))
                     }
-                },
-                enabled = !isSaving,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
-            ) {
-                if (isSaving) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.padding(end = 8.dp),
-                        strokeWidth = 2.dp
-                    )
-                }
-                Text(if (isSaving) stringResource(R.string.saving) else stringResource(R.string.save))
-            }
 
-            // --- Delete button ---
-            if (!showDeleteConfirm) {
-                Button(
-                    onClick = { showDeleteConfirm = true },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error
-                    )
-                ) {
-                    Text(stringResource(R.string.delete))
-                }
-            }
+                    // --- Delete button ---
+                    if (!showDeleteConfirm) {
+                        Button(
+                            onClick = { showDeleteConfirm = true },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.error
+                            )
+                        ) {
+                            Text(stringResource(R.string.delete))
+                        }
+                    }
 
-            // --- Delete confirmation dialog ---
-            if (showDeleteConfirm) {
-                AlertDialog(
-                    onDismissRequest = { showDeleteConfirm = false },
-                    title = { Text(stringResource(R.string.delete_intake_confirm)) },
-                    confirmButton = {
-                        TextButton(
-                            onClick = {
-                                if (!isDeleting) {
-                                    isDeleting = true
-                                    viewModel.delete(
-                                        onComplete = {
-                                            isDeleting = false
-                                            showDeleteConfirm = false
-                                            onNavigateBack()
-                                        },
-                                        onError = { isDeleting = false }
+                    // --- Delete confirmation dialog ---
+                    if (showDeleteConfirm) {
+                        AlertDialog(
+                            onDismissRequest = { showDeleteConfirm = false },
+                            title = { Text(stringResource(R.string.delete_intake_confirm)) },
+                            confirmButton = {
+                                TextButton(
+                                    onClick = {
+                                        if (!isDeleting) {
+                                            isDeleting = true
+                                            viewModel.delete(
+                                                onComplete = {
+                                                    isDeleting = false
+                                                    showDeleteConfirm = false
+                                                    onNavigateBack()
+                                                },
+                                                onError = { isDeleting = false }
+                                            )
+                                        }
+                                    },
+                                    enabled = !isDeleting,
+                                    colors = ButtonDefaults.textButtonColors(
+                                        contentColor = MaterialTheme.colorScheme.error
+                                    )
+                                ) {
+                                    if (isDeleting) {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.padding(end = 4.dp),
+                                            strokeWidth = 2.dp
+                                        )
+                                    }
+                                    Text(
+                                        if (isDeleting) stringResource(R.string.deleting)
+                                        else stringResource(R.string.delete)
                                     )
                                 }
                             },
-                            enabled = !isDeleting,
-                            colors = ButtonDefaults.textButtonColors(
-                                contentColor = MaterialTheme.colorScheme.error
-                            )
-                        ) {
-                            if (isDeleting) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.padding(end = 4.dp),
-                                    strokeWidth = 2.dp
-                                )
+                            dismissButton = {
+                                TextButton(onClick = { showDeleteConfirm = false }) {
+                                    Text(stringResource(R.string.cancel))
+                                }
                             }
-                            Text(
-                                if (isDeleting) stringResource(R.string.deleting)
-                                else stringResource(R.string.delete)
-                            )
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = { showDeleteConfirm = false }) {
-                            Text(stringResource(R.string.cancel))
-                        }
+                        )
                     }
-                )
+                }
             }
         }
     }

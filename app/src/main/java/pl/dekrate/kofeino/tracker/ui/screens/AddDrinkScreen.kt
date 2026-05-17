@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import pl.dekrate.kofeino.tracker.R
+import pl.dekrate.kofeino.tracker.presentation.viewmodel.DrinkError
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.DrinkViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,9 +56,16 @@ fun AddDrinkScreen(
     val scope = rememberCoroutineScope()
     val drinkAddedText = stringResource(R.string.drink_added)
 
+    // Resolve error message to localized string in @Composable context
+    val errorMessage = state.error?.let { error ->
+        when (error) {
+            DrinkError.AddIntakeFailed -> stringResource(R.string.error_add_failed)
+        }
+    }
+
     // Show snackbar on error
-    LaunchedEffect(state.error) {
-        state.error?.let {
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let {
             snackbarHostState.showSnackbar(it)
             viewModel.clearError()
         }
@@ -157,13 +165,13 @@ private fun DrinkItem(
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "${volumeMl} ml",
+                    text = stringResource(R.string.drink_volume_unit, volumeMl),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Text(
-                text = "${caffeineMg} mg",
+                text = stringResource(R.string.drink_caffeine_unit, caffeineMg),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary

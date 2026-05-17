@@ -13,6 +13,14 @@ import pl.dekrate.kofeino.tracker.domain.model.CaffeineIntake
 import timber.log.Timber
 import javax.inject.Inject
 
+/** Errors that can occur on the EditIntake screen. */
+sealed interface EditIntakeError {
+    data object NotFound : EditIntakeError
+    data object LoadFailed : EditIntakeError
+    data object SaveFailed : EditIntakeError
+    data object DeleteFailed : EditIntakeError
+}
+
 /**
  * ViewModel for the EditIntake screen.
  *
@@ -50,13 +58,13 @@ class EditIntakeViewModel @Inject constructor(
                 } else {
                     Timber.w("Intake $intakeId not found")
                     _uiState.update {
-                        it.copy(isLoading = false, error = "Intake not found")
+                        EditIntakeUiState(isLoading = false, error = EditIntakeError.NotFound)
                     }
                 }
             } catch (e: Exception) {
                 Timber.e(e, "Failed to load intake $intakeId")
                 _uiState.update {
-                    it.copy(isLoading = false, error = "Failed to load intake")
+                    EditIntakeUiState(isLoading = false, error = EditIntakeError.LoadFailed)
                 }
             }
         }
@@ -94,7 +102,7 @@ class EditIntakeViewModel @Inject constructor(
                 onComplete()
             } catch (e: Exception) {
                 Timber.e(e, "Failed to save intake")
-                _uiState.update { it.copy(error = "Failed to save changes") }
+                _uiState.update { it.copy(error = EditIntakeError.SaveFailed) }
                 onError()
             }
         }
@@ -115,7 +123,7 @@ class EditIntakeViewModel @Inject constructor(
                 onComplete()
             } catch (e: Exception) {
                 Timber.e(e, "Failed to delete intake")
-                _uiState.update { it.copy(error = "Failed to delete intake") }
+                _uiState.update { it.copy(error = EditIntakeError.DeleteFailed) }
                 onError()
             }
         }
@@ -139,5 +147,5 @@ data class EditIntakeUiState(
     val drinkName: String = "",
     val caffeineMg: Int = 0,
     val volumeMl: Int = 0,
-    val error: String? = null
+    val error: EditIntakeError? = null
 )

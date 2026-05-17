@@ -40,4 +40,10 @@
     <string name="confirm">Potwierdź</string>
     <string name="delete_intake_confirm">Usunąć ten wpis?</string>
     <string name="intake_not_found">Nie znaleziono wpisu</string>
+    <string name="drink_volume_unit">%d ml</string>
+    <string name="drink_caffeine_unit">%d mg</string>
+    <string name="caffeine_adjustment_decrease">-%d mg</string>
+    <string name="caffeine_adjustment_increase">+%d mg</string>
+    <string name="volume_adjustment_decrease">-%d ml</string>
+    <string name="volume_adjustment_increase">+%d ml</string>
 </resources>

@@ -16,6 +16,11 @@ import pl.dekrate.kofeino.tracker.domain.model.DrinkEntity
 import timber.log.Timber
 import javax.inject.Inject
 
+/** Errors that can occur on the AddDrink screen. */
+sealed interface DrinkError {
+    data object AddIntakeFailed : DrinkError
+}
+
 /**
  * ViewModel for the AddDrink screen.
  *
@@ -65,7 +70,7 @@ class DrinkViewModel @Inject constructor(
                 onComplete()
             } catch (e: Exception) {
                 Timber.e(e, "Failed to log drink")
-                _uiState.update { it.copy(error = "Failed to add intake") }
+                _uiState.update { it.copy(error = DrinkError.AddIntakeFailed) }
                 onError()
             }
         }
@@ -77,5 +82,5 @@ class DrinkViewModel @Inject constructor(
 }
 
 data class DrinkUiState(
-    val error: String? = null
+    val error: DrinkError? = null
 )
