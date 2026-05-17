@@ -21,6 +21,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.wear.compose.material3.Button
@@ -51,6 +53,9 @@ fun AddEditDrinkForm(
     val isCaffeineValid = caffeineMg >= 0
     val isVolumeValid = volumeMl >= 0
     val isFormValid = isNameValid && isCaffeineValid && isVolumeValid
+    val caffeineAmountDesc = stringResource(R.string.caffeine_amount)
+    val volumeDecDesc = stringResource(R.string.volume_decrease)
+    val volumeIncDesc = stringResource(R.string.volume_increase)
 
     Column(
         modifier = Modifier.fillMaxWidth().padding(8.dp).verticalScroll(rememberScrollState()),
@@ -113,13 +118,20 @@ fun AddEditDrinkForm(
         ) {
             Button(
                 onClick = { if (caffeineMg >= 5) caffeineMg -= 5 },
-                modifier = Modifier.weight(1f).padding(end = 4.dp)
+                enabled = caffeineMg >= 5,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 4.dp)
+                    .semantics { contentDescription = "$caffeineAmountDesc -5" }
             ) {
                 Text("-5")
             }
             Button(
                 onClick = { caffeineMg += 5 },
-                modifier = Modifier.weight(1f).padding(start = 4.dp)
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 4.dp)
+                    .semantics { contentDescription = "$caffeineAmountDesc +5" }
             ) {
                 Text("+5")
             }
@@ -138,13 +150,20 @@ fun AddEditDrinkForm(
         ) {
             Button(
                 onClick = { if (volumeMl >= 10) volumeMl -= 10 },
-                modifier = Modifier.weight(1f).padding(end = 4.dp)
+                enabled = volumeMl >= 10,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 4.dp)
+                    .semantics { contentDescription = volumeDecDesc }
             ) {
                 Text("-10")
             }
             Button(
                 onClick = { volumeMl += 10 },
-                modifier = Modifier.weight(1f).padding(start = 4.dp)
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 4.dp)
+                    .semantics { contentDescription = volumeIncDesc }
             ) {
                 Text("+10")
             }

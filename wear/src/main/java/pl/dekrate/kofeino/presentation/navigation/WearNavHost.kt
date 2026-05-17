@@ -50,13 +50,11 @@ fun WearNavHost(navController: NavHostController) {
         }
         composable(Screen.ManageDrinks.route) {
             ManageDrinksScreen(
-                onBack = { navController.popBackStack() },
                 onOfficialDrinks = { navController.navigate(Screen.OfficialDrinks.route) }
             )
         }
         composable(Screen.OfficialDrinks.route) {
             OfficialDrinksScreen(
-                onBack = { navController.popBackStack() },
                 onDrinkSelected = { drink ->
                     Timber.d("Importing official drink: ${drink.name} (${drink.caffeineMgPer100ml} mg/100ml)")
                     drinkViewModel.addDrink(
@@ -83,7 +81,7 @@ fun WearNavHost(navController: NavHostController) {
         }
         composable(Screen.Settings.route) {
             SettingsScreen(
-                onBack = { navController.popBackStack() }
+
             )
         }
     }

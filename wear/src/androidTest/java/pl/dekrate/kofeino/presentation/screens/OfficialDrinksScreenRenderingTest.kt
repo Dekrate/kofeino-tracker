@@ -1,5 +1,6 @@
 package pl.dekrate.kofeino.presentation.screens
 
+import android.content.Context
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -7,6 +8,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import org.junit.Rule
 import org.junit.Test
@@ -51,7 +53,11 @@ class OfficialDrinksScreenRenderingTest {
         )
         coEvery { repo.hasFreshCache() } returns true
 
-        return OfficialDrinkViewModel(repo)
+        val context = mockk<Context>(relaxed = true)
+        every { context.getString(any<Int>()) } returns "Error"
+        every { context.getString(any<Int>(), *anyVararg<Any>()) } returns "Error"
+
+        return OfficialDrinkViewModel(repo, context)
     }
 
     private fun mockDrinks() = listOf(
@@ -95,7 +101,7 @@ class OfficialDrinksScreenRenderingTest {
     fun screen_showsTitle() {
         val viewModel = createMockViewModel()
         composeRule.setContent {
-            OfficialDrinksScreen(onBack = {}, onDrinkSelected = {}, viewModel = viewModel)
+            OfficialDrinksScreen(onDrinkSelected = {}, viewModel = viewModel)
         }
 
         composeRule.onNodeWithText("Oficjalne napoje z kofeiną").assertIsDisplayed()
@@ -105,7 +111,7 @@ class OfficialDrinksScreenRenderingTest {
     fun screen_showsDrinksList() {
         val viewModel = createMockViewModel()
         composeRule.setContent {
-            OfficialDrinksScreen(onBack = {}, onDrinkSelected = {}, viewModel = viewModel)
+            OfficialDrinksScreen(onDrinkSelected = {}, viewModel = viewModel)
         }
 
         composeRule.onNodeWithText("Espresso", substring = true).assertIsDisplayed()
@@ -118,7 +124,7 @@ class OfficialDrinksScreenRenderingTest {
     fun screen_showsCaffeineValues() {
         val viewModel = createMockViewModel()
         composeRule.setContent {
-            OfficialDrinksScreen(onBack = {}, onDrinkSelected = {}, viewModel = viewModel)
+            OfficialDrinksScreen(onDrinkSelected = {}, viewModel = viewModel)
         }
 
         composeRule.onNodeWithText("63 mg/100ml").assertIsDisplayed()
@@ -131,7 +137,7 @@ class OfficialDrinksScreenRenderingTest {
     fun screen_showsBrands() {
         val viewModel = createMockViewModel()
         composeRule.setContent {
-            OfficialDrinksScreen(onBack = {}, onDrinkSelected = {}, viewModel = viewModel)
+            OfficialDrinksScreen(onDrinkSelected = {}, viewModel = viewModel)
         }
 
         composeRule.onNodeWithText("Illy", substring = true).assertIsDisplayed()
@@ -144,7 +150,7 @@ class OfficialDrinksScreenRenderingTest {
     fun screen_showsSearchField() {
         val viewModel = createMockViewModel()
         composeRule.setContent {
-            OfficialDrinksScreen(onBack = {}, onDrinkSelected = {}, viewModel = viewModel)
+            OfficialDrinksScreen(onDrinkSelected = {}, viewModel = viewModel)
         }
 
         composeRule.onNodeWithTag("search_field").assertIsDisplayed()
@@ -154,27 +160,17 @@ class OfficialDrinksScreenRenderingTest {
     fun screen_showsSearchPlaceholder() {
         val viewModel = createMockViewModel()
         composeRule.setContent {
-            OfficialDrinksScreen(onBack = {}, onDrinkSelected = {}, viewModel = viewModel)
+            OfficialDrinksScreen(onDrinkSelected = {}, viewModel = viewModel)
         }
 
         composeRule.onNodeWithText("Szukaj napoju…").assertIsDisplayed()
     }
 
     @Test
-    fun screen_showsBackButton() {
-        val viewModel = createMockViewModel()
-        composeRule.setContent {
-            OfficialDrinksScreen(onBack = {}, onDrinkSelected = {}, viewModel = viewModel)
-        }
-
-        composeRule.onNodeWithText("Wstecz").assertIsDisplayed()
-    }
-
-    @Test
     fun screen_displaysFourDrinks() {
         val viewModel = createMockViewModel()
         composeRule.setContent {
-            OfficialDrinksScreen(onBack = {}, onDrinkSelected = {}, viewModel = viewModel)
+            OfficialDrinksScreen(onDrinkSelected = {}, viewModel = viewModel)
         }
 
         // Każdy napój ma mg/100ml — liczymy ile razy występuje
@@ -185,7 +181,7 @@ class OfficialDrinksScreenRenderingTest {
     fun screen_showsEmptyState_whenNoDrinks() {
         val viewModel = createMockViewModel(drinks = emptyList())
         composeRule.setContent {
-            OfficialDrinksScreen(onBack = {}, onDrinkSelected = {}, viewModel = viewModel)
+            OfficialDrinksScreen(onDrinkSelected = {}, viewModel = viewModel)
         }
 
         composeRule.onNodeWithText("Brak oficjalnych napojów w bazie. Spróbuj później.")
@@ -196,7 +192,7 @@ class OfficialDrinksScreenRenderingTest {
     fun screen_showsErrorState_whenFetchFails() {
         val viewModel = createMockViewModel(throwOnFetch = true)
         composeRule.setContent {
-            OfficialDrinksScreen(onBack = {}, onDrinkSelected = {}, viewModel = viewModel)
+            OfficialDrinksScreen(onDrinkSelected = {}, viewModel = viewModel)
         }
 
         composeRule.onNodeWithText("Spróbuj ponownie").assertIsDisplayed()
@@ -209,7 +205,7 @@ class OfficialDrinksScreenRenderingTest {
     fun screen_showsNoResults_whenSearchEmpty() {
         val viewModel = createMockViewModel(searchResults = emptyList())
         composeRule.setContent {
-            OfficialDrinksScreen(onBack = {}, onDrinkSelected = {}, viewModel = viewModel)
+            OfficialDrinksScreen(onDrinkSelected = {}, viewModel = viewModel)
         }
 
         // Najpierw ustaw tryb wyszukiwania

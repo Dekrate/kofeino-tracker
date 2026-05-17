@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.input.ImeAction
@@ -49,7 +50,6 @@ import java.util.Locale
 
 @Composable
 fun OfficialDrinksScreen(
-    onBack: () -> Unit,
     onDrinkSelected: (OfficialDrink) -> Unit = {},
     viewModel: OfficialDrinkViewModel = hiltViewModel()
 ) {
@@ -57,6 +57,13 @@ fun OfficialDrinksScreen(
     val listScrollState = rememberTransformingLazyColumnState()
     var searchText by remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
+
+    // Pre-resolve strings for accessibility
+    val searchHint = stringResource(R.string.official_drinks_search)
+    val searchBtn = stringResource(R.string.official_drinks_search_button)
+    val clearBtn = stringResource(R.string.official_drinks_clear_search)
+    val retryBtn = stringResource(R.string.official_drinks_retry)
+    val per100mlUnit = stringResource(R.string.official_drinks_caffeine_unit_per_100ml)
 
     ScreenScaffold(scrollState = listScrollState) { contentPadding ->
         when {
@@ -91,15 +98,11 @@ fun OfficialDrinksScreen(
                     )
                     Button(
                         onClick = viewModel::refresh,
-                        modifier = Modifier.padding(top = 12.dp)
+                        modifier = Modifier
+                            .padding(top = 12.dp)
+                            .semantics { contentDescription = retryBtn }
                     ) {
                         Text(stringResource(R.string.official_drinks_retry))
-                    }
-                    Button(
-                        onClick = onBack,
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        Text(stringResource(R.string.back))
                     }
                 }
             }
@@ -140,7 +143,10 @@ fun OfficialDrinksScreen(
                                     },
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .semantics { testTag = "search_field" },
+                                        .semantics {
+                                            testTag = "search_field"
+                                            contentDescription = searchHint
+                                        },
                                     textStyle = TextStyle(
                                         color = MaterialTheme.colorScheme.onSurface,
                                         fontSize = 14.sp
@@ -169,7 +175,10 @@ fun OfficialDrinksScreen(
                                             keyboardController?.hide()
                                             viewModel.search(searchText)
                                         },
-                                        modifier = Modifier.weight(1f).padding(end = 4.dp)
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .padding(end = 4.dp)
+                                            .semantics { contentDescription = searchBtn }
                                     ) {
                                         Text(stringResource(R.string.official_drinks_search_button))
                                     }
@@ -178,7 +187,10 @@ fun OfficialDrinksScreen(
                                             searchText = ""
                                             viewModel.clearSearch()
                                         },
-                                        modifier = Modifier.weight(1f).padding(start = 4.dp)
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .padding(start = 4.dp)
+                                            .semantics { contentDescription = clearBtn }
                                     ) {
                                         Text(stringResource(R.string.official_drinks_clear_search))
                                     }
@@ -197,17 +209,6 @@ fun OfficialDrinksScreen(
                                     stringResource(R.string.official_drinks_title),
                                 style = MaterialTheme.typography.titleMedium
                             )
-                        }
-                    }
-
-                    item {
-                        Button(
-                            onClick = onBack,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 8.dp)
-                        ) {
-                            Text(stringResource(R.string.back))
                         }
                     }
 
@@ -242,6 +243,10 @@ fun OfficialDrinksScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 8.dp)
+                                    .semantics {
+                                        val caffeineStr = "%.0f".format(drink.caffeineMgPer100ml)
+                                        contentDescription = "${drink.name} ${drink.brand ?: ""} $caffeineStr $per100mlUnit"
+                                    }
                             ) {
                                 Column {
                                     Text(

@@ -1,5 +1,6 @@
 package pl.dekrate.kofeino.presentation.screens
 
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -12,11 +13,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -41,6 +46,20 @@ fun HistoryScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val scrollState = rememberTransformingLazyColumnState()
+    val context = LocalContext.current
+
+    // Show Toast on errors
+    LaunchedEffect(state.error) {
+        state.error?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            viewModel.clearError()
+        }
+    }
+
+    // Pre-resolve strings for accessibility
+    val previousDayDesc = stringResource(R.string.previous_day)
+    val todayDesc = stringResource(R.string.today)
+    val nextDayDesc = stringResource(R.string.next_day)
 
     ScreenScaffold(scrollState = scrollState) { contentPadding ->
         TransformingLazyColumn(
@@ -75,14 +94,20 @@ fun HistoryScreen(
                     ) {
                         Button(
                             onClick = { viewModel.previousDay() },
-                            modifier = Modifier.weight(1f).padding(end = 4.dp)
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(end = 4.dp)
+                                .semantics { contentDescription = previousDayDesc }
                         ) {
-                            Text("◀", style = MaterialTheme.typography.labelLarge)
+                            Text("\u25C0", style = MaterialTheme.typography.labelLarge)
                         }
                         if (!viewModel.isToday()) {
                             Button(
                                 onClick = { viewModel.goToToday() },
-                                modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(horizontal = 4.dp)
+                                    .semantics { contentDescription = todayDesc }
                             ) {
                                 Text(
                                     stringResource(R.string.today),
@@ -92,9 +117,12 @@ fun HistoryScreen(
                         }
                         Button(
                             onClick = { viewModel.nextDay() },
-                            modifier = Modifier.weight(1f).padding(start = 4.dp)
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(start = 4.dp)
+                                .semantics { contentDescription = nextDayDesc }
                         ) {
-                            Text("▶", style = MaterialTheme.typography.labelLarge)
+                            Text("\u25B6", style = MaterialTheme.typography.labelLarge)
                         }
                     }
                 }
@@ -128,7 +156,11 @@ fun HistoryScreen(
                         val time = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(intake.timestamp))
                         Button(
                             onClick = { onEditIntake(intake.id) },
-                            modifier = Modifier.padding(horizontal = 8.dp)
+                            modifier = Modifier
+                                .padding(horizontal = 8.dp)
+                                .semantics {
+                                    contentDescription = "${intake.drinkName} ${intake.caffeineMg} mg, $time"
+                                }
                         ) {
                             Text(
                                 text = "$time  ${intake.drinkName}  ${intake.caffeineMg} mg",

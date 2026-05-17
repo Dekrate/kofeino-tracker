@@ -4,6 +4,7 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.platform.app.InstrumentationRegistry
@@ -198,6 +199,46 @@ class HistoryScreenTest {
         }
         composeTestRule.onNodeWithText("Espresso", substring = true).performClick()
         assert(editedId == 99L)
+    }
+
+    // ===== Accessibility content description tests =====
+
+    @Test
+    fun historyScreen_previousDayButton_hasContentDescription() {
+        val fakeViewModel = mockk<CaffeineViewModel>(relaxed = true)
+        every { fakeViewModel.uiState } returns MutableStateFlow(
+            CaffeineUiState(dateLabel = context.getString(R.string.today))
+        ) as StateFlow<CaffeineUiState>
+
+        composeTestRule.setContent {
+            KofeinoTrackerTheme {
+                HistoryScreen(
+                    onEditIntake = {},
+                    viewModel = fakeViewModel
+                )
+            }
+        }
+        composeTestRule.onNodeWithContentDescription(context.getString(R.string.previous_day))
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun historyScreen_nextDayButton_hasContentDescription() {
+        val fakeViewModel = mockk<CaffeineViewModel>(relaxed = true)
+        every { fakeViewModel.uiState } returns MutableStateFlow(
+            CaffeineUiState(dateLabel = context.getString(R.string.today))
+        ) as StateFlow<CaffeineUiState>
+
+        composeTestRule.setContent {
+            KofeinoTrackerTheme {
+                HistoryScreen(
+                    onEditIntake = {},
+                    viewModel = fakeViewModel
+                )
+            }
+        }
+        composeTestRule.onNodeWithContentDescription(context.getString(R.string.next_day))
+            .assertIsDisplayed()
     }
 
     private fun createFakeViewModel(state: CaffeineUiState): CaffeineViewModel {
