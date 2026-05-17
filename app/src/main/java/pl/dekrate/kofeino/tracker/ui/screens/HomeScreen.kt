@@ -1,10 +1,6 @@
 package pl.dekrate.kofeino.tracker.ui.screens
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -158,6 +154,7 @@ fun HomeScreen(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun HomeContent(
     state: HomeUiState,
@@ -175,6 +172,7 @@ private fun HomeContent(
                 total = state.totalCaffeineMg,
                 progress = state.progress,
                 exceeded = state.isLimitExceeded,
+                safeLimitMg = HomeViewModel.SAFE_LIMIT_MG,
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -209,16 +207,11 @@ private fun HomeContent(
             }
         } else {
             items(state.todayIntakes, key = { it.id }) { intake ->
-                AnimatedVisibility(
-                    visible = true,
-                    enter = fadeIn() + slideInVertically { -it / 4 },
-                    exit = fadeOut() + slideOutVertically { it / 4 }
-                ) {
-                    TodayIntakeItem(
-                        intake = intake,
-                        onClick = { onIntakeClick(intake.id) }
-                    )
-                }
+                TodayIntakeItem(
+                    intake = intake,
+                    onClick = { onIntakeClick(intake.id) },
+                    modifier = Modifier.animateItem()
+                )
             }
         }
     }
