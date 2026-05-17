@@ -84,7 +84,7 @@ class OfficialDrinksViewModelTest {
     }
 
     @Test
-    fun `should handle initial load failure gracefully`() = runTest {
+    fun `should handle initial load failure gracefully with empty state`() = runTest {
         coEvery { officialRepository.getOfficialDrinks() } returns Result.failure(Exception("No cache"))
 
         viewModel = OfficialDrinksViewModel(officialRepository, caffeineRepository)
@@ -93,7 +93,7 @@ class OfficialDrinksViewModelTest {
         val state = viewModel.uiState.value
         assertEquals(0, state.drinks.size)
         assertFalse(state.isLoading)
-        assertEquals(OfficialDrinksError.SearchFailed, state.error)
+        assertNull("Empty cache should not show error", state.error)
     }
 
     // ===== Search =====
@@ -357,17 +357,22 @@ class OfficialDrinksViewModelTest {
 
     @Test
     fun `clearError should set error to null`() = runTest {
-        coEvery { officialRepository.getOfficialDrinks() } returns Result.failure(Exception("No cache"))
+        coEvery { officialRepository.getOfficialDrinks() } returns Result.success(emptyList())
+        coEvery { officialRepository.searchOfficialDrinks(any()) } throws RuntimeException("Search crash")
 
         viewModel = OfficialDrinksViewModel(officialRepository, caffeineRepository)
         testDispatcher.scheduler.advanceUntilIdle()
 
-        assertNotNull(viewModel.uiState.value.error)
+        // Trigger error via search (not initial load, which handles empty cache gracefully)
+        viewModel.searchImmediate("coffee")
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertNotNull("Error should be set after search crash", viewModel.uiState.value.error)
 
         viewModel.clearError()
         testDispatcher.scheduler.advanceUntilIdle()
 
-        assertNull(viewModel.uiState.value.error)
+        assertNull("Error should be null after clearError", viewModel.uiState.value.error)
     }
 
     @Test

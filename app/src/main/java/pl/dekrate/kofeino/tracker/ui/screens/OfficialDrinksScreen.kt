@@ -16,8 +16,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -29,12 +29,12 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -44,8 +44,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -63,6 +65,7 @@ fun OfficialDrinksScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     // Resolve error message
     val errorMessage = state.error?.let { error ->
@@ -72,11 +75,22 @@ fun OfficialDrinksScreen(
         }
     }
 
-    // Show snackbar on error
+    // Show error in snackbar
     LaunchedEffect(errorMessage) {
         errorMessage?.let {
             snackbarHostState.showSnackbar(it)
             viewModel.clearError()
+        }
+    }
+
+    // Pre-resolve strings (must be @Composable context)
+    val importedText = stringResource(R.string.imported_as_drink)
+
+    // Show import success in snackbar
+    LaunchedEffect(state.successMessage) {
+        state.successMessage?.let {
+            snackbarHostState.showSnackbar(message = importedText)
+            viewModel.clearSuccessMessage()
         }
     }
 
@@ -104,33 +118,74 @@ fun OfficialDrinksScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // Search bar
-            OutlinedTextField(
-                value = state.searchQuery,
-                onValueChange = { viewModel.onQueryChanged(it) },
-                placeholder = { Text(stringResource(R.string.search_hint)) },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Filled.Search,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                },
-                trailingIcon = {
-                    if (state.searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { viewModel.clearSearch() }) {
-                            Icon(
-                                imageVector = Icons.Filled.Clear,
-                                contentDescription = stringResource(R.string.search_clear)
-                            )
-                        }
-                    }
-                },
-                singleLine = true,
+            // Search bar + search button
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp)
-            )
+            ) {
+                OutlinedTextField(
+                    value = state.searchQuery,
+                    onValueChange = { viewModel.onQueryChanged(it) },
+                    placeholder = { Text(stringResource(R.string.search_hint)) },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.Search,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    },
+                    trailingIcon = {
+                        if (state.searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { viewModel.clearSearch() }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Clear,
+                                    contentDescription = stringResource(R.string.search_clear)
+                                )
+                            }
+                        }
+                    },
+                    singleLine = true,
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                        imeAction = ImeAction.Search
+                    ),
+                    keyboardActions = androidx.compose.foundation.text.KeyboardActions(
+                        onSearch = {
+                            keyboardController?.hide()
+                            viewModel.searchImmediate(state.searchQuery)
+                        }
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                // Search button below the field (like watch: trigger even without IME)
+                if (state.searchQuery.isNotBlank()) {
+                    Spacer(Modifier.height(4.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        Button(
+                            onClick = {
+                                keyboardController?.hide()
+                                viewModel.searchImmediate(state.searchQuery)
+                            },
+                            modifier = Modifier.weight(1f).padding(end = 4.dp)
+                        ) {
+                            Text(stringResource(R.string.search_hint).removeSuffix("…"))
+                        }
+                        OutlinedButton(
+                            onClick = {
+                                keyboardController?.hide()
+                                viewModel.clearSearch()
+                            },
+                            modifier = Modifier.weight(1f).padding(start = 4.dp)
+                        ) {
+                            Text(stringResource(R.string.search_clear))
+                        }
+                    }
+                }
+            }
 
             HorizontalDivider()
 
@@ -157,6 +212,7 @@ fun OfficialDrinksScreen(
                 state.isLoading && state.drinks.isNotEmpty() -> {
                     OfficialDrinkList(
                         drinks = state.drinks,
+                        importedDrinkNames = state.importedDrinkNames,
                         importingBarcode = state.importingBarcode,
                         onImport = { viewModel.importAsDrink(it) },
                         searchQuery = state.searchQuery,
@@ -207,6 +263,7 @@ fun OfficialDrinksScreen(
                 else -> {
                     OfficialDrinkList(
                         drinks = state.drinks,
+                        importedDrinkNames = state.importedDrinkNames,
                         importingBarcode = state.importingBarcode,
                         onImport = { viewModel.importAsDrink(it) },
                         searchQuery = state.searchQuery,
@@ -221,6 +278,7 @@ fun OfficialDrinksScreen(
 @Composable
 private fun OfficialDrinkList(
     drinks: List<OfficialDrink>,
+    importedDrinkNames: Set<String>,
     importingBarcode: String?,
     onImport: (OfficialDrink) -> Unit,
     searchQuery: String,
@@ -244,8 +302,10 @@ private fun OfficialDrinkList(
         }
 
         items(drinks, key = { it.barcode }) { drink ->
+            val isAlreadyImported = drink.name in importedDrinkNames
             OfficialDrinkItem(
                 officialDrink = drink,
+                isAlreadyImported = isAlreadyImported,
                 isImporting = importingBarcode == drink.barcode,
                 onImport = { onImport(drink) }
             )
@@ -256,6 +316,7 @@ private fun OfficialDrinkList(
 @Composable
 private fun OfficialDrinkItem(
     officialDrink: OfficialDrink,
+    isAlreadyImported: Boolean,
     isImporting: Boolean,
     onImport: () -> Unit,
     modifier: Modifier = Modifier
@@ -305,31 +366,47 @@ private fun OfficialDrinkItem(
 
             Spacer(Modifier.width(12.dp))
 
-            Button(
-                onClick = onImport,
-                enabled = !isImporting,
-                contentPadding = ButtonDefaults.TextButtonContentPadding,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                )
-            ) {
-                if (isImporting) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(16.dp),
-                        strokeWidth = 2.dp
+            if (isAlreadyImported) {
+                OutlinedButton(
+                    onClick = {},
+                    enabled = false,
+                    contentPadding = ButtonDefaults.TextButtonContentPadding,
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.primary
                     )
-                } else {
-                    Icon(
-                        imageVector = Icons.Filled.Add,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(Modifier.width(4.dp))
+                ) {
                     Text(
-                        text = stringResource(R.string.import_drink),
+                        text = stringResource(R.string.imported_as_drink),
                         style = MaterialTheme.typography.labelSmall
                     )
+                }
+            } else {
+                Button(
+                    onClick = onImport,
+                    enabled = !isImporting,
+                    contentPadding = ButtonDefaults.TextButtonContentPadding,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                ) {
+                    if (isImporting) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(16.dp),
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Filled.Add,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            text = stringResource(R.string.import_drink),
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    }
                 }
             }
         }

@@ -8,9 +8,11 @@ import org.junit.Before
 import org.junit.Test
 import pl.dekrate.kofeino.tracker.data.local.OfficialDrinkCacheDao
 import pl.dekrate.kofeino.tracker.data.local.OfficialDrinkCacheEntity
+import pl.dekrate.kofeino.tracker.data.remote.OpenFoodFactsApi
 
 class OfficialDrinkRepositoryImplTest {
 
+    private val api: OpenFoodFactsApi = mockk()
     private val cacheDao: OfficialDrinkCacheDao = mockk()
     private lateinit var repository: OfficialDrinkRepositoryImpl
 
@@ -26,7 +28,9 @@ class OfficialDrinkRepositoryImplTest {
 
     @Before
     fun setUp() {
-        repository = OfficialDrinkRepositoryImpl(cacheDao)
+        // By default, API is unavailable — tests exercise cache fallback
+        coEvery { api.searchProducts(any(), any(), any(), any(), any()) } throws RuntimeException("API unavailable")
+        repository = OfficialDrinkRepositoryImpl(api, cacheDao)
     }
 
     @Test

@@ -8,6 +8,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepository
@@ -24,11 +26,13 @@ sealed interface OfficialDrinksError {
 
 data class OfficialDrinksUiState(
     val drinks: List<OfficialDrink> = emptyList(),
+    val importedDrinkNames: Set<String> = emptySet(),
     val isLoading: Boolean = false,
     val error: OfficialDrinksError? = null,
     val searchQuery: String = "",
     val isSearchMode: Boolean = false,
-    val importingBarcode: String? = null
+    val importingBarcode: String? = null,
+    val successMessage: String? = null
 )
 
 private const val SEARCH_DEBOUNCE_MS = 500L
@@ -45,6 +49,15 @@ class OfficialDrinksViewModel @Inject constructor(
     private var searchJob: Job? = null
 
     init {
+        // Observe custom drinks to know which official ones are already imported
+        caffeineRepository.getAllDrinks()
+            .onEach { drinks ->
+                _uiState.update {
+                    it.copy(importedDrinkNames = drinks.map { d -> d.name }.toSet())
+                }
+            }
+            .launchIn(viewModelScope)
+
         loadOfficialDrinks()
     }
 
@@ -62,22 +75,25 @@ class OfficialDrinksViewModel @Inject constructor(
                         }
                     }
                     .onFailure { error ->
-                        Timber.e(error, "Failed to load official drinks")
+                        // Empty cache is expected on first launch — don't show error
+                        Timber.i("No cached official drinks available: ${error.message}")
                         _uiState.update {
-                            it.copy(isLoading = false, error = OfficialDrinksError.SearchFailed)
+                            it.copy(isLoading = false, drinks = emptyList())
                         }
                     }
             } catch (e: Exception) {
                 Timber.e(e, "Unexpected error loading official drinks")
                 _uiState.update {
-                    it.copy(isLoading = false, error = OfficialDrinksError.SearchFailed)
+                    it.copy(isLoading = false, drinks = emptyList())
                 }
             }
         }
     }
 
     fun onQueryChanged(query: String) {
-        _uiState.update { it.copy(searchQuery = query, isSearchMode = query.isNotBlank()) }
+        _uiState.update {
+            it.copy(searchQuery = query, isSearchMode = query.isNotBlank(), error = null)
+        }
         searchJob?.cancel()
         if (query.isBlank()) {
             loadOfficialDrinks()
@@ -127,7 +143,13 @@ class OfficialDrinksViewModel @Inject constructor(
                         volumeMl = 100
                     )
                 )
-                _uiState.update { it.copy(importingBarcode = null) }
+                // Success — update state (importedDrinkNames updates via Flow)
+                _uiState.update {
+                    it.copy(
+                        importingBarcode = null,
+                        successMessage = official.name
+                    )
+                }
                 Timber.d("Imported official drink: ${official.name}")
             } catch (e: Exception) {
                 Timber.e(e, "Failed to import drink: ${official.name}")
@@ -140,6 +162,10 @@ class OfficialDrinksViewModel @Inject constructor(
 
     fun clearError() {
         _uiState.update { it.copy(error = null) }
+    }
+
+    fun clearSuccessMessage() {
+        _uiState.update { it.copy(successMessage = null) }
     }
 
     private suspend fun performSearch(query: String) {

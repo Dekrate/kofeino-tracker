@@ -1,0 +1,69 @@
+package pl.dekrate.kofeino.tracker.data.remote
+
+import com.google.gson.annotations.SerializedName
+import retrofit2.http.GET
+import retrofit2.http.Path
+import retrofit2.http.Query
+
+/**
+ * Open Food Facts API interface.
+ *
+ * Base URL: https://world.openfoodfacts.org
+ *
+ * Search returns products with caffeine data. We filter by `nutriments.caffeine_value_100g`
+ * because not all products have caffeine listed.
+ */
+interface OpenFoodFactsApi {
+
+    /**
+     * Search for products by name.
+     *
+     * @param query Search terms (e.g. "coffee", "energy drink")
+     * @param pageSize Results per page (max 50)
+     * @param fields Comma-separated field names to include in response
+     */
+    @GET("cgi/search.pl")
+    suspend fun searchProducts(
+        @Query("search_terms") query: String,
+        @Query("page_size") pageSize: Int = 25,
+        @Query("action") action: String = "process",
+        @Query("json") json: Int = 1,
+        @Query("fields") fields: String = "code,product_name,brands,product_quantity,nutriments"
+    ): OpenFoodFactsSearchResponse
+
+    /**
+     * Get product details by barcode.
+     */
+    @GET("api/v0/product/{barcode}.json")
+    suspend fun getProduct(
+        @Path("barcode") barcode: String
+    ): OpenFoodFactsProductResponse
+}
+
+// ===== Response models =====
+
+data class OpenFoodFactsSearchResponse(
+    val count: Int = 0,
+    val page: Int = 0,
+    @SerializedName("page_size") val pageSize: Int = 0,
+    val products: List<OpenFoodFactsProduct> = emptyList()
+)
+
+data class OpenFoodFactsProductResponse(
+    val code: String = "",
+    val product: OpenFoodFactsProduct? = null,
+    val status: Int = 0
+)
+
+data class OpenFoodFactsProduct(
+    val code: String = "",
+    @SerializedName("product_name") val productName: String = "",
+    val brands: String? = null,
+    @SerializedName("product_quantity") val productQuantity: String? = null,
+    val nutriments: OpenFoodFactsNutriments? = null
+)
+
+data class OpenFoodFactsNutriments(
+    @SerializedName("caffeine_value_100g") val caffeineValue100g: Double? = null,
+    @SerializedName("energy-kcal_value_100g") val energyKcalValue100g: Double? = null
+)

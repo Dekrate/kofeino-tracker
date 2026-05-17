@@ -6,6 +6,7 @@ import android.content.res.Configuration
 import android.content.res.Resources
 import dagger.hilt.android.HiltAndroidApp
 import pl.dekrate.kofeino.tracker.data.local.LanguagePreferences
+import timber.log.Timber
 import java.util.Locale
 
 @HiltAndroidApp
@@ -13,6 +14,9 @@ class KofeinoTrackerApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        if (BuildConfig.DEBUG) {
+            Timber.plant(Timber.DebugTree())
+        }
         applySavedLocale()
     }
 
