@@ -18,7 +18,8 @@ object LocaleHelper {
 
     /** Wraps [context] with a specific language code (e.g. "en", "pl"). */
     fun setLocale(context: Context, language: String): Context {
-        val locale = Locale.of(language)
+        @Suppress("DEPRECATION")
+        val locale = Locale(language)
         Locale.setDefault(locale)
         val config = Configuration(context.resources.configuration)
         config.setLocale(locale)

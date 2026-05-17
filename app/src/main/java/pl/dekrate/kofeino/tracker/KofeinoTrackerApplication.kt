@@ -12,7 +12,8 @@ class KofeinoTrackerApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         val lang = getLanguage(this)
-        Locale.setDefault(Locale.of(lang))
+        @Suppress("DEPRECATION")
+        Locale.setDefault(Locale(lang))
     }
 
     companion object {
