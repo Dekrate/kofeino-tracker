@@ -95,7 +95,7 @@ class CaffeineViewModel @Inject constructor(
 
     // --- Intake operations ---
 
-    fun addDrink(drink: DrinkEntity) {
+    fun addDrink(drink: DrinkEntity, onComplete: () -> Unit = {}, onError: () -> Unit = {}) {
         Timber.d("Adding drink: ${drink.name} (${drink.caffeineMg} mg)")
         viewModelScope.launch {
             try {
@@ -107,9 +107,11 @@ class CaffeineViewModel @Inject constructor(
                     timestamp = System.currentTimeMillis()
                 )
                 repository.addIntake(intake)
+                onComplete()
             } catch (e: Exception) {
                 Timber.e(e, "Failed to add intake")
                 _uiState.update { it.copy(error = context.getString(R.string.error_add_failed)) }
+                onError()
             }
         }
     }

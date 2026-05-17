@@ -71,6 +71,12 @@ class OfficialDrinkViewModel @Inject constructor(
                     isLoading = false,
                     error = context.getString(R.string.error_load_failed)
                 )
+            } catch (e: Exception) {
+                Timber.e(e, "Unexpected error loading official drinks")
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = context.getString(R.string.error_load_failed)
+                )
             }
         }
     }
@@ -126,6 +132,12 @@ class OfficialDrinkViewModel @Inject constructor(
                 }
             } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
                 Timber.e(e, "Timeout searching official drinks")
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = context.getString(R.string.error_search_failed)
+                )
+            } catch (e: Exception) {
+                Timber.e(e, "Unexpected error searching official drinks")
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     error = context.getString(R.string.error_search_failed)

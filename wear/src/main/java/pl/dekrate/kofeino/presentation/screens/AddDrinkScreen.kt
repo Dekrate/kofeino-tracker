@@ -68,9 +68,13 @@ fun AddDrinkScreen(
                     Button(
                         onClick = {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            viewModel.addDrink(drink)
-                            Toast.makeText(context, R.string.drink_added, Toast.LENGTH_SHORT).show()
-                            onDrinkAdded()
+                            viewModel.addDrink(
+                                drink,
+                                onComplete = {
+                                    Toast.makeText(context, R.string.drink_added, Toast.LENGTH_SHORT).show()
+                                    onDrinkAdded()
+                                }
+                            )
                         },
                         modifier = Modifier
                             .padding(horizontal = 8.dp)

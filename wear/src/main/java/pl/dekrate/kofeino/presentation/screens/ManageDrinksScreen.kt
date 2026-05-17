@@ -35,7 +35,6 @@ import pl.dekrate.kofeino.presentation.viewmodel.DrinkViewModel
 
 @Composable
 fun ManageDrinksScreen(
-    onBack: () -> Unit,
     onOfficialDrinks: () -> Unit = {},
     viewModel: DrinkViewModel = hiltViewModel()
 ) {

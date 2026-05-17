@@ -44,6 +44,8 @@
     <string name="drink_name_hint">Enter drink name</string>
     <string name="caffeine_amount">Caffeine amount (mg)</string>
     <string name="volume">Volume</string>
+    <string name="volume_decrease">Volume -10 ml</string>
+    <string name="volume_increase">Volume +10 ml</string>
     <string name="delete_drink_confirm">Delete this drink?</string>
     <string name="no_drinks_defined">No drinks defined</string>
     <string name="drinks_subtitle">Add, edit and remove drinks</string>
@@ -66,6 +68,7 @@
     <string name="log_tag">Kofeino</string>
 
     <!-- Official drinks -->
+    <string name="official_drinks_caffeine_unit_per_100ml">mg/100ml</string>
     <string name="official_drinks_button">Official drinks</string>
     <string name="official_drinks_title">Official caffeinated drinks</string>
     <string name="official_drinks_loading">Loading data…</string>

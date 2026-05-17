@@ -33,7 +33,6 @@ import pl.dekrate.kofeino.data.local.LanguagePreferences
 
 @Composable
 fun SettingsScreen(
-    onBack: () -> Unit
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val activity = context.findActivity()

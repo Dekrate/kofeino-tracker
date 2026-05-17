@@ -54,6 +54,8 @@ fun AddEditDrinkForm(
     val isVolumeValid = volumeMl >= 0
     val isFormValid = isNameValid && isCaffeineValid && isVolumeValid
     val caffeineAmountDesc = stringResource(R.string.caffeine_amount)
+    val volumeDecDesc = stringResource(R.string.volume_decrease)
+    val volumeIncDesc = stringResource(R.string.volume_increase)
 
     Column(
         modifier = Modifier.fillMaxWidth().padding(8.dp).verticalScroll(rememberScrollState()),
@@ -152,7 +154,7 @@ fun AddEditDrinkForm(
                 modifier = Modifier
                     .weight(1f)
                     .padding(end = 4.dp)
-                    .semantics { contentDescription = "Volume -10 ml" }
+                    .semantics { contentDescription = volumeDecDesc }
             ) {
                 Text("-10")
             }
@@ -161,7 +163,7 @@ fun AddEditDrinkForm(
                 modifier = Modifier
                     .weight(1f)
                     .padding(start = 4.dp)
-                    .semantics { contentDescription = "Volume +10 ml" }
+                    .semantics { contentDescription = volumeIncDesc }
             ) {
                 Text("+10")
             }

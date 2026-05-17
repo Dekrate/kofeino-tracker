@@ -50,7 +50,6 @@ import java.util.Locale
 
 @Composable
 fun OfficialDrinksScreen(
-    onBack: () -> Unit,
     onDrinkSelected: (OfficialDrink) -> Unit = {},
     viewModel: OfficialDrinkViewModel = hiltViewModel()
 ) {
@@ -64,6 +63,7 @@ fun OfficialDrinksScreen(
     val searchBtn = stringResource(R.string.official_drinks_search_button)
     val clearBtn = stringResource(R.string.official_drinks_clear_search)
     val retryBtn = stringResource(R.string.official_drinks_retry)
+    val per100mlUnit = stringResource(R.string.official_drinks_caffeine_unit_per_100ml)
 
     ScreenScaffold(scrollState = listScrollState) { contentPadding ->
         when {
@@ -244,7 +244,8 @@ fun OfficialDrinksScreen(
                                     .fillMaxWidth()
                                     .padding(horizontal = 8.dp)
                                     .semantics {
-                                        contentDescription = "${drink.name} ${drink.brand ?: ""} ${"%.0f".format(drink.caffeineMgPer100ml)} mg/100ml"
+                                        val caffeineStr = "%.0f".format(drink.caffeineMgPer100ml)
+                                        contentDescription = "${drink.name} ${drink.brand ?: ""} $caffeineStr $per100mlUnit"
                                     }
                             ) {
                                 Column {

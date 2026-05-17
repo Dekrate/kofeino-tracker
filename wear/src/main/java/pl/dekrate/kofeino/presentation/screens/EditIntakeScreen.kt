@@ -85,6 +85,8 @@ fun EditIntakeScreen(
     val deleteDesc = stringResource(R.string.delete)
     val cancelDesc = stringResource(R.string.cancel)
     val confirmDesc = stringResource(R.string.confirm)
+    val volumeDecDesc = stringResource(R.string.volume_decrease)
+    val volumeIncDesc = stringResource(R.string.volume_increase)
 
     var caffeineMg by remember(currentIntake.id) { mutableIntStateOf(currentIntake.caffeineMg) }
     var volumeMl by remember(currentIntake.id) { mutableIntStateOf(currentIntake.volumeMl) }
@@ -150,7 +152,7 @@ fun EditIntakeScreen(
                     modifier = Modifier
                         .weight(1f)
                         .padding(end = 4.dp)
-                        .semantics { contentDescription = "Volume -10 ml" }
+                        .semantics { contentDescription = volumeDecDesc }
                 ) {
                     Text("-10")
                 }
@@ -159,7 +161,7 @@ fun EditIntakeScreen(
                     modifier = Modifier
                         .weight(1f)
                         .padding(start = 4.dp)
-                        .semantics { contentDescription = "Volume +10 ml" }
+                        .semantics { contentDescription = volumeIncDesc }
                 ) {
                     Text("+10")
                 }

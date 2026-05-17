@@ -44,6 +44,8 @@
     <string name="drink_name_hint">Wpisz nazwę napoju</string>
     <string name="caffeine_amount">Ilość kofeiny (mg)</string>
     <string name="volume">Objętość</string>
+    <string name="volume_decrease">Objętość -10 ml</string>
+    <string name="volume_increase">Objętość +10 ml</string>
     <string name="delete_drink_confirm">Usunąć ten napój?</string>
     <string name="no_drinks_defined">Brak zdefiniowanych napojów</string>
     <string name="drinks_subtitle">Dodawaj, edytuj i usuwaj napoje</string>
@@ -66,6 +68,7 @@
     <string name="log_tag">Kofeino</string>
 
     <!-- Official drinks -->
+    <string name="official_drinks_caffeine_unit_per_100ml">mg/100ml</string>
     <string name="official_drinks_button">Oficjalne napoje</string>
     <string name="official_drinks_title">Oficjalne napoje z kofeiną</string>
     <string name="official_drinks_loading">Pobieranie danych…</string>
