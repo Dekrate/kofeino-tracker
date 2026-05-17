@@ -1,4 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">KofeinoTracker</string>
-    <string name="wear_companion_description">Aplikacja towarzysząca dla Wear OS. Zainstaluj moduł wear na zegarku, aby korzystać z monitorowania kofeiny.</string>
+    <string name="home_title">Dzienna kofeina</string>
+    <string name="add_drink_title">Dodaj napój</string>
+    <string name="history_title">Historia</string>
+    <string name="manage_drinks_title">Zarządzaj napojami</string>
+    <string name="official_drinks_title">Oficjalne napoje</string>
+    <string name="settings_title">Ustawienia</string>
+    <string name="error_add_failed">Nie udało się dodać wpisu</string>
+    <string name="error_save_failed">Nie udało się zapisać zmian</string>
+    <string name="error_delete_failed">Nie udało się usunąć wpisu</string>
+    <string name="error_load_failed">Nie udało się wczytać danych</string>
+    <string name="error_search_failed">Wyszukiwanie nie powiodło się</string>
+    <string name="error_no_results">Brak wyników</string>
+    <string name="today">Dziś</string>
+    <string name="yesterday">Wczoraj</string>
+    <string name="tomorrow">Jutro</string>
 </resources>

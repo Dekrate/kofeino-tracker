@@ -1,4 +1,4 @@
-package com.example.kofeinotracker
+package pl.dekrate.kofeino.tracker
 
 import android.app.Application
 import android.content.Context
@@ -11,13 +11,11 @@ class KofeinoTrackerApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        // Apply saved language as default locale
         val lang = getLanguage(this)
-        Locale.setDefault(Locale(lang))
+        Locale.setDefault(Locale.of(lang))
     }
 
     companion object {
-        // Uses the same file name as the wear module for consistency
         private const val PREFS_NAME = "kofeino_language_prefs"
         private const val KEY_LANGUAGE = "selected_language"
 

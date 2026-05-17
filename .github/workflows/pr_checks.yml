@@ -39,18 +39,20 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x gradlew
 
-      - name: Build debug APK (wear only)
-        run: ./gradlew :wear:assembleDebug
+      - name: Build debug APK
+        run: ./gradlew assembleDebug
 
       - name: Run unit tests
-        run: ./gradlew :wear:testDebugUnitTest
+        run: ./gradlew testDebugUnitTest
 
       - name: Upload test report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: wear/build/reports/tests/testDebugUnitTest/
+          path: |
+            app/build/reports/tests/testDebugUnitTest/
+            wear/build/reports/tests/testDebugUnitTest/
           retention-days: 14
 
   lint:
