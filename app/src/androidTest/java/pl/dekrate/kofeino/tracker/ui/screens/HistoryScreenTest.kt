@@ -109,9 +109,10 @@ class HistoryScreenTest {
     }
 
     @Test
-    fun historyScreen_showsDateLabel() {
+    fun historyScreen_showsLocalizedTodayLabel() {
         val fakeViewModel = createFakeViewModel(
-            HistoryUiState(dateLabel = "Today", isLoading = false)
+            state = HistoryUiState(isLoading = false),
+            isToday = true
         )
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
@@ -121,13 +122,15 @@ class HistoryScreenTest {
                 )
             }
         }
-        composeTestRule.onNodeWithText("Today").assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(R.string.today)).assertIsDisplayed()
     }
 
     @Test
-    fun historyScreen_showsDateLabel_forYesterday() {
+    fun historyScreen_showsLocalizedYesterdayLabel() {
         val fakeViewModel = createFakeViewModel(
-            HistoryUiState(dateLabel = "Yesterday", isLoading = false)
+            state = HistoryUiState(isLoading = false),
+            isToday = false,
+            isYesterday = true
         )
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
@@ -137,7 +140,7 @@ class HistoryScreenTest {
                 )
             }
         }
-        composeTestRule.onNodeWithText("Yesterday").assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(R.string.yesterday)).assertIsDisplayed()
     }
 
     @Test
@@ -370,10 +373,15 @@ class HistoryScreenTest {
         composeTestRule.onNodeWithText("Cappuccino", substring = true).assertIsDisplayed()
     }
 
-    private fun createFakeViewModel(state: HistoryUiState): HistoryViewModel {
+    private fun createFakeViewModel(
+        state: HistoryUiState,
+        isToday: Boolean = false,
+        isYesterday: Boolean = false
+    ): HistoryViewModel {
         val vm = mockk<HistoryViewModel>(relaxed = true)
         every { vm.uiState } returns MutableStateFlow(state) as StateFlow<HistoryUiState>
-        every { vm.isToday() } returns (state.dateLabel == "Today")
+        every { vm.isToday() } returns isToday
+        every { vm.isYesterday() } returns isYesterday
         return vm
     }
 }

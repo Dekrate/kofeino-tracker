@@ -6,6 +6,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -67,13 +68,16 @@ class HistoryViewModelTest {
     }
 
     @Test
-    fun `initial state should have today date label`() = runTest {
+    fun `initial state should have formatted date label`() = runTest {
         viewModel = HistoryViewModel(repository)
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.uiState.test {
             val state = awaitItem()
-            assertEquals("Today", state.dateLabel)
+            assertTrue(
+                "Date label should match dd.MM.yyyy format, got: ${state.dateLabel}",
+                state.dateLabel.matches(Regex("\\d{2}\\.\\d{2}\\.\\d{4}"))
+            )
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -213,16 +217,14 @@ class HistoryViewModelTest {
     }
 
     @Test
-    fun `date label should show formatted date for non-today non-yesterday`() = runTest {
-        // Set up to return a date that's neither today nor yesterday
-        // We navigate to +3 days from today
+    fun `date label should always be formatted date`() = runTest {
         every { repository.getIntakesForDate(any()) } returns flowOf(emptyList())
         every { repository.getTotalCaffeineForDate(any()) } returns flowOf(0)
 
         viewModel = HistoryViewModel(repository)
         testDispatcher.scheduler.advanceUntilIdle()
 
-        // Navigate 3 days ahead to get a date that's not today/yesterday
+        // Navigate 3 days ahead
         viewModel.nextDay()
         testDispatcher.scheduler.advanceUntilIdle()
         viewModel.nextDay()
@@ -231,17 +233,29 @@ class HistoryViewModelTest {
         testDispatcher.scheduler.advanceUntilIdle()
 
         val dateLabel = viewModel.uiState.value.dateLabel
-        // Should not be "Today" or "Yesterday"
-        assertFalse("Date label should not be Today for future date", dateLabel == "Today")
-        assertFalse("Date label should not be Yesterday for future date", dateLabel == "Yesterday")
-        // Should match date format pattern dd.MM.yyyy
         assertTrue(
-            "Date label should be formatted as dd.MM.yyyy, got: $dateLabel",
+            "Date label should match dd.MM.yyyy format, got: $dateLabel",
             dateLabel.matches(Regex("\\d{2}\\.\\d{2}\\.\\d{4}"))
         )
     }
 
     // ===== Error handling tests =====
+
+    @Test
+    fun `repository exception should set error state and clear loading`() = runTest {
+        every { repository.getIntakesForDate(any()) } returns flow { throw RuntimeException("DB error") }
+        every { repository.getTotalCaffeineForDate(any()) } returns flowOf(0)
+
+        viewModel = HistoryViewModel(repository)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.uiState.test {
+            val state = awaitItem()
+            assertNotNull("Error should be set on exception", state.error)
+            assertFalse("Loading should be false after error", state.isLoading)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
 
     @Test
     fun `clearError should set error to null`() = runTest {

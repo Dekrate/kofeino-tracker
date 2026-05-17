@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -55,6 +56,15 @@ class HistoryViewModel @Inject constructor(
                     )
                 }
             }
+            .catch { e ->
+                emit(
+                    HistoryUiState(
+                        selectedDateMillis = _selectedDateMillis.value,
+                        error = e.message ?: "Failed to load history",
+                        isLoading = false
+                    )
+                )
+            }
             .onEach { newState ->
                 _uiState.value = newState
             }
@@ -77,6 +87,10 @@ class HistoryViewModel @Inject constructor(
 
     fun isToday(): Boolean {
         return getStartOfToday() == _selectedDateMillis.value
+    }
+
+    fun isYesterday(): Boolean {
+        return startOfDayOffset(getStartOfToday(), -1) == _selectedDateMillis.value
     }
 
     // --- Error handling ---
@@ -105,13 +119,7 @@ class HistoryViewModel @Inject constructor(
     }
 
     private fun formatDateLabel(millis: Long): String {
-        val today = getStartOfToday()
-        val yesterday = startOfDayOffset(today, -1)
-        return when (millis) {
-            today -> "Today"
-            yesterday -> "Yesterday"
-            else -> SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(Date(millis))
-        }
+        return SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(Date(millis))
     }
 
     /** Returns start of day offset by `days` from given timestamp (DST-safe). */

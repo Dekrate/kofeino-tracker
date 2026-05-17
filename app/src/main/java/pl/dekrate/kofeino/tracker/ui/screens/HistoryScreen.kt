@@ -62,6 +62,13 @@ fun HistoryScreen(
     val nextDayDesc = stringResource(R.string.next_day)
     val goToTodayDesc = stringResource(R.string.go_to_today)
 
+    // Localized date label — ViewModel returns raw formatted date, UI resolves relative labels
+    val dateLabel = when {
+        viewModel.isToday() -> stringResource(R.string.today)
+        viewModel.isYesterday() -> stringResource(R.string.yesterday)
+        else -> state.dateLabel
+    }
+
     // Show error in snackbar
     LaunchedEffect(state.error) {
         state.error?.let { message ->
@@ -94,6 +101,7 @@ fun HistoryScreen(
         } else {
             HistoryContent(
                 state = state,
+                dateLabel = dateLabel,
                 onPreviousDay = { viewModel.previousDay() },
                 onNextDay = { viewModel.nextDay() },
                 onGoToToday = { viewModel.goToToday() },
@@ -111,6 +119,7 @@ fun HistoryScreen(
 @Composable
 private fun HistoryContent(
     state: HistoryUiState,
+    dateLabel: String,
     onPreviousDay: () -> Unit,
     onNextDay: () -> Unit,
     onGoToToday: () -> Unit,
@@ -129,7 +138,7 @@ private fun HistoryContent(
         // Date navigation row
         item(key = "date_navigation") {
             DateNavigationRow(
-                dateLabel = state.dateLabel,
+                dateLabel = dateLabel,
                 onPreviousDay = onPreviousDay,
                 onNextDay = onNextDay,
                 onGoToToday = onGoToToday,
