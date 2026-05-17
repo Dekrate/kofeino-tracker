@@ -77,4 +77,35 @@
     <!-- About -->
     <string name="about">O aplikacji</string>
     <string name="version_format">Wersja %s</string>
+
+    <!-- ManageDrinksScreen -->
+    <string name="add_drink_form_title">Dodaj napój</string>
+    <string name="edit_drink_form_title">Edytuj napój</string>
+    <string name="drink_name_label">Nazwa</string>
+    <string name="drink_name_hint">np. Flat White</string>
+    <string name="drink_name_required">Nazwa jest wymagana</string>
+    <string name="caffeine_mg_label">Kofeina: %d mg</string>
+    <string name="volume_ml_label">Objętość: %d ml</string>
+    <string name="drink_saved">Zapisano napój!</string>
+    <string name="drink_deleted">Usunięto napój</string>
+    <string name="delete_drink_confirm">Usunąć ten napój?</string>
+    <string name="delete_drink_warning">\"%s\" zostanie trwale usunięty. Tej czynności nie można cofnąć.</string>
+    <string name="delete_default_drink_blocked">Nie można usunąć domyślnych napojów</string>
+    <string name="no_custom_drinks">Brak własnych napojów</string>
+    <string name="no_custom_drinks_hint">Dotknij +, aby dodać pierwszy napój</string>
+    <string name="browse_official_drinks">Przeglądaj oficjalne napoje</string>
+    <string name="browse_official_drinks_hint">Szukaj w bazie Open Food Facts</string>
+
+    <!-- OfficialDrinksScreen -->
+    <string name="search_hint">Szukaj napojów…</string>
+    <string name="search_clear">Wyczyść wyszukiwanie</string>
+    <string name="search_loading">Szukanie…</string>
+    <string name="import_drink">Importuj</string>
+    <string name="import_as_drink">Importuj jako napój</string>
+    <string name="imported_as_drink">Zaimportowano jako napój</string>
+    <string name="import_error">Nie udało się zaimportować napoju</string>
+    <string name="caffeine_per_100ml">%.0f mg / 100 ml</string>
+    <string name="no_search_results">Nie znaleziono napojów</string>
+    <string name="no_search_results_hint">Spróbuj innego zapytania</string>
+    <string name="type_to_search">Wpisz, aby szukać napojów</string>
 </resources>

@@ -50,7 +50,8 @@ fun AppNavHost(
         }
         composable(Screen.ManageDrinks.route) {
             ManageDrinksScreen(
-                onNavigateToOfficialDrinks = { navController.navigate(Screen.OfficialDrinks.route) }
+                onNavigateToOfficialDrinks = { navController.navigate(Screen.OfficialDrinks.route) },
+                onNavigateBack = { navController.popBackStack() }
             )
         }
         composable(Screen.OfficialDrinks.route) {
