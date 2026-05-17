@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">KofeinoTracker</string>
     <string name="home_title">Dzienna kofeina</string>
+    <string name="add_drink">Dodaj napój</string>
     <string name="add_drink_title">Dodaj napój</string>
     <string name="history_title">Historia</string>
     <string name="manage_drinks_title">Zarządzaj napojami</string>
@@ -46,4 +47,11 @@
     <string name="caffeine_adjustment_increase">+%d mg</string>
     <string name="volume_adjustment_decrease">-%d ml</string>
     <string name="volume_adjustment_increase">+%d ml</string>
+
+    <!-- HomeScreen -->
+    <string name="today_intakes">Dzisiejsze wpisy</string>
+    <string name="no_drinks_today">Brak napojów dzisiaj</string>
+    <string name="tap_add_to_start">Dotknij +, aby dodać pierwszy napój</string>
+    <string name="safe_limit">Bezpieczny limit: 400 mg</string>
+    <string name="limit_exceeded">Przekroczono bezpieczny limit!</string>
 </resources>
