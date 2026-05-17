@@ -52,19 +52,20 @@ class CaffeineIntakeDaoTest {
 
     @Test
     fun insertAndGetByDate() = runTest {
-        val now = System.currentTimeMillis()
-        val today = CaffeineIntake(drinkName = "Coffee", caffeineMg = 95, volumeMl = 250, timestamp = now)
-        val yesterday = CaffeineIntake(drinkName = "Tea", caffeineMg = 47, volumeMl = 250, timestamp = now - 86400000L * 2)
+        // Use deterministic timestamps 3 days apart to avoid DST/midnight edge cases
+        val recentTs = 1_000_000_000L // ~2001
+        val oldTs = recentTs - 86400000L * 3 // 3 days earlier
 
-        dao.insert(today)
-        dao.insert(yesterday)
+        dao.insert(CaffeineIntake(drinkName = "Recent", caffeineMg = 95, volumeMl = 250, timestamp = recentTs))
+        dao.insert(CaffeineIntake(drinkName = "Old", caffeineMg = 47, volumeMl = 250, timestamp = oldTs))
 
-        val startOfDay = now - 86400000L // 24h back
-        val endOfDay = now + 1000L
+        // Window covering only the "recent" entry
+        val startOfDay = recentTs - 1000L
+        val endOfDay = recentTs + 1000L
 
         val intakes = dao.getIntakesByDate(startOfDay, endOfDay).first()
-        assert(intakes.size == 1) { "Expected 1 intake today, got ${intakes.size}" }
-        assert(intakes[0].drinkName == "Coffee")
+        assert(intakes.size == 1) { "Expected 1 intake in window, got ${intakes.size}" }
+        assert(intakes[0].drinkName == "Recent")
     }
 
     @Test

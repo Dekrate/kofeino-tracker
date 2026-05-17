@@ -123,6 +123,38 @@ class OfficialDrinkRepositoryImplTest {
     }
 
     @Test
+    fun `getOfficialDrinks returns failure when cache only has expired entries`() = runTest {
+        val expired = sampleCached.copy(fetchedAtMillis = 0L) // 1970-01-01
+        coEvery { cacheDao.getAllCached() } returns listOf(expired)
+
+        val result = repository.getOfficialDrinks()
+
+        assert(result.isFailure) { "Expected failure for expired cache, got $result" }
+    }
+
+    @Test
+    fun `searchOfficialDrinks returns empty when cache only has expired entries`() = runTest {
+        val expired = sampleCached.copy(fetchedAtMillis = 0L)
+        coEvery { cacheDao.getAllCached() } returns listOf(expired)
+
+        val result = repository.searchOfficialDrinks("Energy")
+
+        assert(result.isSuccess) { "Expected success for search even with expired cache" }
+        assert(result.getOrThrow().isEmpty()) { "Expected empty results from expired cache" }
+    }
+
+    @Test
+    fun `hasFreshCache returns false when one entry is expired in batch`() = runTest {
+        val fresh = sampleCached.copy(barcode = "1", fetchedAtMillis = System.currentTimeMillis())
+        val expired = sampleCached.copy(barcode = "2", fetchedAtMillis = 0L)
+        coEvery { cacheDao.getAllCached() } returns listOf(fresh, expired)
+
+        val result = repository.hasFreshCache()
+
+        assert(!result) { "Expected stale cache when any entry is expired (batch semantics)" }
+    }
+
+    @Test
     fun `clearCache delegates to dao`() = runTest {
         coEvery { cacheDao.clearAll() } returns Unit
 

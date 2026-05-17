@@ -13,9 +13,11 @@ import javax.inject.Singleton
  * When #9 (Data Layer - API + Preferences) is implemented, this will be
  * extended with network backing via Retrofit/CaffeineApiService.
  *
- * Current strategy:
- * 1. Return data from local cache if available
- * 2. Return failure if cache is empty
+ * Strategy:
+ * - All load/search methods filter by TTL, returning only fresh entries.
+ * - If filtering leaves zero entries, the result is a failure (no fresh data).
+ * - [hasFreshCache] uses `all` because the cache is batch-populated —
+ *   partial expiry shouldn't claim freshness.
  */
 @Singleton
 class OfficialDrinkRepositoryImpl @Inject constructor(
@@ -28,18 +30,18 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getOfficialDrinks(): Result<List<OfficialDrink>> {
-        return loadFromCache()
+        return loadFreshFromCache()
     }
 
     override suspend fun searchOfficialDrinks(query: String): Result<List<OfficialDrink>> {
-        return searchCacheLocally(query)
+        return searchFreshCacheLocally(query)
     }
 
     override suspend fun hasFreshCache(): Boolean {
         val cached = cacheDao.getAllCached()
         if (cached.isEmpty()) return false
         val now = System.currentTimeMillis()
-        return cached.any { now - it.fetchedAtMillis < CACHE_TTL_MILLIS }
+        return cached.all { now - it.fetchedAtMillis < CACHE_TTL_MILLIS }
     }
 
     override suspend fun clearCache() {
@@ -47,19 +49,28 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
         Timber.d("Official drink cache cleared")
     }
 
-    private suspend fun loadFromCache(): Result<List<OfficialDrink>> {
-        val cached = cacheDao.getAllCached()
-        if (cached.isEmpty()) {
-            return Result.failure(Exception("No cached data available"))
+    /** Returns only TTL-fresh cached entries, or failure if none are fresh. */
+    private suspend fun loadFreshFromCache(): Result<List<OfficialDrink>> {
+        val now = System.currentTimeMillis()
+        val fresh = cacheDao.getAllCached()
+            .filter { now - it.fetchedAtMillis < CACHE_TTL_MILLIS }
+        if (fresh.isEmpty()) {
+            return Result.failure(Exception("No fresh cached data available"))
         }
-        Timber.d("Loaded ${cached.size} drinks from local cache")
-        return Result.success(cached.map { it.toOfficialDrink() })
+        Timber.d("Loaded ${fresh.size} fresh drinks from local cache")
+        return Result.success(fresh.map { it.toOfficialDrink() })
     }
 
-    private suspend fun searchCacheLocally(query: String): Result<List<OfficialDrink>> {
-        val all = cacheDao.getAllCached()
+    /** Searches only TTL-fresh cached entries, or returns empty list if none fresh. */
+    private suspend fun searchFreshCacheLocally(query: String): Result<List<OfficialDrink>> {
+        val now = System.currentTimeMillis()
+        val fresh = cacheDao.getAllCached()
+            .filter { now - it.fetchedAtMillis < CACHE_TTL_MILLIS }
+        if (fresh.isEmpty()) {
+            return Result.success(emptyList())
+        }
         val lower = query.lowercase()
-        val filtered = all.filter {
+        val filtered = fresh.filter {
             it.name.lowercase().contains(lower) ||
                 (it.brand?.lowercase()?.contains(lower) == true)
         }

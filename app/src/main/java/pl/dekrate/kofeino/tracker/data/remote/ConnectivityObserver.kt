@@ -30,6 +30,10 @@ enum class ConnectivityStatus {
  * Observes internet connectivity state.
  *
  * Emits changes via [status] StateFlow and [observeConnectivity] Flow.
+ * The NetworkCallback is registered eagerly in [init] so that [status]
+ * and [isOnline] remain current regardless of whether any caller collects
+ * [observeConnectivity].
+ *
  * Phone-specific: uses [ConnectivityManager] directly (no wear-specific APIs).
  */
 @Singleton
@@ -46,45 +50,61 @@ class ConnectivityObserver @Inject constructor(
     val isOnline: Boolean
         get() = _status.value != ConnectivityStatus.DISCONNECTED
 
-    /** Flow emitting connectivity changes using callbackFlow. */
-    val observeConnectivity: Flow<ConnectivityStatus> = callbackFlow {
-        val callback = object : ConnectivityManager.NetworkCallback() {
-            override fun onAvailable(network: Network) {
-                Timber.d("Network available: $network")
-                val newStatus = currentConnectivityStatus()
-                _status.value = newStatus
-                trySend(newStatus)
-            }
-
-            override fun onLost(network: Network) {
-                Timber.d("Network lost: $network")
-                val newStatus = currentConnectivityStatus()
-                _status.value = newStatus
-                trySend(newStatus)
-            }
-
-            override fun onCapabilitiesChanged(
-                network: Network,
-                capabilities: NetworkCapabilities
-            ) {
-                val newStatus = parseCapabilities(capabilities)
-                _status.value = newStatus
-                trySend(newStatus)
-            }
+    /** Shared callback that updates [_status] on connectivity changes. */
+    private val networkCallback = object : ConnectivityManager.NetworkCallback() {
+        override fun onAvailable(network: Network) {
+            Timber.d("Network available: $network")
+            _status.value = currentConnectivityStatus()
         }
 
+        override fun onLost(network: Network) {
+            Timber.d("Network lost: $network")
+            _status.value = currentConnectivityStatus()
+        }
+
+        override fun onCapabilitiesChanged(
+            network: Network,
+            capabilities: NetworkCapabilities
+        ) {
+            _status.value = parseCapabilities(capabilities)
+        }
+    }
+
+    /** Eager registration — keeps [_status] and [isOnline] up to date. */
+    init {
         val request = NetworkRequest.Builder()
             .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
             .build()
-        connectivityManager.registerNetworkCallback(request, callback)
+        connectivityManager.registerNetworkCallback(request, networkCallback)
+    }
 
-        // Emit initial state
-        val initial = currentConnectivityStatus()
-        _status.value = initial
-        trySend(initial)
+    /**
+     * Reactive connectivity flow.
+     *
+     * Delivers the current state on first collection, then emits on every change.
+     * The underlying NetworkCallback is already registered in [init]; this Flow
+     * simply bridges it to the coroutine world and unregisters on cancellation
+     * of **this specific collector** (the shared callback in [init] survives).
+     */
+    val observeConnectivity: Flow<ConnectivityStatus> = callbackFlow {
+        // 1. Emit the current state immediately
+        trySend(_status.value)
+
+        // 2. Bridge the shared callback to this Flow
+        val bridgeCallback = object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) { trySend(_status.value) }
+            override fun onLost(network: Network) { trySend(_status.value) }
+            override fun onCapabilitiesChanged(network: Network, capabilities: NetworkCapabilities) {
+                trySend(_status.value)
+            }
+        }
+        val bridgeRequest = NetworkRequest.Builder()
+            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            .build()
+        connectivityManager.registerNetworkCallback(bridgeRequest, bridgeCallback)
 
         awaitClose {
-            connectivityManager.unregisterNetworkCallback(callback)
+            connectivityManager.unregisterNetworkCallback(bridgeCallback)
         }
     }
 

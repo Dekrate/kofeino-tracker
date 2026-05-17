@@ -83,22 +83,21 @@ object DatabaseModule {
             Triple("Energy drink", 80, 250),
             Triple("Cola", 34, 330)
         )
-        db.execSQL("BEGIN TRANSACTION")
+        // Room already wraps onCreate in a transaction, so no BEGIN/COMMIT needed.
         try {
+            val stmt = db.compileStatement(
+                "INSERT OR IGNORE INTO drinks (name, caffeineMg, volumeMl, isDefault) VALUES (?, ?, ?, 1)"
+            )
             for ((name, caffeine, volume) in defaults) {
-                val stmt = db.compileStatement(
-                    "INSERT OR IGNORE INTO drinks (name, caffeineMg, volumeMl, isDefault) VALUES (?, ?, ?, 1)"
-                )
+                stmt.clearBindings()
                 stmt.bindString(1, name)
                 stmt.bindLong(2, caffeine.toLong())
                 stmt.bindLong(3, volume.toLong())
                 stmt.executeInsert()
-                stmt.close()
             }
-            db.execSQL("COMMIT")
+            stmt.close()
             Timber.i("Seeded ${defaults.size} default drinks")
         } catch (e: Exception) {
-            db.execSQL("ROLLBACK")
             Timber.e(e, "Failed to seed default drinks")
         }
     }
