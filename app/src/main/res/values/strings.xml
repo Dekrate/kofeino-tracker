@@ -21,4 +21,23 @@
     <string name="go_to_today">Go to today</string>
     <string name="daily_total">Daily total</string>
     <string name="no_intakes_for_date">No intakes recorded for this day</string>
+    <string name="back">Back</string>
+
+    <!-- AddDrinkScreen -->
+    <string name="select_drink">Select drink</string>
+    <string name="drink_added">Drink added!</string>
+    <string name="no_drinks_defined">No drinks defined</string>
+
+    <!-- EditIntakeScreen -->
+    <string name="edit_intake_title">Edit entry</string>
+    <string name="caffeine_label">Caffeine: %d mg</string>
+    <string name="volume_label">Volume: %d ml</string>
+    <string name="save">Save</string>
+    <string name="saving">Saving…</string>
+    <string name="delete">Delete</string>
+    <string name="deleting">Deleting…</string>
+    <string name="cancel">Cancel</string>
+    <string name="confirm">Confirm</string>
+    <string name="delete_intake_confirm">Delete this entry?</string>
+    <string name="intake_not_found">Entry not found</string>
 </resources>

@@ -21,4 +21,23 @@
     <string name="go_to_today">Przejdź do dziś</string>
     <string name="daily_total">Dzienna suma</string>
     <string name="no_intakes_for_date">Brak wpisów dla tego dnia</string>
+    <string name="back">Wstecz</string>
+
+    <!-- AddDrinkScreen -->
+    <string name="select_drink">Wybierz napój</string>
+    <string name="drink_added">Dodano napój!</string>
+    <string name="no_drinks_defined">Brak zdefiniowanych napojów</string>
+
+    <!-- EditIntakeScreen -->
+    <string name="edit_intake_title">Edytuj wpis</string>
+    <string name="caffeine_label">Kofeina: %d mg</string>
+    <string name="volume_label">Objętość: %d ml</string>
+    <string name="save">Zapisz</string>
+    <string name="saving">Zapisywanie…</string>
+    <string name="delete">Usuń</string>
+    <string name="deleting">Usuwanie…</string>
+    <string name="cancel">Anuluj</string>
+    <string name="confirm">Potwierdź</string>
+    <string name="delete_intake_confirm">Usunąć ten wpis?</string>
+    <string name="intake_not_found">Nie znaleziono wpisu</string>
 </resources>
