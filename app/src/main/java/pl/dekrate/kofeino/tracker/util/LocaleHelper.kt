@@ -16,8 +16,9 @@ object LocaleHelper {
         return setLocale(context, lang)
     }
 
-    /** Wraps [context] with a specific language code (e.g. "en", "pl"). */
+    /** Wraps [context] with a specific language code (e.g. "en", "pl", or "" for system default). */
     fun setLocale(context: Context, language: String): Context {
+        if (language.isEmpty()) return context  // No forced locale → system default
         @Suppress("DEPRECATION")
         val locale = Locale(language)
         Locale.setDefault(locale)

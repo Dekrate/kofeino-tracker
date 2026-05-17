@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import pl.dekrate.kofeino.tracker.navigation.AppNavHost
+import pl.dekrate.kofeino.tracker.data.local.ThemePreferences
 import pl.dekrate.kofeino.tracker.ui.theme.KofeinoTrackerPhoneTheme
 import pl.dekrate.kofeino.tracker.util.LocaleHelper
 
@@ -25,8 +26,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        val themeMode = ThemePreferences.getThemeMode(this)
+
         setContent {
-            KofeinoTrackerPhoneTheme {
+            KofeinoTrackerPhoneTheme(themeMode = themeMode) {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     val navController = rememberNavController()
                     AppNavHost(navController = navController)

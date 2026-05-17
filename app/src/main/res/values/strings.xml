@@ -54,4 +54,27 @@
     <string name="tap_add_to_start">Tap + to add your first drink</string>
     <string name="safe_limit">Safe limit: 400 mg</string>
     <string name="limit_exceeded">Safe limit exceeded!</string>
+
+    <!-- SettingsScreen -->
+    <string name="language">Language</string>
+    <string name="app_language">App language</string>
+    <string name="language_system">System default</string>
+    <string name="polish">Polski</string>
+    <string name="english">English</string>
+    <string name="language_switch_description">Switch language to %s</string>
+    <string name="language_system_description">Use system language</string>
+
+    <!-- Theme -->
+    <string name="theme">Theme</string>
+    <string name="app_theme">App theme</string>
+    <string name="theme_system">System default</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_system_description">Use system theme</string>
+    <string name="theme_light_description">Use light theme</string>
+    <string name="theme_dark_description">Use dark theme</string>
+
+    <!-- About -->
+    <string name="about">About</string>
+    <string name="version_format">Version %s</string>
 </resources>

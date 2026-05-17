@@ -27,9 +27,10 @@ class LanguagePreferences @Inject constructor(
     companion object {
         private const val FILE_NAME = "kofeino_language_prefs"
         private const val KEY_LANGUAGE = "selected_language"
-        const val DEFAULT_LANGUAGE = "en"
+        const val LANGUAGE_SYSTEM = ""
         const val LANGUAGE_PL = "pl"
         const val LANGUAGE_EN = "en"
+        const val DEFAULT_LANGUAGE = LANGUAGE_SYSTEM
 
         /** Static access for use before Hilt is initialized (attachBaseContext). */
         fun getLanguage(context: Context): String {
