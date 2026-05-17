@@ -1,33 +1,24 @@
 package pl.dekrate.kofeino.tracker.ui.screens
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -35,8 +26,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -44,7 +33,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -69,7 +57,7 @@ fun HistoryScreen(
     val state by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Pre-resolve strings for semantics (they are not @Composable)
+    // Pre-resolve strings for semantics (are not @Composable)
     val previousDayDesc = stringResource(R.string.previous_day)
     val nextDayDesc = stringResource(R.string.next_day)
     val goToTodayDesc = stringResource(R.string.go_to_today)
@@ -120,7 +108,6 @@ fun HistoryScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HistoryContent(
     state: HistoryUiState,
@@ -134,69 +121,43 @@ private fun HistoryContent(
     goToTodayDesc: String,
     modifier: Modifier = Modifier
 ) {
-    val pullToRefreshState = rememberPullToRefreshState()
-
-    if (pullToRefreshState.isRefreshing) {
-        LaunchedEffect(true) {
-            // Pull-to-refresh just re-triggers the existing flow emissions.
-            // The flows from repository are already reactive.
-            pullToRefreshState.endRefresh()
-        }
-    }
-
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .nestedScroll(pullToRefreshState.nestedScrollConnection)
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                start = 16.dp,
-                end = 16.dp,
-                top = 8.dp,
-                bottom = 16.dp
-            ),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            // Date navigation row
-            item(key = "date_navigation") {
-                DateNavigationRow(
-                    dateLabel = state.dateLabel,
-                    onPreviousDay = onPreviousDay,
-                    onNextDay = onNextDay,
-                    onGoToToday = onGoToToday,
-                    showTodayButton = showTodayButton,
-                    previousDayDesc = previousDayDesc,
-                    nextDayDesc = nextDayDesc,
-                    goToTodayDesc = goToTodayDesc
+        // Date navigation row
+        item(key = "date_navigation") {
+            DateNavigationRow(
+                dateLabel = state.dateLabel,
+                onPreviousDay = onPreviousDay,
+                onNextDay = onNextDay,
+                onGoToToday = onGoToToday,
+                showTodayButton = showTodayButton,
+                previousDayDesc = previousDayDesc,
+                nextDayDesc = nextDayDesc,
+                goToTodayDesc = goToTodayDesc
+            )
+        }
+
+        // Daily total
+        item(key = "daily_total") {
+            DailyTotalCard(totalCaffeineMg = state.totalCaffeineMg)
+        }
+
+        // Intake list or empty state
+        if (state.dateIntakes.isEmpty()) {
+            item(key = "empty_state") {
+                EmptyHistoryState()
+            }
+        } else {
+            items(state.dateIntakes, key = { it.id }) { intake ->
+                IntakeItem(
+                    intake = intake,
+                    onClick = { onIntakeClick(intake.id) }
                 )
             }
-
-            // Daily total
-            item(key = "daily_total") {
-                DailyTotalCard(totalCaffeineMg = state.totalCaffeineMg)
-            }
-
-            // Intake list or empty state
-            if (state.dateIntakes.isEmpty()) {
-                item(key = "empty_state") {
-                    EmptyHistoryState()
-                }
-            } else {
-                items(state.dateIntakes, key = { it.id }) { intake ->
-                    IntakeItem(
-                        intake = intake,
-                        onClick = { onIntakeClick(intake.id) }
-                    )
-                }
-            }
         }
-
-        PullToRefreshContainer(
-            state = pullToRefreshState,
-            modifier = Modifier.align(Alignment.TopCenter)
-        )
     }
 }
 
@@ -233,16 +194,17 @@ private fun DateNavigationRow(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(
-                onClick = onPreviousDay,
-                modifier = Modifier.semantics {
-                    contentDescription = previousDayDesc
-                }
+            // Previous day button
+            Box(
+                modifier = Modifier
+                    .semantics { contentDescription = previousDayDesc }
+                    .clickable(onClick = onPreviousDay)
+                    .padding(12.dp)
             ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = previousDayDesc,
-                    tint = MaterialTheme.colorScheme.primary
+                Text(
+                    text = "\u25C0",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
 
@@ -251,9 +213,7 @@ private fun DateNavigationRow(
                     onClick = onGoToToday,
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
-                        .semantics {
-                            contentDescription = goToTodayDesc
-                        },
+                        .semantics { contentDescription = goToTodayDesc },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
                         contentColor = MaterialTheme.colorScheme.onSecondaryContainer
@@ -265,19 +225,21 @@ private fun DateNavigationRow(
                     )
                 }
             } else {
-                Spacer(Modifier.size(1.dp))
+                // Placeholder to keep arrows centered when no today button
+                Spacer(Modifier.height(1.dp))
             }
 
-            IconButton(
-                onClick = onNextDay,
-                modifier = Modifier.semantics {
-                    contentDescription = nextDayDesc
-                }
+            // Next day button
+            Box(
+                modifier = Modifier
+                    .semantics { contentDescription = nextDayDesc }
+                    .clickable(onClick = onNextDay)
+                    .padding(12.dp)
             ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                    contentDescription = nextDayDesc,
-                    tint = MaterialTheme.colorScheme.primary
+                Text(
+                    text = "\u25B6",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
         }
