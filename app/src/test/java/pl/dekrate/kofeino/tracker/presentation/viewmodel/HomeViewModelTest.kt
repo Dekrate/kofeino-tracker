@@ -21,7 +21,10 @@ import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepository
 import pl.dekrate.kofeino.tracker.domain.model.CaffeineIntake
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
@@ -89,18 +92,13 @@ class HomeViewModelTest {
     fun `date label should contain day of week`() = runTest {
         viewModel = HomeViewModel(repository)
 
+        val expectedDay = SimpleDateFormat("EEEE", Locale.getDefault()).format(Date())
         viewModel.uiState.test {
             awaitItem() // skip loading
             val state = awaitItem()
-            // Should have day name like "Monday", "Tuesday" etc
-            val dayNames = listOf(
-                "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday",
-                "poniedziałek", "wtorek", "środa", "czwartek", "piątek", "sobota", "niedziela"
-            )
-            val hasDayName = dayNames.any { state.dateLabel.contains(it, ignoreCase = true) }
             assertTrue(
-                "Date label should contain day of week, got: ${state.dateLabel}",
-                hasDayName
+                "Date label should contain day of week ($expectedDay), got: ${state.dateLabel}",
+                state.dateLabel.contains(expectedDay, ignoreCase = true)
             )
             cancelAndIgnoreRemainingEvents()
         }

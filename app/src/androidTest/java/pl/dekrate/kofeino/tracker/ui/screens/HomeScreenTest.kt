@@ -66,7 +66,7 @@ class HomeScreenTest {
                 )
             }
         }
-        composeTestRule.onNodeWithText("250", substring = true).assertIsDisplayed()
+        composeTestRule.onNodeWithText("250").assertIsDisplayed()
     }
 
     @Test
@@ -432,7 +432,9 @@ class HomeScreenTest {
                 )
             }
         }
-        composeTestRule.onNodeWithContentDescription("200 mg Safe limit: 400 mg", substring = true)
+        composeTestRule.onNodeWithContentDescription(
+                "200 mg ${context.getString(R.string.safe_limit)}", substring = true
+            )
             .assertIsDisplayed()
     }
 

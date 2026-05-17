@@ -1,6 +1,11 @@
 package pl.dekrate.kofeino.tracker.ui.screens
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
@@ -49,12 +54,24 @@ fun CoffeeCupIndicator(
     total: Int,
     progress: Float,
     exceeded: Boolean,
+    safeLimitMg: Int = 400,
     modifier: Modifier = Modifier
 ) {
     val animatedProgress by animateFloatAsState(
         targetValue = progress.coerceIn(0f, 1f),
         animationSpec = tween(durationMillis = 800),
         label = "coffeeProgress"
+    )
+
+    val steamTransition = rememberInfiniteTransition(label = "steam")
+    val steamPhase by steamTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 2500, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "steamPhase"
     )
 
     val cupColor = if (exceeded) CoffeeErrorRed else CoffeeLatte
@@ -104,7 +121,8 @@ fun CoffeeCupIndicator(
                         progress = animatedProgress,
                         exceeded = exceeded,
                         cupColor = cupColor,
-                        coffeeFill = coffeeFill
+                        coffeeFill = coffeeFill,
+                        steamPhase = steamPhase
                     )
                 }
             }
@@ -128,7 +146,7 @@ fun CoffeeCupIndicator(
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text = "/ ${SAFE_LIMIT_MG} mg",
+                    text = "/ $safeLimitMg mg",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -146,7 +164,7 @@ fun CoffeeCupIndicator(
             )
         } else {
             Text(
-                text = "${(progress * 100).toInt()}% ${stringResource(R.string.safe_limit)}",
+                text = "${(progress.coerceIn(0f, 1f) * 100).toInt()}% ${stringResource(R.string.safe_limit)}",
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -154,8 +172,6 @@ fun CoffeeCupIndicator(
     }
 
 }
-
-private const val SAFE_LIMIT_MG = 400
 
 // Phone-specific color palette for the cup
 private val CoffeeLatte = Color(0xFFC8A67A)
@@ -204,7 +220,8 @@ private fun DrawScope.drawCoffeeCup(
     progress: Float,
     exceeded: Boolean,
     cupColor: Color,
-    coffeeFill: Color
+    coffeeFill: Color,
+    steamPhase: Float = 0f
 ) {
     val w = size.width
     val h = size.height
@@ -298,29 +315,32 @@ private fun DrawScope.drawCoffeeCup(
         style = Stroke(width = strokeW, cap = StrokeCap.Round)
     )
 
-    // Steam (when exceeded)
+    // Steam (animated when exceeded)
     if (exceeded) {
         val steamColor = CoffeeFoam.copy(alpha = 0.6f)
         val steamW = 2.dp.toPx()
         val steamBase = bodyTop - h * 0.04f - 2.dp.toPx()
         for (i in 0 until 3) {
             val sx = w * (0.28f + i * 0.2f)
-            val offset = i * 6.dp.toPx()
+            val phase = (steamPhase + i * 0.33f) % 1f
+            val riseOffset = phase * 24.dp.toPx()
+            val alpha = 1f - phase * 0.6f
+
             drawArc(
-                color = steamColor,
+                color = steamColor.copy(alpha = steamColor.alpha * alpha),
                 startAngle = 0f,
                 sweepAngle = 180f,
                 useCenter = false,
-                topLeft = Offset(sx - 4.dp.toPx(), steamBase - offset - 8.dp.toPx()),
+                topLeft = Offset(sx - 4.dp.toPx(), steamBase - i * 6.dp.toPx() - riseOffset - 8.dp.toPx()),
                 size = Size(8.dp.toPx(), 8.dp.toPx()),
                 style = Stroke(width = steamW)
             )
             drawArc(
-                color = steamColor,
+                color = steamColor.copy(alpha = steamColor.alpha * alpha),
                 startAngle = 0f,
                 sweepAngle = 180f,
                 useCenter = false,
-                topLeft = Offset(sx - 4.dp.toPx(), steamBase - offset - 16.dp.toPx()),
+                topLeft = Offset(sx - 4.dp.toPx(), steamBase - i * 6.dp.toPx() - riseOffset - 16.dp.toPx()),
                 size = Size(8.dp.toPx(), 8.dp.toPx()),
                 style = Stroke(width = steamW)
             )
