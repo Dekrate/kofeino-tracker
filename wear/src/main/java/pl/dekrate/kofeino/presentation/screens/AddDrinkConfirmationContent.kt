@@ -1,11 +1,11 @@
 package pl.dekrate.kofeino.presentation.screens
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -56,118 +56,136 @@ fun AddDrinkConfirmationContent(
     val cancelDesc = stringResource(R.string.cancel)
 
     ScreenScaffold(modifier = modifier) {
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Drink name — prominent header
-            Text(
-                text = drink.name,
-                style = MaterialTheme.typography.titleMedium
-            )
+            item {
+                Text(
+                    text = drink.name,
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
 
             // Subtitle
-            Text(
-                text = stringResource(R.string.adjust_serving),
-                style = MaterialTheme.typography.labelMedium
-            )
+            item {
+                Text(
+                    text = stringResource(R.string.adjust_serving),
+                    style = MaterialTheme.typography.labelMedium
+                )
+            }
 
             // Caffeine display
-            Text(
-                text = stringResource(R.string.caffeine_label, caffeineMg),
-                style = MaterialTheme.typography.bodyMedium
-            )
+            item {
+                Text(
+                    text = stringResource(R.string.caffeine_label, caffeineMg),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
 
             // Caffeine stepper +/- 5
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                Button(
-                    onClick = { if (caffeineMg >= 5) caffeineMg -= 5 },
-                    enabled = caffeineMg >= 5,
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 4.dp)
-                        .semantics { contentDescription = "$caffeineDesc -5" }
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    Text("-5")
-                }
-                Button(
-                    onClick = { caffeineMg += 5 },
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 4.dp)
-                        .semantics { contentDescription = "$caffeineDesc +5" }
-                ) {
-                    Text("+5")
+                    Button(
+                        onClick = { if (caffeineMg >= 5) caffeineMg -= 5 },
+                        enabled = !isLogging && caffeineMg >= 5,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 4.dp)
+                            .semantics { contentDescription = "$caffeineDesc -5" }
+                    ) {
+                        Text("-5")
+                    }
+                    Button(
+                        onClick = { caffeineMg += 5 },
+                        enabled = !isLogging,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 4.dp)
+                            .semantics { contentDescription = "$caffeineDesc +5" }
+                    ) {
+                        Text("+5")
+                    }
                 }
             }
 
             // Volume display
-            Text(
-                text = "${stringResource(R.string.volume)}: ${volumeMl}ml",
-                style = MaterialTheme.typography.bodySmall
-            )
+            item {
+                Text(
+                    text = "${stringResource(R.string.volume)}: ${volumeMl}ml",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
 
             // Volume stepper +/- 10
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                Button(
-                    onClick = { if (volumeMl >= 10) volumeMl -= 10 },
-                    enabled = volumeMl >= 10,
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 4.dp)
-                        .semantics { contentDescription = volumeDecDesc }
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    Text("-10")
-                }
-                Button(
-                    onClick = { volumeMl += 10 },
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 4.dp)
-                        .semantics { contentDescription = volumeIncDesc }
-                ) {
-                    Text("+10")
+                    Button(
+                        onClick = { if (volumeMl >= 10) volumeMl -= 10 },
+                        enabled = !isLogging && volumeMl >= 10,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 4.dp)
+                            .semantics { contentDescription = volumeDecDesc }
+                    ) {
+                        Text("-10")
+                    }
+                    Button(
+                        onClick = { volumeMl += 10 },
+                        enabled = !isLogging,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 4.dp)
+                            .semantics { contentDescription = volumeIncDesc }
+                    ) {
+                        Text("+10")
+                    }
                 }
             }
 
             // Log drink button — primary action, disables during save
-            Button(
-                onClick = { onLogDrink(caffeineMg, volumeMl) },
-                enabled = !isLogging,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .semantics { contentDescription = logDrinkDesc },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
-            ) {
-                if (isLogging) {
-                    CircularProgressIndicator(modifier = Modifier.padding(end = 4.dp))
+            item {
+                Button(
+                    onClick = { onLogDrink(caffeineMg, volumeMl) },
+                    enabled = !isLogging,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .semantics { contentDescription = logDrinkDesc },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    if (isLogging) {
+                        CircularProgressIndicator(modifier = Modifier.padding(end = 4.dp))
+                    }
+                    Text(
+                        if (isLogging) stringResource(R.string.saving)
+                        else stringResource(R.string.log_drink)
+                    )
                 }
-                Text(
-                    if (isLogging) stringResource(R.string.saving)
-                    else stringResource(R.string.log_drink)
-                )
             }
 
             // Cancel button — dismisses the dialog
-            OutlinedButton(
-                onClick = onCancel,
-                enabled = !isLogging,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .semantics { contentDescription = cancelDesc }
-            ) {
-                Text(stringResource(R.string.cancel))
+            item {
+                OutlinedButton(
+                    onClick = onCancel,
+                    enabled = !isLogging,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .semantics { contentDescription = cancelDesc }
+                ) {
+                    Text(stringResource(R.string.cancel))
+                }
             }
         }
     }

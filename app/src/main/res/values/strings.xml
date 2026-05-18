@@ -29,6 +29,10 @@
     <string name="drink_added">Drink added!</string>
     <string name="no_drinks_defined">No drinks defined</string>
 
+    <!-- AddDrink confirmation -->
+    <string name="adjust_serving">Adjust serving</string>
+    <string name="log_drink">Log drink</string>
+
     <!-- EditIntakeScreen -->
     <string name="edit_intake_title">Edit entry</string>
     <string name="caffeine_label">Caffeine: %d mg</string>

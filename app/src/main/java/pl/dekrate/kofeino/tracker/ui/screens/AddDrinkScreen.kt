@@ -10,16 +10,20 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -30,17 +34,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import pl.dekrate.kofeino.tracker.R
+import pl.dekrate.kofeino.tracker.domain.model.DrinkEntity
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.DrinkError
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.DrinkViewModel
 
@@ -55,6 +64,10 @@ fun AddDrinkScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val drinkAddedText = stringResource(R.string.drink_added)
+
+    // Confirmation state
+    var selectedDrink by remember { mutableStateOf<DrinkEntity?>(null) }
+    var isLogging by remember { mutableStateOf(false) }
 
     // Resolve error message to localized string in @Composable context
     val errorMessage = state.error?.let { error ->
@@ -74,9 +87,20 @@ fun AddDrinkScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.select_drink)) },
+                title = {
+                    Text(
+                        if (selectedDrink != null) stringResource(R.string.adjust_serving)
+                        else stringResource(R.string.select_drink)
+                    )
+                },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
+                    IconButton(onClick = {
+                        if (selectedDrink != null) {
+                            selectedDrink = null
+                        } else {
+                            onNavigateBack()
+                        }
+                    }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back)
@@ -90,7 +114,33 @@ fun AddDrinkScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
-        if (drinks.isEmpty()) {
+        val drink = selectedDrink
+        if (drink != null) {
+            // Confirmation content
+            AddDrinkConfirmationContent(
+                drink = drink,
+                isLogging = isLogging,
+                onLogDrink = { caffeineMg, volumeMl ->
+                    isLogging = true
+                    val adjustedDrink = drink.copy(caffeineMg = caffeineMg, volumeMl = volumeMl)
+                    viewModel.logDrink(
+                        drink = adjustedDrink,
+                        onComplete = {
+                            isLogging = false
+                            selectedDrink = null
+                            scope.launch {
+                                snackbarHostState.showSnackbar(drinkAddedText)
+                            }
+                        },
+                        onError = {
+                            isLogging = false
+                        }
+                    )
+                },
+                onCancel = { selectedDrink = null },
+                modifier = Modifier.padding(innerPadding)
+            )
+        } else if (drinks.isEmpty()) {
             // Empty state
             Column(
                 modifier = Modifier
@@ -117,21 +167,122 @@ fun AddDrinkScreen(
                     vertical = 8.dp
                 )
             ) {
-                items(drinks, key = { it.id }) { drink ->
+                items(drinks, key = { it.id }) { drinkItem ->
                     DrinkItem(
-                        name = drink.name,
-                        caffeineMg = drink.caffeineMg,
-                        volumeMl = drink.volumeMl,
-                        onClick = {
-                            viewModel.logDrink(drink, onComplete = {
-                                scope.launch {
-                                    snackbarHostState.showSnackbar(drinkAddedText)
-                                }
-                            })
-                        }
+                        name = drinkItem.name,
+                        caffeineMg = drinkItem.caffeineMg,
+                        volumeMl = drinkItem.volumeMl,
+                        onClick = { selectedDrink = drinkItem }
                     )
                 }
             }
+        }
+    }
+}
+
+/**
+ * Full-screen confirmation content shown after tapping a drink in [AddDrinkScreen].
+ * Allows adjusting caffeine (+/-5) and volume (+/-10) before logging.
+ */
+@Composable
+private fun AddDrinkConfirmationContent(
+    drink: DrinkEntity,
+    isLogging: Boolean,
+    onLogDrink: (caffeineMg: Int, volumeMl: Int) -> Unit,
+    onCancel: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var caffeineMg by remember { mutableIntStateOf(drink.caffeineMg) }
+    var volumeMl by remember { mutableIntStateOf(drink.volumeMl) }
+
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Drink name
+        Text(
+            text = drink.name,
+            style = MaterialTheme.typography.headlineSmall,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        // Caffeine section
+        Text(
+            text = stringResource(R.string.caffeine_label, caffeineMg),
+            style = MaterialTheme.typography.titleMedium
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            OutlinedButton(
+                onClick = { if (caffeineMg >= 5) caffeineMg -= 5 },
+                enabled = caffeineMg >= 5
+            ) {
+                Text("-5")
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Button(
+                onClick = { caffeineMg += 5 }
+            ) {
+                Text("+5")
+            }
+        }
+
+        // Volume section
+        Text(
+            text = stringResource(R.string.volume_label, volumeMl),
+            style = MaterialTheme.typography.titleMedium
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            OutlinedButton(
+                onClick = { if (volumeMl >= 10) volumeMl -= 10 },
+                enabled = volumeMl >= 10
+            ) {
+                Text("-10")
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Button(
+                onClick = { volumeMl += 10 }
+            ) {
+                Text("+10")
+            }
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        // Log drink button
+        Button(
+            onClick = { onLogDrink(caffeineMg, volumeMl) },
+            enabled = !isLogging,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            if (isLogging) {
+                CircularProgressIndicator(
+                    modifier = Modifier.padding(end = 8.dp),
+                    strokeWidth = 2.dp
+                )
+            }
+            Text(
+                if (isLogging) stringResource(R.string.saving)
+                else stringResource(R.string.log_drink)
+            )
+        }
+
+        // Cancel button
+        OutlinedButton(
+            onClick = onCancel,
+            enabled = !isLogging,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.cancel))
         }
     }
 }

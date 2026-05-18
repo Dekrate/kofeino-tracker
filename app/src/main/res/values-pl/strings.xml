@@ -29,6 +29,10 @@
     <string name="drink_added">Dodano napój!</string>
     <string name="no_drinks_defined">Brak zdefiniowanych napojów</string>
 
+    <!-- AddDrink confirmation -->
+    <string name="adjust_serving">Dostosuj porcję</string>
+    <string name="log_drink">Dodaj napój</string>
+
     <!-- EditIntakeScreen -->
     <string name="edit_intake_title">Edytuj wpis</string>
     <string name="caffeine_label">Kofeina: %d mg</string>

@@ -52,6 +52,7 @@ fun AddDrinkScreen(
             drink = drink,
             isLogging = isLogging,
             onLogDrink = { caffeineMg, volumeMl ->
+                if (isLogging) return@AddDrinkConfirmationContent
                 isLogging = true
                 viewModel.addDrink(
                     drink.copy(caffeineMg = caffeineMg, volumeMl = volumeMl),
@@ -64,6 +65,7 @@ fun AddDrinkScreen(
                     onError = {
                         // Re-enable the button so the user can retry
                         isLogging = false
+                        Toast.makeText(context, R.string.error_add_failed, Toast.LENGTH_SHORT).show()
                     }
                 )
             },
