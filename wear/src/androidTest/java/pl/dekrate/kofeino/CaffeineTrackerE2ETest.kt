@@ -46,6 +46,12 @@ class CaffeineTrackerE2ETest {
         // Click "Espresso" (display name from DB, not resource)
         composeRule.onNodeWithText("Espresso", substring = true).performClick()
 
+        // Confirmation dialog should appear — click "Log drink" to confirm
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText(context.getString(pl.dekrate.kofeino.R.string.log_drink))
+            .assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(pl.dekrate.kofeino.R.string.log_drink)).performClick()
+
         // Back to home, total should show 63
         composeRule.waitForIdle()
         composeRule.onNodeWithText("63").assertIsDisplayed()
@@ -67,6 +73,9 @@ class CaffeineTrackerE2ETest {
             composeRule.waitForIdle()
             composeRule.onNodeWithText("Podwójne espresso", substring = true).performClick()
             composeRule.waitForIdle()
+            // Confirm the drink
+            composeRule.onNodeWithText(context.getString(pl.dekrate.kofeino.R.string.log_drink)).performClick()
+            composeRule.waitForIdle()
         }
 
         // Wait for UI updates
@@ -80,6 +89,8 @@ class CaffeineTrackerE2ETest {
         composeRule.waitForIdle()
         composeRule.onNodeWithText("Espresso", substring = true).performClick()
         composeRule.waitForIdle()
+        composeRule.onNodeWithText(context.getString(pl.dekrate.kofeino.R.string.log_drink)).performClick()
+        composeRule.waitForIdle()
 
         composeRule.onNodeWithText(
             context.getString(pl.dekrate.kofeino.R.string.limit_exceeded)
@@ -92,6 +103,8 @@ class CaffeineTrackerE2ETest {
         composeRule.onNodeWithText("+").performClick()
         composeRule.waitForIdle()
         composeRule.onNodeWithText("Espresso", substring = true).performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText(context.getString(pl.dekrate.kofeino.R.string.log_drink)).performClick()
         composeRule.waitForIdle()
 
         // Go to history

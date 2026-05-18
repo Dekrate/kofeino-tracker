@@ -7,6 +7,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -26,6 +29,7 @@ import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.Text
 import pl.dekrate.kofeino.R
+import pl.dekrate.kofeino.domain.model.DrinkEntity
 import pl.dekrate.kofeino.presentation.viewmodel.CaffeineViewModel
 
 @Composable
@@ -35,58 +39,86 @@ fun AddDrinkScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val drinks = state.drinks
-    val scrollState = rememberTransformingLazyColumnState()
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
 
-    ScreenScaffold(scrollState = scrollState) { contentPadding ->
-        TransformingLazyColumn(
-            state = scrollState,
-            contentPadding = contentPadding,
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.Top)
-        ) {
-            item {
-                ListHeader {
-                    Text(
-                        text = stringResource(R.string.select_drink),
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                }
-            }
+    // When non-null, the confirmation overlay is shown instead of the drink list
+    var selectedDrink by remember { mutableStateOf<DrinkEntity?>(null) }
+    var isLogging by remember { mutableStateOf(false) }
 
-            if (drinks.isEmpty()) {
+    if (selectedDrink != null) {
+        val drink = selectedDrink!!
+        AddDrinkConfirmationContent(
+            drink = drink,
+            isLogging = isLogging,
+            onLogDrink = { caffeineMg, volumeMl ->
+                if (isLogging) return@AddDrinkConfirmationContent
+                isLogging = true
+                viewModel.addDrink(
+                    drink.copy(caffeineMg = caffeineMg, volumeMl = volumeMl),
+                    onComplete = {
+                        Toast.makeText(context, R.string.drink_added, Toast.LENGTH_SHORT).show()
+                        selectedDrink = null
+                        isLogging = false
+                        onDrinkAdded()
+                    },
+                    onError = {
+                        // Re-enable the button so the user can retry
+                        isLogging = false
+                        Toast.makeText(context, R.string.error_add_failed, Toast.LENGTH_SHORT).show()
+                    }
+                )
+            },
+            onCancel = {
+                selectedDrink = null
+                isLogging = false
+            }
+        )
+    } else {
+        val scrollState = rememberTransformingLazyColumnState()
+        ScreenScaffold(scrollState = scrollState) { contentPadding ->
+            TransformingLazyColumn(
+                state = scrollState,
+                contentPadding = contentPadding,
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.Top)
+            ) {
                 item {
-                    Text(
-                        text = stringResource(R.string.no_drinks_defined),
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                    )
-                }
-            } else {
-                items(drinks, key = { it.id }) { drink ->
-                    Button(
-                        onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            viewModel.addDrink(
-                                drink,
-                                onComplete = {
-                                    Toast.makeText(context, R.string.drink_added, Toast.LENGTH_SHORT).show()
-                                    onDrinkAdded()
-                                }
-                            )
-                        },
-                        modifier = Modifier
-                            .padding(horizontal = 8.dp)
-                            .semantics {
-                                contentDescription = "${drink.name} ${drink.caffeineMg} mg"
-                            }
-                    ) {
+                    ListHeader {
                         Text(
-                            text = "${drink.name}  ${drink.caffeineMg} mg",
-                            style = MaterialTheme.typography.bodyMedium,
-                            maxLines = 1
+                            text = stringResource(R.string.select_drink),
+                            style = MaterialTheme.typography.titleMedium
                         )
+                    }
+                }
+
+                if (drinks.isEmpty()) {
+                    item {
+                        Text(
+                            text = stringResource(R.string.no_drinks_defined),
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
+                    }
+                } else {
+                    items(drinks, key = { it.id }) { drink ->
+                        Button(
+                            onClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                selectedDrink = drink
+                            },
+                            modifier = Modifier
+                                .padding(horizontal = 8.dp)
+                                .semantics {
+                                    contentDescription = "${drink.name} ${drink.caffeineMg} mg"
+                                }
+                        ) {
+                            Text(
+                                text = "${drink.name}  ${drink.caffeineMg} mg",
+                                style = MaterialTheme.typography.bodyMedium,
+                                maxLines = 1
+                            )
+                        }
                     }
                 }
             }

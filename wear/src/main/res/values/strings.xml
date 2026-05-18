@@ -50,6 +50,10 @@
     <string name="no_drinks_defined">No drinks defined</string>
     <string name="drinks_subtitle">Add, edit and remove drinks</string>
 
+    <!-- AddDrink confirmation dialog -->
+    <string name="adjust_serving">Adjust serving</string>
+    <string name="log_drink">Log drink</string>
+
     <!-- Record management -->
     <string name="edit_intake">Edit entry</string>
     <string name="delete_intake">Delete entry</string>
