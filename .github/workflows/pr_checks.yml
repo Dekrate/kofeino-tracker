@@ -6,6 +6,10 @@ on:
   push:
     branches: [ main, master ]
 
+permissions:
+  checks: write
+  pull-requests: write
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -45,15 +49,24 @@ jobs:
       - name: Run unit tests
         run: ./gradlew testDebugUnitTest
 
-      - name: Upload test report
+      - name: Upload test report (HTML)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
+          name: test-results-html
           path: |
             app/build/reports/tests/testDebugUnitTest/
             wear/build/reports/tests/testDebugUnitTest/
           retention-days: 14
+
+      - name: Publish unit test results
+        if: always()
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: |
+            app/build/test-results/testDebugUnitTest/*.xml
+            wear/build/test-results/testDebugUnitTest/*.xml
+          check_name: Unit Test Results
 
   lint:
     name: Lint

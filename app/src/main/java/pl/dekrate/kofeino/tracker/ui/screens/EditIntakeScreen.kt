@@ -38,6 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -307,8 +308,9 @@ fun EditIntakeScreen(
                                         )
                                     }
                                     Text(
-                                        if (isDeleting) stringResource(R.string.deleting)
-                                        else stringResource(R.string.delete)
+                                        text = if (isDeleting) stringResource(R.string.deleting)
+                                        else stringResource(R.string.delete),
+                                        modifier = Modifier.testTag("confirm_delete")
                                     )
                                 }
                             },
