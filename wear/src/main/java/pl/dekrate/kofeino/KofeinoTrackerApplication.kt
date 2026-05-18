@@ -1,12 +1,21 @@
 package pl.dekrate.kofeino
 
 import android.app.Application
-import android.content.res.Configuration
+import android.content.Context
 import dagger.hilt.android.HiltAndroidApp
 import pl.dekrate.kofeino.data.local.LanguagePreferences
+import pl.dekrate.kofeino.presentation.util.LocaleHelper
 import timber.log.Timber
-import java.util.Locale
 
+/**
+ * Application entry point for the Wear OS module.
+ *
+ * Uses the **Template Method** pattern via [attachBaseContext] to wrap the base
+ * context with the user's saved language locale. This ensures that all
+ * `@ApplicationContext` injections and Activity contexts reflect the chosen
+ * language from startup, without relying on the deprecated
+ * [android.content.res.Resources.updateConfiguration] API.
+ */
 @HiltAndroidApp
 class KofeinoTrackerApplication : Application() {
     override fun onCreate() {
@@ -14,22 +23,10 @@ class KofeinoTrackerApplication : Application() {
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
         }
-        applySavedLocale()
     }
 
-    /** Updates the Application-level locale so that @ApplicationContext
-     *  injected into ViewModels reflects the current language. */
-    fun refreshLocale() {
-        val lang = LanguagePreferences.getLanguage(this)
-        Locale.setDefault(Locale(lang))
-        val config = Configuration(resources.configuration).apply {
-            setLocale(Locale(lang))
-        }
-        resources.updateConfiguration(config, resources.displayMetrics)
-    }
-
-    private fun applySavedLocale() {
-        val lang = LanguagePreferences.getLanguage(this)
-        Locale.setDefault(Locale(lang))
+    override fun attachBaseContext(base: Context) {
+        val lang = LanguagePreferences.getLanguage(base)
+        super.attachBaseContext(LocaleHelper.wrapContext(base, lang))
     }
 }

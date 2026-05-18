@@ -3,7 +3,6 @@ package pl.dekrate.kofeino.presentation.screens
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
-import pl.dekrate.kofeino.KofeinoTrackerApplication
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -95,7 +94,6 @@ fun SettingsScreen(
                                 onClick = {
                                     prefs.setLanguage(LanguagePreferences.LANGUAGE_EN)
                                     currentLang = LanguagePreferences.LANGUAGE_EN
-                                    (context.applicationContext as? KofeinoTrackerApplication)?.refreshLocale()
                                     activity?.recreate()
                                 },
                                 modifier = Modifier
@@ -122,7 +120,6 @@ fun SettingsScreen(
                                 onClick = {
                                     prefs.setLanguage(LanguagePreferences.LANGUAGE_PL)
                                     currentLang = LanguagePreferences.LANGUAGE_PL
-                                    (context.applicationContext as? KofeinoTrackerApplication)?.refreshLocale()
                                     activity?.recreate()
                                 },
                                 modifier = Modifier
