@@ -1,13 +1,19 @@
 package pl.dekrate.kofeino.tracker
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.core.content.ContextCompat
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import pl.dekrate.kofeino.tracker.navigation.AppNavHost
@@ -26,6 +32,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        requestNotificationPermissions()
+
         val themeMode = DataStorePreferences.getThemeMode(this)
 
         setContent {
@@ -36,5 +44,35 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    /**
+     * Requests notification permissions required for the live updates feature.
+     *
+     * - [Manifest.permission.POST_NOTIFICATIONS] (Android 13+)
+     * - [Manifest.permission.POST_PROMOTED_NOTIFICATIONS] (Android 16+)
+     *
+     * The notification manager gracefully degrades if permissions are denied.
+     */
+    /**
+     * Requests notification permission required for the live updates feature.
+     *
+     * - [Manifest.permission.POST_NOTIFICATIONS] (Android 13+)
+     *
+     * The notification manager gracefully degrades if permission is denied.
+     */
+    private fun requestNotificationPermissions() {
+        if (Build.VERSION.SDK_INT >= 33 &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            permissionLauncher.launch(arrayOf(Manifest.permission.POST_NOTIFICATIONS))
+        }
+    }
+
+    private val permissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { _ ->
+        // Permission result is handled gracefully — notification degrades silently
     }
 }

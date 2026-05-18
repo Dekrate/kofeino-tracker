@@ -23,6 +23,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -60,9 +61,6 @@ fun SettingsScreen(
         }
     }
 
-    // Handle language change — triggers activity recreation.
-    // The Activity's attachBaseContext() picks up the new locale from preferences,
-    // no Application-level resource mutation needed.
     LaunchedEffect(state.currentLanguage) {
         if (state.languageChanged) {
             activity?.recreate()
@@ -70,7 +68,6 @@ fun SettingsScreen(
         }
     }
 
-    // Handle theme change — triggers activity recreation
     LaunchedEffect(state.currentThemeMode) {
         if (state.themeChanged) {
             activity?.recreate()
@@ -89,206 +86,109 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.settings_title),
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                },
+                title = { Text(stringResource(R.string.settings_title), style = MaterialTheme.typography.titleMedium) },
                 navigationIcon = {
-                    IconButton(
-                        onClick = onNavigateBack,
-                        modifier = Modifier.semantics { contentDescription = backDesc }
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = backDesc,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                    IconButton(onClick = onNavigateBack, modifier = Modifier.semantics { contentDescription = backDesc }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = backDesc, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface
-                )
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface, titleContentColor = MaterialTheme.colorScheme.onSurface)
             )
         }
     ) { innerPadding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
+            modifier = Modifier.fillMaxSize().padding(innerPadding).verticalScroll(rememberScrollState())
         ) {
-            // --- Theme section ---
-            SectionHeader(
-                text = stringResource(R.string.app_theme),
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-            )
+            // ── Theme section ──
+            SectionHeader(stringResource(R.string.app_theme), Modifier.padding(horizontal = 16.dp, vertical = 12.dp))
 
-            ThemeOption(
-                label = stringResource(R.string.theme_system),
-                isSelected = state.currentThemeMode == DataStorePreferences.THEME_SYSTEM,
-                onSelect = { viewModel.setThemeMode(DataStorePreferences.THEME_SYSTEM) },
-                modifier = Modifier.semantics { contentDescription = systemThemeDesc }
-            )
+            ThemeOption(stringResource(R.string.theme_system), state.currentThemeMode == DataStorePreferences.THEME_SYSTEM,
+                { viewModel.setThemeMode(DataStorePreferences.THEME_SYSTEM) }, Modifier.semantics { contentDescription = systemThemeDesc })
+            ThemeOption(stringResource(R.string.theme_light), state.currentThemeMode == DataStorePreferences.THEME_LIGHT,
+                { viewModel.setThemeMode(DataStorePreferences.THEME_LIGHT) }, Modifier.semantics { contentDescription = lightThemeDesc })
+            ThemeOption(stringResource(R.string.theme_dark), state.currentThemeMode == DataStorePreferences.THEME_DARK,
+                { viewModel.setThemeMode(DataStorePreferences.THEME_DARK) }, Modifier.semantics { contentDescription = darkThemeDesc })
 
-            ThemeOption(
-                label = stringResource(R.string.theme_light),
-                isSelected = state.currentThemeMode == DataStorePreferences.THEME_LIGHT,
-                onSelect = { viewModel.setThemeMode(DataStorePreferences.THEME_LIGHT) },
-                modifier = Modifier.semantics { contentDescription = lightThemeDesc }
-            )
+            HorizontalDivider(Modifier.padding(vertical = 8.dp))
 
-            ThemeOption(
-                label = stringResource(R.string.theme_dark),
-                isSelected = state.currentThemeMode == DataStorePreferences.THEME_DARK,
-                onSelect = { viewModel.setThemeMode(DataStorePreferences.THEME_DARK) },
-                modifier = Modifier.semantics { contentDescription = darkThemeDesc }
-            )
+            // ── Language section ──
+            SectionHeader(stringResource(R.string.app_language), Modifier.padding(horizontal = 16.dp, vertical = 12.dp))
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+            LanguageOption(stringResource(R.string.language_system), state.currentLanguage == DataStorePreferences.LANGUAGE_SYSTEM,
+                { viewModel.setLanguage(DataStorePreferences.LANGUAGE_SYSTEM) }, Modifier.semantics { contentDescription = systemLangDesc })
+            LanguageOption(stringResource(R.string.english), state.currentLanguage == DataStorePreferences.LANGUAGE_EN,
+                { viewModel.setLanguage(DataStorePreferences.LANGUAGE_EN) }, Modifier.semantics { contentDescription = englishDesc })
+            LanguageOption(stringResource(R.string.polish), state.currentLanguage == DataStorePreferences.LANGUAGE_PL,
+                { viewModel.setLanguage(DataStorePreferences.LANGUAGE_PL) }, Modifier.semantics { contentDescription = polishDesc })
 
-            // --- Language section ---
-            SectionHeader(
-                text = stringResource(R.string.app_language),
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-            )
+            HorizontalDivider(Modifier.padding(vertical = 8.dp))
 
-            LanguageOption(
-                label = stringResource(R.string.language_system),
-                isSelected = state.currentLanguage == DataStorePreferences.LANGUAGE_SYSTEM,
-                onSelect = { viewModel.setLanguage(DataStorePreferences.LANGUAGE_SYSTEM) },
-                modifier = Modifier.semantics { contentDescription = systemLangDesc }
-            )
+            // ── Notification section ──
+            SectionHeader(stringResource(R.string.notification_section), Modifier.padding(horizontal = 16.dp, vertical = 12.dp))
 
-            LanguageOption(
-                label = stringResource(R.string.english),
-                isSelected = state.currentLanguage == DataStorePreferences.LANGUAGE_EN,
-                onSelect = { viewModel.setLanguage(DataStorePreferences.LANGUAGE_EN) },
-                modifier = Modifier.semantics { contentDescription = englishDesc }
-            )
+            NotifToggle(stringResource(R.string.notif_live), stringResource(R.string.notif_live_desc),
+                state.notifLiveEnabled, { viewModel.setNotifLiveEnabled(it) })
+            NotifToggle(stringResource(R.string.notif_morning), stringResource(R.string.notif_morning_desc),
+                state.notifMorningEnabled, { viewModel.setNotifMorningEnabled(it) })
+            NotifToggle(stringResource(R.string.notif_regular), stringResource(R.string.notif_regular_desc),
+                state.notifRegularEnabled, { viewModel.setNotifRegularEnabled(it) })
+            NotifToggle(stringResource(R.string.notif_evening), stringResource(R.string.notif_evening_desc),
+                state.notifEveningEnabled, { viewModel.setNotifEveningEnabled(it) })
 
-            LanguageOption(
-                label = stringResource(R.string.polish),
-                isSelected = state.currentLanguage == DataStorePreferences.LANGUAGE_PL,
-                onSelect = { viewModel.setLanguage(DataStorePreferences.LANGUAGE_PL) },
-                modifier = Modifier.semantics { contentDescription = polishDesc }
-            )
+            HorizontalDivider(Modifier.padding(vertical = 8.dp))
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+            // ── About section ──
+            SectionHeader(stringResource(R.string.about), Modifier.padding(horizontal = 16.dp, vertical = 12.dp))
 
-            // --- About section ---
-            SectionHeader(
-                text = stringResource(R.string.about),
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-            )
-
-            AboutRow(
-                label = stringResource(R.string.app_name),
-                value = stringResource(R.string.version_format, versionName),
-                contentDesc = stringResource(R.string.version_format, versionName),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
-            )
+            AboutRow(stringResource(R.string.app_name), stringResource(R.string.version_format, versionName),
+                stringResource(R.string.version_format, versionName), Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp))
         }
     }
 }
 
 @Composable
-private fun SectionHeader(
-    text: String,
-    modifier: Modifier = Modifier
-) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.titleSmall,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = modifier
-    )
+private fun SectionHeader(text: String, modifier: Modifier = Modifier) {
+    Text(text, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, modifier = modifier)
 }
 
 @Composable
-private fun LanguageOption(
-    label: String,
-    isSelected: Boolean,
-    onSelect: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable { onSelect() }
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        RadioButton(
-            selected = isSelected,
-            onClick = onSelect
-        )
-        Spacer(modifier = Modifier.width(12.dp))
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface
-        )
+private fun LanguageOption(label: String, isSelected: Boolean, onSelect: () -> Unit, modifier: Modifier = Modifier) {
+    Row(modifier = modifier.fillMaxWidth().clickable { onSelect() }.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+        RadioButton(selected = isSelected, onClick = onSelect)
+        Spacer(Modifier.width(12.dp))
+        Text(label, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
     }
 }
 
 @Composable
-private fun ThemeOption(
-    label: String,
-    isSelected: Boolean,
-    onSelect: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable { onSelect() }
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        RadioButton(
-            selected = isSelected,
-            onClick = onSelect
-        )
-        Spacer(modifier = Modifier.width(12.dp))
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface
-        )
+private fun ThemeOption(label: String, isSelected: Boolean, onSelect: () -> Unit, modifier: Modifier = Modifier) {
+    Row(modifier = modifier.fillMaxWidth().clickable { onSelect() }.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+        RadioButton(selected = isSelected, onClick = onSelect)
+        Spacer(Modifier.width(12.dp))
+        Text(label, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
     }
 }
 
 @Composable
-private fun AboutRow(
-    label: String,
-    value: String,
-    contentDesc: String,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier.semantics { contentDescription = contentDesc },
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f)
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+private fun NotifToggle(label: String, description: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit, modifier: Modifier = Modifier) {
+    Row(modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(label, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
+            Text(description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Spacer(Modifier.width(12.dp))
+        Switch(checked = checked, onCheckedChange = onCheckedChange)
     }
 }
 
-/** Recursively finds the Activity from a Context. */
+@Composable
+private fun AboutRow(label: String, value: String, contentDesc: String, modifier: Modifier = Modifier) {
+    Row(modifier = modifier.semantics { contentDescription = contentDesc }, verticalAlignment = Alignment.CenterVertically) {
+        Text(label, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
+        Text(value, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
 internal fun Context.findActivity(): Activity? = when (this) {
     is Activity -> this
     is ContextWrapper -> baseContext.findActivity()

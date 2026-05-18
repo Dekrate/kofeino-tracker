@@ -100,6 +100,55 @@
     <string name="browse_official_drinks">Przeglądaj oficjalne napoje</string>
     <string name="browse_official_drinks_hint">Szukaj w bazie Open Food Facts</string>
 
+    <!-- Live Updates Notification -->
+    <string name="notification_channel_name">Kofeina — podgląd na żywo</string>
+    <string name="notification_channel_description">Pokazuje dzienne spożycie kofeiny jako powiadomienie na żywo</string>
+    <string name="notification_title">☕ Dzienne spożycie kofeiny</string>
+    <string name="notification_title_limit_exceeded">⚠️ Przekroczono dzienny limit!</string>
+    <string name="notification_body">Dziś: %1$d mg z %2$d mg</string>
+    <string name="notification_body_over">Dziś: %1$d mg — powyżej bezpiecznego limitu!</string>
+    <string name="notification_short_text">%1$d mg</string>
+    <string name="notification_metric_primary">%1$d mg kofeiny dziś</string>
+    <string name="notification_metric_secondary">%1$d z %2$d mg dziennego celu</string>
+    <string name="notification_permission_title">Śledzenie kofeiny</string>
+    <string name="notification_permission_text">Pokaż aktualne spożycie kofeiny</string>
+
+    <!-- Notification settings -->
+    <string name="notification_section">Powiadomienia</string>
+    <string name="notif_live">Podgląd na żywo</string>
+    <string name="notif_live_desc">Pokazuje bieżące spożycie kofeiny w powiadomieniu</string>
+    <string name="notif_morning">Przypomnienie poranne</string>
+    <string name="notif_morning_desc">Przypomnij o zalogowaniu pierwszej kawy o 8:00</string>
+    <string name="notif_regular">Przypomnienie regularne</string>
+    <string name="notif_regular_desc">Przypominaj co 3 godziny, jeśli nie zalogowano spożycia</string>
+    <string name="notif_evening">Podsumowanie wieczorne</string>
+    <string name="notif_evening_desc">Pokaż dzienne podsumowanie kofeiny o 20:00</string>
+
+    <!-- Reminder notifications -->
+    <string name="reminder_channel_name">Przypomnienia o kofeinie</string>
+    <string name="reminder_channel_description">Poranne, regularne i wieczorne przypomnienia</string>
+    <!-- Morning variants -->
+    <string name="reminder_morning_title_1">☕ Dzień dobry!</string>
+    <string name="reminder_morning_body_1">Czas na pierwszą kawę! Zaloguj spożycie, aby rozpocząć śledzenie.</string>
+    <string name="reminder_morning_title_2">🌅 Wstawaj!</string>
+    <string name="reminder_morning_body_2">Nowy dzień — zaloguj pierwszą dawkę kofeiny.</string>
+    <string name="reminder_morning_title_3">☀️ Czas na kawę</string>
+    <string name="reminder_morning_body_3">Nie zapomnij zalogować pierwszej filiżanki. Startujemy!</string>
+    <!-- Regular variants -->
+    <string name="reminder_regular_title_1">⏰ Sprawdź kofeinę</string>
+    <string name="reminder_regular_body_1">Minęło trochę czasu od ostatniego logowania. Piłeś dziś kawę?</string>
+    <string name="reminder_regular_title_2">🤔 Czas na dolewkę?</string>
+    <string name="reminder_regular_body_2">Minęło kilka godzin — może kolejna kawa?</string>
+    <string name="reminder_regular_title_3">☕ Przerwa</string>
+    <string name="reminder_regular_body_3">Szybkie check-in! Była jakaś kofeina od ostatniego pytania?</string>
+    <!-- Evening variants -->
+    <string name="reminder_evening_title_1">📊 Podsumowanie dnia</string>
+    <string name="reminder_evening_body_1">Sprawdź swoje dzienne spożycie kofeiny w aplikacji.</string>
+    <string name="reminder_evening_title_2">🌙 Wieczorne podsumowanie</string>
+    <string name="reminder_evening_body_2">Jak minął dzień z kofeiną? Otwórz aplikację, aby zobaczyć szczegóły.</string>
+    <string name="reminder_evening_title_3">📋 Raport dnia</string>
+    <string name="reminder_evening_body_3">Czas przejrzeć dzienne spożycie kofeiny. Stuknij, aby sprawdzić.</string>
+
     <!-- OfficialDrinksScreen -->
     <string name="search_hint">Szukaj napojów…</string>
     <string name="search_clear">Wyczyść wyszukiwanie</string>

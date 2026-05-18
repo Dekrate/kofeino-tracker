@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -62,6 +63,10 @@ class DataStorePreferences @Inject constructor(
     // In-memory caches for synchronous access (avoids runBlocking on every read)
     @Volatile private var cachedLanguage: String = DEFAULT_LANGUAGE
     @Volatile private var cachedThemeMode: String = DEFAULT_THEME
+    @Volatile private var cachedNotifLive: Boolean = DEFAULT_NOTIF_LIVE
+    @Volatile private var cachedNotifMorning: Boolean = DEFAULT_NOTIF_MORNING
+    @Volatile private var cachedNotifRegular: Boolean = DEFAULT_NOTIF_REGULAR
+    @Volatile private var cachedNotifEvening: Boolean = DEFAULT_NOTIF_EVENING
     @Volatile private var initialized = false
 
     /** Application-scoped coroutine scope with supervisor behaviour. */
@@ -76,8 +81,14 @@ class DataStorePreferences @Inject constructor(
                 val prefs = dataStore.data.first()
                 cachedLanguage = prefs[LANGUAGE_KEY] ?: migrateLanguageFromSp()
                 cachedThemeMode = prefs[THEME_KEY] ?: migrateThemeFromSp()
+                cachedNotifLive = prefs[NOTIF_LIVE_KEY] ?: DEFAULT_NOTIF_LIVE
+                cachedNotifMorning = prefs[NOTIF_MORNING_KEY] ?: DEFAULT_NOTIF_MORNING
+                cachedNotifRegular = prefs[NOTIF_REGULAR_KEY] ?: DEFAULT_NOTIF_REGULAR
+                cachedNotifEvening = prefs[NOTIF_EVENING_KEY] ?: DEFAULT_NOTIF_EVENING
                 initialized = true
-                Timber.d("DataStorePreferences initialized — lang=%s theme=%s", cachedLanguage, cachedThemeMode)
+                Timber.d("DataStorePreferences initialized — lang=%s theme=%s notif=%b,%b,%b,%b",
+                    cachedLanguage, cachedThemeMode,
+                    cachedNotifLive, cachedNotifMorning, cachedNotifRegular, cachedNotifEvening)
             } catch (e: Exception) {
                 // Fallback to SharedPreferences
                 cachedLanguage = LanguagePreferences.getLanguage(context)
@@ -144,6 +155,44 @@ class DataStorePreferences @Inject constructor(
         Timber.d("Theme mode set to: %s", mode)
     }
 
+    // ===== Notification toggles =====
+
+    fun isNotificationLiveEnabled(): Boolean = cachedNotifLive
+    fun observeNotificationLiveEnabled(): Flow<Boolean> = dataStore.data.map { s ->
+        s[NOTIF_LIVE_KEY] ?: DEFAULT_NOTIF_LIVE
+    }
+    suspend fun setNotificationLiveEnabled(enabled: Boolean) {
+        dataStore.edit { it[NOTIF_LIVE_KEY] = enabled }
+        cachedNotifLive = enabled
+    }
+
+    fun isNotificationMorningEnabled(): Boolean = cachedNotifMorning
+    fun observeNotificationMorningEnabled(): Flow<Boolean> = dataStore.data.map { s ->
+        s[NOTIF_MORNING_KEY] ?: DEFAULT_NOTIF_MORNING
+    }
+    suspend fun setNotificationMorningEnabled(enabled: Boolean) {
+        dataStore.edit { it[NOTIF_MORNING_KEY] = enabled }
+        cachedNotifMorning = enabled
+    }
+
+    fun isNotificationRegularEnabled(): Boolean = cachedNotifRegular
+    fun observeNotificationRegularEnabled(): Flow<Boolean> = dataStore.data.map { s ->
+        s[NOTIF_REGULAR_KEY] ?: DEFAULT_NOTIF_REGULAR
+    }
+    suspend fun setNotificationRegularEnabled(enabled: Boolean) {
+        dataStore.edit { it[NOTIF_REGULAR_KEY] = enabled }
+        cachedNotifRegular = enabled
+    }
+
+    fun isNotificationEveningEnabled(): Boolean = cachedNotifEvening
+    fun observeNotificationEveningEnabled(): Flow<Boolean> = dataStore.data.map { s ->
+        s[NOTIF_EVENING_KEY] ?: DEFAULT_NOTIF_EVENING
+    }
+    suspend fun setNotificationEveningEnabled(enabled: Boolean) {
+        dataStore.edit { it[NOTIF_EVENING_KEY] = enabled }
+        cachedNotifEvening = enabled
+    }
+
     /** Returns true once the cache has been populated. */
     fun isReady(): Boolean = initialized
 
@@ -176,6 +225,10 @@ class DataStorePreferences @Inject constructor(
     companion object {
         private val LANGUAGE_KEY = stringPreferencesKey("selected_language")
         private val THEME_KEY = stringPreferencesKey("selected_theme_mode")
+        private val NOTIF_LIVE_KEY = booleanPreferencesKey("notification_live")
+        private val NOTIF_MORNING_KEY = booleanPreferencesKey("notification_morning")
+        private val NOTIF_REGULAR_KEY = booleanPreferencesKey("notification_regular")
+        private val NOTIF_EVENING_KEY = booleanPreferencesKey("notification_evening")
 
         const val LANGUAGE_SYSTEM = LanguagePreferences.LANGUAGE_SYSTEM
         const val LANGUAGE_PL = LanguagePreferences.LANGUAGE_PL
@@ -186,6 +239,11 @@ class DataStorePreferences @Inject constructor(
         const val THEME_LIGHT = ThemePreferences.THEME_LIGHT
         const val THEME_DARK = ThemePreferences.THEME_DARK
         const val DEFAULT_THEME = ThemePreferences.DEFAULT_THEME_MODE
+
+        const val DEFAULT_NOTIF_LIVE = true
+        const val DEFAULT_NOTIF_MORNING = false
+        const val DEFAULT_NOTIF_REGULAR = false
+        const val DEFAULT_NOTIF_EVENING = false
 
         /**
          * Synchronous read for [android.app.Application.attachBaseContext].

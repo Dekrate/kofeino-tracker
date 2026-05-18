@@ -46,12 +46,20 @@ class SettingsViewModelTest {
     /** Simulates the DataStore-backed reactive streams. */
     private val languageFlow = MutableStateFlow(DataStorePreferences.DEFAULT_LANGUAGE)
     private val themeFlow = MutableStateFlow(DataStorePreferences.DEFAULT_THEME)
+    private val notifLiveFlow = MutableStateFlow(DataStorePreferences.DEFAULT_NOTIF_LIVE)
+    private val notifMorningFlow = MutableStateFlow(DataStorePreferences.DEFAULT_NOTIF_MORNING)
+    private val notifRegularFlow = MutableStateFlow(DataStorePreferences.DEFAULT_NOTIF_REGULAR)
+    private val notifEveningFlow = MutableStateFlow(DataStorePreferences.DEFAULT_NOTIF_EVENING)
 
     @Before
     fun setup() {
         preferences = mockk(relaxed = true)
         every { preferences.observeLanguage() } returns languageFlow
         every { preferences.observeThemeMode() } returns themeFlow
+        every { preferences.observeNotificationLiveEnabled() } returns notifLiveFlow
+        every { preferences.observeNotificationMorningEnabled() } returns notifMorningFlow
+        every { preferences.observeNotificationRegularEnabled() } returns notifRegularFlow
+        every { preferences.observeNotificationEveningEnabled() } returns notifEveningFlow
         every { preferences.getLanguage() } returns DataStorePreferences.DEFAULT_LANGUAGE
         every { preferences.getThemeMode() } returns DataStorePreferences.DEFAULT_THEME
     }
