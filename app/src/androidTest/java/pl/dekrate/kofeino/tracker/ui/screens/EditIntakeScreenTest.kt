@@ -1,9 +1,9 @@
 package pl.dekrate.kofeino.tracker.ui.screens
 
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.platform.app.InstrumentationRegistry
@@ -263,18 +263,13 @@ class EditIntakeScreenTest {
     }
 
     @Test
-    fun editIntakeScreen_saveButton_isDisabled_whenSaving() {
+    fun editIntakeScreen_showsSavingLabel_whenSaveClicked() {
         val intake = CaffeineIntake(id = 1, drinkName = "Latte", caffeineMg = 63, volumeMl = 250, timestamp = 0L)
         val fakeVm = mockk<EditIntakeViewModel>(relaxed = true)
         every { fakeVm.uiState } returns MutableStateFlow(
             EditIntakeUiState(intake = intake, drinkName = "Latte", caffeineMg = 63, volumeMl = 250, isLoading = false)
         ) as StateFlow<EditIntakeUiState>
-
-        // Make save call onComplete (simulates success) to re-enable
-        every { fakeVm.save(any(), any()) } answers {
-            val onComplete = arg<() -> Unit>(0)
-            onComplete()
-        }
+        // Mock save does NOT invoke onComplete — isSaving stays true
 
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
@@ -285,8 +280,10 @@ class EditIntakeScreenTest {
                 )
             }
         }
-        // Click save — it completes instantly via the mock, so the screen navigates back
         composeTestRule.onNodeWithText(context.getString(R.string.save)).performClick()
+        // Button should now show "Saving…" and original "Save" text should be gone
+        composeTestRule.onNodeWithText(context.getString(R.string.saving)).assertIsDisplayed()
+        composeTestRule.onNodeWithText(context.getString(R.string.save)).assertDoesNotExist()
         verify { fakeVm.save(any(), any()) }
     }
 
@@ -332,8 +329,8 @@ class EditIntakeScreenTest {
         // Click Delete -> confirmation shown
         composeTestRule.onNodeWithText(context.getString(R.string.delete)).performClick()
         composeTestRule.onNodeWithText(context.getString(R.string.delete_intake_confirm)).assertIsDisplayed()
-        // Click confirm delete
-        composeTestRule.onNodeWithText(context.getString(R.string.delete)).performClick()
+        // Click confirm delete (uses testTag to disambiguate from trigger button)
+        composeTestRule.onNodeWithTag("confirm_delete").performClick()
         verify { fakeVm.delete(any(), any()) }
     }
 
