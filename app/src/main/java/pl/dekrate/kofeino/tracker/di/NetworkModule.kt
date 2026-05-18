@@ -4,15 +4,12 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import okhttp3.Cache
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
-import pl.dekrate.kofeino.tracker.data.remote.ConnectivityObserver
 import pl.dekrate.kofeino.tracker.data.remote.OpenFoodFactsApi
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import timber.log.Timber
-import java.io.File
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
@@ -20,7 +17,6 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val CACHE_SIZE = 10L * 1024 * 1024 // 10 MB
     private const val TIMEOUT_SECONDS = 15L
 
     @Provides

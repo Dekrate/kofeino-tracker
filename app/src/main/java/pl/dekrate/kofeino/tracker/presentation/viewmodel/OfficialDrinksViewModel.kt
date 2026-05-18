@@ -91,29 +91,33 @@ class OfficialDrinksViewModel @Inject constructor(
     }
 
     fun onQueryChanged(query: String) {
-        _uiState.update {
-            it.copy(searchQuery = query, isSearchMode = query.isNotBlank(), error = null)
-        }
+        // Clear error immediately so user doesn't see stale error while typing
+        _uiState.update { it.copy(searchQuery = query, isSearchMode = query.isNotBlank(), error = null) }
         searchJob?.cancel()
         if (query.isBlank()) {
             loadOfficialDrinks()
             return
         }
+        val currentQuery = query
         searchJob = viewModelScope.launch {
             delay(SEARCH_DEBOUNCE_MS)
-            performSearch(query)
+            // Only execute if this query is still current
+            if (_uiState.value.searchQuery == currentQuery) {
+                performSearch(currentQuery)
+            }
         }
     }
 
     fun searchImmediate(query: String) {
         _uiState.update { it.copy(searchQuery = query, isSearchMode = query.isNotBlank()) }
+        searchJob?.cancel()
         if (query.isBlank()) {
             loadOfficialDrinks()
             return
         }
-        searchJob?.cancel()
-        viewModelScope.launch {
-            performSearch(query)
+        val currentQuery = query
+        searchJob = viewModelScope.launch {
+            performSearch(currentQuery)
         }
     }
 
@@ -127,6 +131,7 @@ class OfficialDrinksViewModel @Inject constructor(
     }
 
     fun clearSearch() {
+        searchJob?.cancel()
         _uiState.update { it.copy(searchQuery = "", isSearchMode = false) }
         loadOfficialDrinks()
     }

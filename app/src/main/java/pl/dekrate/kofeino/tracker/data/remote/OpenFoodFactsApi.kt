@@ -64,6 +64,7 @@ data class OpenFoodFactsProduct(
 )
 
 data class OpenFoodFactsNutriments(
-    @SerializedName("caffeine_value_100g") val caffeineValue100g: Double? = null,
+    /** Caffeine in grams per 100g (API returns grams, not mg). */
+    @SerializedName("caffeine_100g") val caffeine100g: Double? = null,
     @SerializedName("energy-kcal_value_100g") val energyKcalValue100g: Double? = null
 )

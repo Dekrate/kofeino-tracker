@@ -19,7 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -99,7 +99,7 @@ fun HomeScreen(
                         modifier = Modifier.semantics { contentDescription = manageDrinksDesc }
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.Star,
+                            imageVector = Icons.Filled.Edit,
                             contentDescription = manageDrinksDesc,
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )

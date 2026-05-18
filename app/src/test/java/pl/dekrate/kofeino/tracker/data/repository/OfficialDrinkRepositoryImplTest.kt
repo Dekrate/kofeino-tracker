@@ -127,13 +127,16 @@ class OfficialDrinkRepositoryImplTest {
     }
 
     @Test
-    fun `getOfficialDrinks returns failure when cache only has expired entries`() = runTest {
+    fun `getOfficialDrinks returns stale cache when API fails and fresh cache is empty`() = runTest {
         val expired = sampleCached.copy(fetchedAtMillis = 0L) // 1970-01-01
         coEvery { cacheDao.getAllCached() } returns listOf(expired)
 
         val result = repository.getOfficialDrinks()
 
-        assert(result.isFailure) { "Expected failure for expired cache, got $result" }
+        assert(result.isSuccess) { "Expected stale cache fallback, got $result" }
+        val drinks = result.getOrThrow()
+        assert(drinks.size == 1) { "Expected 1 stale drink, got ${drinks.size}" }
+        assert(drinks[0].barcode == "5901234567890")
     }
 
     @Test

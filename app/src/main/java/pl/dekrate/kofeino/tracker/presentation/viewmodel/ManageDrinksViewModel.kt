@@ -6,6 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
@@ -19,6 +20,7 @@ sealed interface ManageDrinksError {
     data object LoadFailed : ManageDrinksError
     data object DeleteFailed : ManageDrinksError
     data object DefaultDrinkNotDeletable : ManageDrinksError
+    data object SaveFailed : ManageDrinksError
 }
 
 data class ManageDrinksUiState(
@@ -43,6 +45,12 @@ class ManageDrinksViewModel @Inject constructor(
             .onEach { drinks ->
                 _uiState.update {
                     it.copy(drinks = drinks, isLoading = false)
+                }
+            }
+            .catch { e ->
+                Timber.e(e, "Failed to load drinks")
+                _uiState.update {
+                    it.copy(isLoading = false, error = ManageDrinksError.LoadFailed)
                 }
             }
             .launchIn(viewModelScope)
@@ -118,6 +126,7 @@ class ManageDrinksViewModel @Inject constructor(
                 Timber.d("Drink saved: $name ($caffeineMg mg, $volumeMl ml)")
             } catch (e: Exception) {
                 Timber.e(e, "Failed to save drink")
+                _uiState.update { it.copy(error = ManageDrinksError.SaveFailed) }
             }
         }
     }
