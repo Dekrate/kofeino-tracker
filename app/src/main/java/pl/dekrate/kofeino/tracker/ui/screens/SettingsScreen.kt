@@ -38,7 +38,6 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import pl.dekrate.kofeino.tracker.KofeinoTrackerApplication
 import pl.dekrate.kofeino.tracker.R
 import pl.dekrate.kofeino.tracker.data.local.DataStorePreferences
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.SettingsViewModel
@@ -61,10 +60,11 @@ fun SettingsScreen(
         }
     }
 
-    // Handle language change — triggers activity recreation
+    // Handle language change — triggers activity recreation.
+    // The Activity's attachBaseContext() picks up the new locale from preferences,
+    // no Application-level resource mutation needed.
     LaunchedEffect(state.currentLanguage) {
         if (state.languageChanged) {
-            (context.applicationContext as? KofeinoTrackerApplication)?.refreshLocale()
             activity?.recreate()
             viewModel.consumeLanguageChanged()
         }

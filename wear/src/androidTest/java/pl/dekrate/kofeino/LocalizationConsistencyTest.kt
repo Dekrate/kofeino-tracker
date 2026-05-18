@@ -1,6 +1,7 @@
 package pl.dekrate.kofeino
 
 import android.content.res.Configuration
+import android.os.LocaleList
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -23,14 +24,16 @@ class LocalizationConsistencyTest {
      */
     @Test
     fun allStringResourcesExistInBothLocales() {
+        val englishLocale = Locale.forLanguageTag("en")
         val englishConfig = Configuration(context.resources.configuration).apply {
-            setLocale(Locale("en"))
+            setLocales(LocaleList(englishLocale))
         }
         val englishContext = context.createConfigurationContext(englishConfig)
         val englishResources = englishContext.resources
 
+        val polishLocale = Locale.forLanguageTag("pl")
         val polishConfig = Configuration(context.resources.configuration).apply {
-            setLocale(Locale("pl"))
+            setLocales(LocaleList(polishLocale))
         }
         val polishContext = context.createConfigurationContext(polishConfig)
         val polishResources = polishContext.resources
@@ -83,8 +86,9 @@ class LocalizationConsistencyTest {
     fun defaultLocaleIsEnglish() {
         // Create a context with a neutral (unsupported) locale to force
         // Android's resource fallback to values/ (which is English).
+        val neutralLocale = Locale.forLanguageTag("de")
         val neutralConfig = Configuration(context.resources.configuration).apply {
-            setLocale(Locale("de"))
+            setLocales(LocaleList(neutralLocale))
         }
         val neutralContext = context.createConfigurationContext(neutralConfig)
         val todayString = neutralContext.resources.getString(R.string.today)
