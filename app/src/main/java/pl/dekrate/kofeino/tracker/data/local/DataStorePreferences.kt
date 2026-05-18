@@ -8,12 +8,14 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -24,7 +26,7 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 /**
  * DataStore-backed preferences for language and theme.
  *
- * **Why two layers?**
+ * **Two-layer storage design**:
  * - [DataStore] is the canonical store (async, type-safe, modern).
  * - [SharedPreferences] mirror is required because [android.app.Application.attachBaseContext]
  *   runs before Hilt/DataStore are available. The static companion methods read from SP for
@@ -42,7 +44,7 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
  * ```kotlin
  * // Runtime (post-Hilt):
  * @Inject lateinit var preferences: DataStorePreferences
- * val lang = preferences.getLanguage()          // Sync (cached)
+ * val lang = preferences.getLanguage()          // Sync (cached, falls back to SP if not ready)
  * preferences.observeLanguage().collect { ... }  // Reactive
  * preferences.setLanguage("pl")                  // Async write
  *
@@ -62,9 +64,14 @@ class DataStorePreferences @Inject constructor(
     @Volatile private var cachedThemeMode: String = DEFAULT_THEME
     @Volatile private var initialized = false
 
+    /** Application-scoped coroutine scope with supervisor behaviour. */
+    private val scope = GlobalScope + CoroutineExceptionHandler { _, e ->
+        Timber.w(e, "DataStorePreferences: unhandled exception in warm-up coroutine")
+    }
+
     /** Eagerly warm the cache from DataStore on construction. */
     init {
-        CoroutineScope(Dispatchers.IO).launch {
+        scope.launch(Dispatchers.IO) {
             try {
                 val prefs = dataStore.data.first()
                 cachedLanguage = prefs[LANGUAGE_KEY] ?: migrateLanguageFromSp()
@@ -83,12 +90,18 @@ class DataStorePreferences @Inject constructor(
 
     // ===== Language =====
 
-    /** Synchronous read — backed by in-memory cache. */
-    fun getLanguage(): String = cachedLanguage
+    /**
+     * Synchronous read — backed by in-memory cache.
+     * Falls back to SharedPreferences if the DataStore warm-up hasn't completed yet.
+     */
+    fun getLanguage(): String {
+        if (!initialized) return LanguagePreferences.getLanguage(context)
+        return cachedLanguage
+    }
 
-    /** Reactive stream. */
-    fun observeLanguage(): Flow<String> = dataStore.data.map { prefs ->
-        prefs[LANGUAGE_KEY] ?: DEFAULT_LANGUAGE
+    /** Reactive stream — always reads from DataStore (source of truth). */
+    fun observeLanguage(): Flow<String> = dataStore.data.map { settings ->
+        settings[LANGUAGE_KEY] ?: DEFAULT_LANGUAGE
     }
 
     /** Persist language preference. */
@@ -97,6 +110,7 @@ class DataStorePreferences @Inject constructor(
             settings[LANGUAGE_KEY] = lang
         }
         cachedLanguage = lang
+        initialized = true
         // Mirror to SharedPreferences for attachBaseContext
         LanguagePreferences(context).setLanguage(lang)
         Timber.d("Language set to: %s", lang)
@@ -104,10 +118,16 @@ class DataStorePreferences @Inject constructor(
 
     // ===== Theme =====
 
-    /** Synchronous read — backed by in-memory cache. */
-    fun getThemeMode(): String = cachedThemeMode
+    /**
+     * Synchronous read — backed by in-memory cache.
+     * Falls back to SharedPreferences if the DataStore warm-up hasn't completed yet.
+     */
+    fun getThemeMode(): String {
+        if (!initialized) return ThemePreferences.getThemeMode(context)
+        return cachedThemeMode
+    }
 
-    /** Reactive stream. */
+    /** Reactive stream — always reads from DataStore (source of truth). */
     fun observeThemeMode(): Flow<String> = dataStore.data.map { settings ->
         settings[THEME_KEY] ?: DEFAULT_THEME
     }
@@ -118,6 +138,7 @@ class DataStorePreferences @Inject constructor(
             settings[THEME_KEY] = mode
         }
         cachedThemeMode = mode
+        initialized = true
         // Mirror to SharedPreferences for attachBaseContext
         ThemePreferences(context).setThemeMode(mode)
         Timber.d("Theme mode set to: %s", mode)
