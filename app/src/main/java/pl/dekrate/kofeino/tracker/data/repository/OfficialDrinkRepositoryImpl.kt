@@ -2,6 +2,7 @@ package pl.dekrate.kofeino.tracker.data.repository
 
 import pl.dekrate.kofeino.tracker.data.local.OfficialDrinkCacheDao
 import pl.dekrate.kofeino.tracker.data.local.OfficialDrinkCacheEntity
+import pl.dekrate.kofeino.tracker.data.remote.ConnectivityObserver
 import pl.dekrate.kofeino.tracker.data.remote.OpenFoodFactsApi
 import pl.dekrate.kofeino.tracker.data.remote.OpenFoodFactsProduct
 import pl.dekrate.kofeino.tracker.domain.model.OfficialDrink
@@ -11,12 +12,19 @@ import javax.inject.Singleton
 
 /**
  * Implementation of [OfficialDrinkRepository] backed by Open Food Facts API
- * with local cache for offline-first behavior.
+ * with local cache for offline-first behavior and ConnectivityObserver integration.
  *
- * Strategy:
- * 1. Return fresh cache immediately (offline-first, no network wait on init)
- * 2. Fetch from API in the background, cache results
- * 3. If cache is empty or stale, try API and block
+ * ## Offline-first strategy
+ * 1. Return fresh cache immediately (no network wait on init)
+ * 2. If online AND cache is stale/missing → fetch from API, cache results
+ * 3. If offline → return stale cache (last known data)
+ * 4. API failure → return stale cache (graceful degradation)
+ *
+ * ## SOLID
+ * - **Single Responsibility**: repository only — delegates networking to [OpenFoodFactsApi],
+ *   caching to [OfficialDrinkCacheDao], connectivity to [ConnectivityObserver]
+ * - **Dependency Inversion**: depends on abstractions ([OfficialDrinkRepository], [OpenFoodFactsApi])
+ * - **Open/Closed**: new data sources (e.g. another API) can be added without modifying this class
  *
  * Cache TTL: 1 hour.
  * API caffeine values: returned in grams per 100g, converted to mg per 100ml.
@@ -24,7 +32,8 @@ import javax.inject.Singleton
 @Singleton
 class OfficialDrinkRepositoryImpl @Inject constructor(
     private val api: OpenFoodFactsApi,
-    private val cacheDao: OfficialDrinkCacheDao
+    private val cacheDao: OfficialDrinkCacheDao,
+    private val connectivityObserver: ConnectivityObserver
 ) : OfficialDrinkRepository {
 
     companion object {
@@ -41,7 +50,13 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
         val cached = loadFreshFromCache()
         if (cached.isSuccess) return cached
 
-        // 2. No fresh cache — try API with multiple broad queries to seed variety
+        // 2. No fresh cache — check connectivity
+        if (!connectivityObserver.isOnline) {
+            Timber.d("Offline — falling back to stale cache")
+            return loadStaleFromCache()
+        }
+
+        // 3. Online — try API with multiple broad queries to seed variety
         return try {
             val queries = listOf("coffee", "tea", "energy drink", "cola")
             val allDrinks = mutableListOf<OfficialDrink>()
@@ -62,7 +77,8 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
                 return Result.success(unique)
             }
 
-            // 3. API returned nothing — last resort: stale cache
+            // 4. API returned nothing — last resort: stale cache
+            Timber.d("API returned no results — falling back to stale cache")
             loadStaleFromCache()
         } catch (e: Exception) {
             Timber.w(e, "API load failed, falling back to stale cache")
@@ -71,6 +87,12 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
     }
 
     override suspend fun searchOfficialDrinks(query: String): Result<List<OfficialDrink>> {
+        // Check connectivity before attempting API call
+        if (!connectivityObserver.isOnline) {
+            Timber.d("Offline — searching local cache for '%s'", query)
+            return searchLocalCache(query)
+        }
+
         // Try API search first
         return try {
             val response = api.searchProducts(query = query, pageSize = 25)
@@ -82,10 +104,10 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
             if (drinks.isNotEmpty()) {
                 cacheDao.insertAll(drinks.map { it.toCacheEntity() })
             }
-            Timber.d("API search for '$query' returned ${response.count} total, ${drinks.size} with caffeine")
+            Timber.d("API search for '%s' returned %d total, %d with caffeine", query, response.count, drinks.size)
             Result.success(drinks)
         } catch (e: Exception) {
-            Timber.w(e, "API search failed for '$query', searching local cache")
+            Timber.w(e, "API search failed for '%s', searching local cache", query)
             searchLocalCache(query)
         }
     }

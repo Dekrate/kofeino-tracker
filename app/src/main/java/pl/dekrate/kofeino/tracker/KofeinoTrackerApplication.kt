@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.res.Configuration
 import android.content.res.Resources
 import dagger.hilt.android.HiltAndroidApp
+import pl.dekrate.kofeino.tracker.data.local.DataStorePreferences
 import pl.dekrate.kofeino.tracker.data.local.LanguagePreferences
 import timber.log.Timber
 import java.util.Locale
@@ -51,10 +52,10 @@ class KofeinoTrackerApplication : Application() {
     }
 
     companion object {
-        /** Delegates to [LanguagePreferences] companion for consistency. */
-        fun getLanguage(context: Context): String = LanguagePreferences.getLanguage(context)
+        /** Delegates to [DataStorePreferences] companion (reads SharedPreferences pre-Hilt). */
+        fun getLanguage(context: Context): String = DataStorePreferences.getLanguage(context)
 
-        /** Delegates to a new [LanguagePreferences] for consistency. */
+        /** Delegates to a new [LanguagePreferences] for pre-Hilt writes. */
         fun setLanguage(context: Context, lang: String) {
             LanguagePreferences(context).setLanguage(lang)
         }

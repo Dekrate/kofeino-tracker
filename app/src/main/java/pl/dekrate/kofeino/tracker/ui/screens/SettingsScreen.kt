@@ -40,8 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import pl.dekrate.kofeino.tracker.KofeinoTrackerApplication
 import pl.dekrate.kofeino.tracker.R
-import pl.dekrate.kofeino.tracker.data.local.LanguagePreferences
-import pl.dekrate.kofeino.tracker.data.local.ThemePreferences
+import pl.dekrate.kofeino.tracker.data.local.DataStorePreferences
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -129,22 +128,22 @@ fun SettingsScreen(
 
             ThemeOption(
                 label = stringResource(R.string.theme_system),
-                isSelected = state.currentThemeMode == ThemePreferences.THEME_SYSTEM,
-                onSelect = { viewModel.setThemeMode(ThemePreferences.THEME_SYSTEM) },
+                isSelected = state.currentThemeMode == DataStorePreferences.THEME_SYSTEM,
+                onSelect = { viewModel.setThemeMode(DataStorePreferences.THEME_SYSTEM) },
                 modifier = Modifier.semantics { contentDescription = systemThemeDesc }
             )
 
             ThemeOption(
                 label = stringResource(R.string.theme_light),
-                isSelected = state.currentThemeMode == ThemePreferences.THEME_LIGHT,
-                onSelect = { viewModel.setThemeMode(ThemePreferences.THEME_LIGHT) },
+                isSelected = state.currentThemeMode == DataStorePreferences.THEME_LIGHT,
+                onSelect = { viewModel.setThemeMode(DataStorePreferences.THEME_LIGHT) },
                 modifier = Modifier.semantics { contentDescription = lightThemeDesc }
             )
 
             ThemeOption(
                 label = stringResource(R.string.theme_dark),
-                isSelected = state.currentThemeMode == ThemePreferences.THEME_DARK,
-                onSelect = { viewModel.setThemeMode(ThemePreferences.THEME_DARK) },
+                isSelected = state.currentThemeMode == DataStorePreferences.THEME_DARK,
+                onSelect = { viewModel.setThemeMode(DataStorePreferences.THEME_DARK) },
                 modifier = Modifier.semantics { contentDescription = darkThemeDesc }
             )
 
@@ -158,22 +157,22 @@ fun SettingsScreen(
 
             LanguageOption(
                 label = stringResource(R.string.language_system),
-                isSelected = state.currentLanguage == LanguagePreferences.LANGUAGE_SYSTEM,
-                onSelect = { viewModel.setLanguage(LanguagePreferences.LANGUAGE_SYSTEM) },
+                isSelected = state.currentLanguage == DataStorePreferences.LANGUAGE_SYSTEM,
+                onSelect = { viewModel.setLanguage(DataStorePreferences.LANGUAGE_SYSTEM) },
                 modifier = Modifier.semantics { contentDescription = systemLangDesc }
             )
 
             LanguageOption(
                 label = stringResource(R.string.english),
-                isSelected = state.currentLanguage == LanguagePreferences.LANGUAGE_EN,
-                onSelect = { viewModel.setLanguage(LanguagePreferences.LANGUAGE_EN) },
+                isSelected = state.currentLanguage == DataStorePreferences.LANGUAGE_EN,
+                onSelect = { viewModel.setLanguage(DataStorePreferences.LANGUAGE_EN) },
                 modifier = Modifier.semantics { contentDescription = englishDesc }
             )
 
             LanguageOption(
                 label = stringResource(R.string.polish),
-                isSelected = state.currentLanguage == LanguagePreferences.LANGUAGE_PL,
-                onSelect = { viewModel.setLanguage(LanguagePreferences.LANGUAGE_PL) },
+                isSelected = state.currentLanguage == DataStorePreferences.LANGUAGE_PL,
+                onSelect = { viewModel.setLanguage(DataStorePreferences.LANGUAGE_PL) },
                 modifier = Modifier.semantics { contentDescription = polishDesc }
             )
 
