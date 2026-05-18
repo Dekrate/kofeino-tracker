@@ -308,9 +308,9 @@ fun EditIntakeScreen(
                                         )
                                     }
                                     Text(
-                                        modifier = Modifier.testTag("confirm_delete"),
-                                        if (isDeleting) stringResource(R.string.deleting)
-                                        else stringResource(R.string.delete)
+                                        text = if (isDeleting) stringResource(R.string.deleting)
+                                        else stringResource(R.string.delete),
+                                        modifier = Modifier.testTag("confirm_delete")
                                     )
                                 }
                             },
