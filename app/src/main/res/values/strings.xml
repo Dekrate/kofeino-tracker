@@ -77,4 +77,35 @@
     <!-- About -->
     <string name="about">About</string>
     <string name="version_format">Version %s</string>
+
+    <!-- ManageDrinksScreen -->
+    <string name="add_drink_form_title">Add Drink</string>
+    <string name="edit_drink_form_title">Edit Drink</string>
+    <string name="drink_name_label">Name</string>
+    <string name="drink_name_hint">e.g. Flat White</string>
+    <string name="drink_name_required">Name is required</string>
+    <string name="caffeine_mg_label">Caffeine: %d mg</string>
+    <string name="volume_ml_label">Volume: %d ml</string>
+    <string name="drink_saved">Drink saved!</string>
+    <string name="drink_deleted">Drink deleted</string>
+    <string name="delete_drink_confirm">Delete this drink?</string>
+    <string name="delete_drink_warning">\"%s\" will be removed permanently. This action cannot be undone.</string>
+    <string name="delete_default_drink_blocked">Default drinks cannot be deleted</string>
+    <string name="no_custom_drinks">No custom drinks yet</string>
+    <string name="no_custom_drinks_hint">Tap + to add your first custom drink</string>
+    <string name="browse_official_drinks">Browse official drinks</string>
+    <string name="browse_official_drinks_hint">Search Open Food Facts database</string>
+
+    <!-- OfficialDrinksScreen -->
+    <string name="search_hint">Search drinks…</string>
+    <string name="search_clear">Clear search</string>
+    <string name="search_loading">Searching…</string>
+    <string name="import_drink">Import</string>
+    <string name="import_as_drink">Import as drink</string>
+    <string name="imported_as_drink">Imported as drink</string>
+    <string name="import_error">Failed to import drink</string>
+    <string name="caffeine_per_100ml">%.0f mg / 100 ml</string>
+    <string name="no_search_results">No drinks found</string>
+    <string name="no_search_results_hint">Try a different search term</string>
+    <string name="type_to_search">Type to search drinks</string>
 </resources>

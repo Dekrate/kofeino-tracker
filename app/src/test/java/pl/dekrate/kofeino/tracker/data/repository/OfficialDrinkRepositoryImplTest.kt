@@ -8,9 +8,11 @@ import org.junit.Before
 import org.junit.Test
 import pl.dekrate.kofeino.tracker.data.local.OfficialDrinkCacheDao
 import pl.dekrate.kofeino.tracker.data.local.OfficialDrinkCacheEntity
+import pl.dekrate.kofeino.tracker.data.remote.OpenFoodFactsApi
 
 class OfficialDrinkRepositoryImplTest {
 
+    private val api: OpenFoodFactsApi = mockk()
     private val cacheDao: OfficialDrinkCacheDao = mockk()
     private lateinit var repository: OfficialDrinkRepositoryImpl
 
@@ -26,7 +28,9 @@ class OfficialDrinkRepositoryImplTest {
 
     @Before
     fun setUp() {
-        repository = OfficialDrinkRepositoryImpl(cacheDao)
+        // By default, API is unavailable — tests exercise cache fallback
+        coEvery { api.searchProducts(any(), any(), any(), any(), any()) } throws RuntimeException("API unavailable")
+        repository = OfficialDrinkRepositoryImpl(api, cacheDao)
     }
 
     @Test
@@ -123,13 +127,16 @@ class OfficialDrinkRepositoryImplTest {
     }
 
     @Test
-    fun `getOfficialDrinks returns failure when cache only has expired entries`() = runTest {
+    fun `getOfficialDrinks returns stale cache when API fails and fresh cache is empty`() = runTest {
         val expired = sampleCached.copy(fetchedAtMillis = 0L) // 1970-01-01
         coEvery { cacheDao.getAllCached() } returns listOf(expired)
 
         val result = repository.getOfficialDrinks()
 
-        assert(result.isFailure) { "Expected failure for expired cache, got $result" }
+        assert(result.isSuccess) { "Expected stale cache fallback, got $result" }
+        val drinks = result.getOrThrow()
+        assert(drinks.size == 1) { "Expected 1 stale drink, got ${drinks.size}" }
+        assert(drinks[0].barcode == "5901234567890")
     }
 
     @Test
