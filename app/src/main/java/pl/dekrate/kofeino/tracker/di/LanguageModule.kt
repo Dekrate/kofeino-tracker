@@ -1,23 +1,18 @@
 package pl.dekrate.kofeino.tracker.di
 
-import android.content.Context
 import dagger.Module
-import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import pl.dekrate.kofeino.tracker.data.local.LanguagePreferences
-import javax.inject.Singleton
 
+/**
+ * Language preferences DI module (retained for Hilt binding scope).
+ *
+ * [DataStorePreferences] is automatically provided by Hilt; this module
+ * exists only as an extension point and documentation anchor.
+ *
+ * The old [pl.dekrate.kofeino.tracker.data.local.LanguagePreferences] (SharedPreferences)
+ * is retained only for pre-Hilt static access (attachBaseContext).
+ */
 @Module
 @InstallIn(SingletonComponent::class)
-object LanguageModule {
-
-    @Provides
-    @Singleton
-    fun provideLanguagePreferences(
-        @ApplicationContext context: Context
-    ): LanguagePreferences {
-        return LanguagePreferences(context)
-    }
-}
+object LanguageModule

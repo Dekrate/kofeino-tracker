@@ -1,23 +1,21 @@
 package pl.dekrate.kofeino.tracker.di
 
-import android.content.Context
 import dagger.Module
-import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import pl.dekrate.kofeino.tracker.data.local.ThemePreferences
-import javax.inject.Singleton
 
+/**
+ * Preferences DI module.
+ *
+ * [DataStorePreferences] is automatically provided by Hilt via its `@Inject constructor`
+ * and `@Singleton` annotation — no `@Provides` method needed here.
+ *
+ * This module exists as a documentation anchor and extension point for any
+ * future preference-related bindings.
+ *
+ * The old [pl.dekrate.kofeino.tracker.data.local.ThemePreferences] (SharedPreferences)
+ * is retained only for pre-Hilt static access (attachBaseContext).
+ */
 @Module
 @InstallIn(SingletonComponent::class)
-object ThemeModule {
-
-    @Provides
-    @Singleton
-    fun provideThemePreferences(
-        @ApplicationContext context: Context
-    ): ThemePreferences {
-        return ThemePreferences(context)
-    }
-}
+object ThemeModule
