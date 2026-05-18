@@ -20,7 +20,6 @@ import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -254,6 +253,51 @@ class AddDrinkScreenTest {
         composeTestRule.onNodeWithText("-10").performClick()
         composeTestRule.onNodeWithText(
             "${context.getString(R.string.volume)}: 190ml", substring = true
+        ).assertIsDisplayed()
+    }
+
+    @Test
+    fun addDrinkScreen_confirmation_volumeStepper_minimumGuard() {
+        val drinks = listOf(
+            DrinkEntity(1, "Espresso", 63, 30, true)
+        )
+        val fakeViewModel = createFakeViewModel(drinks)
+        composeTestRule.setContent {
+            KofeinoTrackerTheme {
+                AddDrinkScreen(
+                    onDrinkAdded = {},
+                    viewModel = fakeViewModel
+                )
+            }
+        }
+
+        // Tap the drink -> confirmation shown
+        composeTestRule.onNodeWithText("Espresso", substring = true).performClick()
+
+        // Click -10 three times: 30 -> 20 -> 10 -> 0
+        composeTestRule.onNodeWithText("-10").performClick()
+        composeTestRule.onNodeWithText("-10").performClick()
+        composeTestRule.onNodeWithText("-10").performClick()
+
+        // Value should be 0 (minimum guard stops at 0)
+        composeTestRule.onNodeWithText(
+            "${context.getString(R.string.volume)}: 0ml", substring = true
+        ).assertIsDisplayed()
+
+        // -10 button should be disabled since 0 < 10
+        composeTestRule.onNodeWithText("-10").assertIsNotEnabled()
+
+        // +10 should still work
+        composeTestRule.onNodeWithText("+10").performClick()
+        composeTestRule.onNodeWithText(
+            "${context.getString(R.string.volume)}: 10ml", substring = true
+        ).assertIsDisplayed()
+
+        // After going back above 10, -10 should be enabled again
+        composeTestRule.onNodeWithText("-10").assertIsEnabled()
+        composeTestRule.onNodeWithText("-10").performClick()
+        composeTestRule.onNodeWithText(
+            "${context.getString(R.string.volume)}: 0ml", substring = true
         ).assertIsDisplayed()
     }
 

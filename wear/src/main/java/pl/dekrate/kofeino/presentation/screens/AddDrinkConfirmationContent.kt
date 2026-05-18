@@ -45,8 +45,8 @@ fun AddDrinkConfirmationContent(
     onCancel: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var caffeineMg by remember { mutableIntStateOf(drink.caffeineMg) }
-    var volumeMl by remember { mutableIntStateOf(drink.volumeMl) }
+    var caffeineMg by remember(drink) { mutableIntStateOf(drink.caffeineMg) }
+    var volumeMl by remember(drink) { mutableIntStateOf(drink.volumeMl) }
 
     // Pre-resolve strings for accessibility (semantics blocks are not @Composable)
     val caffeineDesc = stringResource(R.string.caffeine_amount)
