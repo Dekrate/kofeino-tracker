@@ -156,8 +156,8 @@ class OfficialDrinksScreenTest {
     @Test
     fun officialDrinksScreen_displaysResults() {
         val drinks = listOf(
-            OfficialDrink(barcode = "123", name = "Coca-Cola", brand = "Coca-Cola", caffeineMgPer100ml = 10.0),
-            OfficialDrink(barcode = "456", name = "Pepsi", brand = "PepsiCo", caffeineMgPer100ml = 8.0)
+            OfficialDrink(barcode = "123", name = "Coca-Cola", brand = "Coca-Cola", caffeineMgPer100ml = 10.0, energyKcalPer100ml = null, quantity = null),
+            OfficialDrink(barcode = "456", name = "Pepsi", brand = "PepsiCo", caffeineMgPer100ml = 8.0, energyKcalPer100ml = null, quantity = null)
         )
         val fakeVm = createFakeViewModel(
             OfficialDrinksUiState(drinks = drinks, isSearchMode = true, searchQuery = "cola")
@@ -177,7 +177,7 @@ class OfficialDrinksScreenTest {
     @Test
     fun officialDrinksScreen_displaysCaffeinePer100ml() {
         val drinks = listOf(
-            OfficialDrink(barcode = "123", name = "Monster", brand = "Monster", caffeineMgPer100ml = 32.0)
+            OfficialDrink(barcode = "123", name = "Monster", brand = "Monster", caffeineMgPer100ml = 32.0, energyKcalPer100ml = null, quantity = null)
         )
         val fakeVm = createFakeViewModel(
             OfficialDrinksUiState(drinks = drinks, isSearchMode = true, searchQuery = "monster")
@@ -198,7 +198,7 @@ class OfficialDrinksScreenTest {
     @Test
     fun officialDrinksScreen_displaysBrandAndCaffeine() {
         val drinks = listOf(
-            OfficialDrink(barcode = "123", name = "Monster", brand = "Monster Energy", caffeineMgPer100ml = 32.0)
+            OfficialDrink(barcode = "123", name = "Monster", brand = "Monster Energy", caffeineMgPer100ml = 32.0, energyKcalPer100ml = null, quantity = null)
         )
         val fakeVm = createFakeViewModel(
             OfficialDrinksUiState(drinks = drinks, isSearchMode = true, searchQuery = "monster")
@@ -221,7 +221,7 @@ class OfficialDrinksScreenTest {
     @Test
     fun officialDrinksScreen_showsImportButton() {
         val drinks = listOf(
-            OfficialDrink(barcode = "123", name = "Coca-Cola", brand = null, caffeineMgPer100ml = 10.0)
+            OfficialDrink(barcode = "123", name = "Coca-Cola", brand = null, caffeineMgPer100ml = 10.0, energyKcalPer100ml = null, quantity = null)
         )
         val fakeVm = createFakeViewModel(
             OfficialDrinksUiState(drinks = drinks, isSearchMode = true, searchQuery = "cola")
@@ -240,7 +240,7 @@ class OfficialDrinksScreenTest {
     @Test
     fun officialDrinksScreen_showsImportedButton_whenAlreadyImported() {
         val drinks = listOf(
-            OfficialDrink(barcode = "123", name = "Coca-Cola", brand = null, caffeineMgPer100ml = 10.0)
+            OfficialDrink(barcode = "123", name = "Coca-Cola", brand = null, caffeineMgPer100ml = 10.0, energyKcalPer100ml = null, quantity = null)
         )
         val fakeVm = createFakeViewModel(
             OfficialDrinksUiState(
@@ -266,7 +266,7 @@ class OfficialDrinksScreenTest {
 
     @Test
     fun officialDrinksScreen_importButton_callsImportAsDrink() {
-        val drink = OfficialDrink(barcode = "123", name = "Coca-Cola", brand = null, caffeineMgPer100ml = 10.0)
+        val drink = OfficialDrink(barcode = "123", name = "Coca-Cola", brand = null, caffeineMgPer100ml = 10.0, energyKcalPer100ml = null, quantity = null)
         val fakeVm = mockk<OfficialDrinksViewModel>(relaxed = true)
         every { fakeVm.uiState } returns MutableStateFlow(
             OfficialDrinksUiState(drinks = listOf(drink), isSearchMode = true, searchQuery = "cola")
@@ -367,7 +367,7 @@ class OfficialDrinksScreenTest {
     @Test
     fun officialDrinksScreen_showsSmallLoadingIndicator_duringBackgroundRefresh() {
         val drinks = listOf(
-            OfficialDrink(barcode = "123", name = "Coca-Cola", brand = null, caffeineMgPer100ml = 10.0)
+            OfficialDrink(barcode = "123", name = "Coca-Cola", brand = null, caffeineMgPer100ml = 10.0, energyKcalPer100ml = null, quantity = null)
         )
         val fakeVm = createFakeViewModel(
             OfficialDrinksUiState(drinks = drinks, isLoading = true, isSearchMode = true, searchQuery = "cola")
