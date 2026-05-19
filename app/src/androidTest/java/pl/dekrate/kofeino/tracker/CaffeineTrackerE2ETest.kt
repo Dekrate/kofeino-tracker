@@ -157,7 +157,7 @@ class CaffeineTrackerE2ETest {
         // Use fine adjustment: +1 three times -> 66
         repeat(3) {
             composeRule.onNodeWithText(
-                context.getString(R.string.caffeine_adjustment_increase_fine)
+                context.getString(R.string.caffeine_adjustment_increase, 1)
             ).performClick()
             composeRule.waitForIdle()
         }

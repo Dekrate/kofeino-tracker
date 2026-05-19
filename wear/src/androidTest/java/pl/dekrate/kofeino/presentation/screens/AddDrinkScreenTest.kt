@@ -159,7 +159,7 @@ class AddDrinkScreenTest {
 
         // Tap +1 -> 64
         composeTestRule.onNodeWithText(
-            context.getString(R.string.caffeine_adjustment_increase_fine)
+            context.getString(R.string.caffeine_adjustment_increase, 1)
         ).performClick()
         composeTestRule.onNodeWithText(
             context.getString(R.string.caffeine_label, 64),
@@ -168,10 +168,10 @@ class AddDrinkScreenTest {
 
         // Tap -1 twice -> 62
         composeTestRule.onNodeWithText(
-            context.getString(R.string.caffeine_adjustment_decrease_fine)
+            context.getString(R.string.caffeine_adjustment_decrease, 1)
         ).performClick()
         composeTestRule.onNodeWithText(
-            context.getString(R.string.caffeine_adjustment_decrease_fine)
+            context.getString(R.string.caffeine_adjustment_decrease, 1)
         ).performClick()
         composeTestRule.onNodeWithText(
             context.getString(R.string.caffeine_label, 62),

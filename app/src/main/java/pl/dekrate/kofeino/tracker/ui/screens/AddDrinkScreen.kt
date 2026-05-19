@@ -298,13 +298,13 @@ private fun CaffeineStepper(
                 onClick = { onCaffeineChange(-CaffeineFineStepMg) },
                 enabled = caffeineMg >= CaffeineFineStepMg
             ) {
-                Text(stringResource(R.string.caffeine_adjustment_decrease_fine))
+                Text(stringResource(R.string.caffeine_adjustment_decrease, CaffeineFineStepMg))
             }
             Spacer(modifier = Modifier.width(16.dp))
             Button(
                 onClick = { onCaffeineChange(CaffeineFineStepMg) }
             ) {
-                Text(stringResource(R.string.caffeine_adjustment_increase_fine))
+                Text(stringResource(R.string.caffeine_adjustment_increase, CaffeineFineStepMg))
             }
         }
     }

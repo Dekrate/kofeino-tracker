@@ -94,8 +94,8 @@ fun AddDrinkConfirmationContent(
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     Button(
-                        onClick = { if (caffeineMg >= 5) caffeineMg -= 5 },
-                        enabled = !isLogging && caffeineMg >= 5,
+                        onClick = { if (caffeineMg >= CaffeineCoarseStepMg) caffeineMg -= CaffeineCoarseStepMg },
+                        enabled = !isLogging && caffeineMg >= CaffeineCoarseStepMg,
                         modifier = Modifier
                             .weight(1f)
                             .padding(end = 4.dp)
@@ -104,7 +104,7 @@ fun AddDrinkConfirmationContent(
                         Text(stringResource(R.string.caffeine_adjustment_decrease, CaffeineCoarseStepMg))
                     }
                     Button(
-                        onClick = { caffeineMg += 5 },
+                        onClick = { caffeineMg += CaffeineCoarseStepMg },
                         enabled = !isLogging,
                         modifier = Modifier
                             .weight(1f)
@@ -123,24 +123,24 @@ fun AddDrinkConfirmationContent(
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     Button(
-                        onClick = { if (caffeineMg >= 1) caffeineMg -= 1 },
-                        enabled = !isLogging && caffeineMg >= 1,
+                        onClick = { if (caffeineMg >= CaffeineFineStepMg) caffeineMg -= CaffeineFineStepMg },
+                        enabled = !isLogging && caffeineMg >= CaffeineFineStepMg,
                         modifier = Modifier
                             .weight(1f)
                             .padding(end = 4.dp)
                             .semantics { contentDescription = "$caffeineDesc -1" }
                     ) {
-                        Text(stringResource(R.string.caffeine_adjustment_decrease_fine))
+                        Text(stringResource(R.string.caffeine_adjustment_decrease, CaffeineFineStepMg))
                     }
                     Button(
-                        onClick = { caffeineMg += 1 },
+                        onClick = { caffeineMg += CaffeineFineStepMg },
                         enabled = !isLogging,
                         modifier = Modifier
                             .weight(1f)
                             .padding(start = 4.dp)
                             .semantics { contentDescription = "$caffeineDesc +1" }
                     ) {
-                        Text(stringResource(R.string.caffeine_adjustment_increase_fine))
+                        Text(stringResource(R.string.caffeine_adjustment_increase, CaffeineFineStepMg))
                     }
                 }
             }
@@ -221,3 +221,4 @@ fun AddDrinkConfirmationContent(
 }
 
 private const val CaffeineCoarseStepMg = 5
+private const val CaffeineFineStepMg = 1

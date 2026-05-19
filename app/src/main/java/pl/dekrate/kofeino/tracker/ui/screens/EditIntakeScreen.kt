@@ -201,13 +201,13 @@ fun EditIntakeScreen(
                                     enabled = state.caffeineMg >= 1,
                                     modifier = Modifier.weight(1f)
                                 ) {
-                                    Text(stringResource(R.string.caffeine_adjustment_decrease_fine))
+                                    Text(stringResource(R.string.caffeine_adjustment_decrease, 1))
                                 }
                                 Button(
                                     onClick = { viewModel.updateCaffeineMg(1) },
                                     modifier = Modifier.weight(1f)
                                 ) {
-                                    Text(stringResource(R.string.caffeine_adjustment_increase_fine))
+                                    Text(stringResource(R.string.caffeine_adjustment_increase, 1))
                                 }
                             }
                         }

@@ -99,8 +99,6 @@
     <string name="intake_not_found">Entry not found</string>
     <string name="caffeine_adjustment_decrease">-%d mg</string>
     <string name="caffeine_adjustment_increase">+%d mg</string>
-    <string name="caffeine_adjustment_decrease_fine">-1 mg</string>
-    <string name="caffeine_adjustment_increase_fine">+1 mg</string>
     <string name="caffeine_label">Caffeine: %d mg</string>
     <string name="saving">Saving…</string>
     <string name="deleting">Deleting…</string>

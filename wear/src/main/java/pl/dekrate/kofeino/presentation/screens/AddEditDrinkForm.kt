@@ -118,8 +118,8 @@ fun AddEditDrinkForm(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Button(
-                onClick = { if (caffeineMg >= 5) caffeineMg -= 5 },
-                enabled = caffeineMg >= 5,
+                onClick = { if (caffeineMg >= CaffeineCoarseStepMg) caffeineMg -= CaffeineCoarseStepMg },
+                enabled = caffeineMg >= CaffeineCoarseStepMg,
                 modifier = Modifier
                     .weight(1f)
                     .padding(end = 4.dp)
@@ -128,7 +128,7 @@ fun AddEditDrinkForm(
                 Text(stringResource(R.string.caffeine_adjustment_decrease, CaffeineCoarseStepMg))
             }
             Button(
-                onClick = { caffeineMg += 5 },
+                onClick = { caffeineMg += CaffeineCoarseStepMg },
                 modifier = Modifier
                     .weight(1f)
                     .padding(start = 4.dp)
@@ -143,23 +143,23 @@ fun AddEditDrinkForm(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Button(
-                onClick = { if (caffeineMg >= 1) caffeineMg -= 1 },
-                enabled = caffeineMg >= 1,
+                onClick = { if (caffeineMg >= CaffeineFineStepMg) caffeineMg -= CaffeineFineStepMg },
+                enabled = caffeineMg >= CaffeineFineStepMg,
                 modifier = Modifier
                     .weight(1f)
                     .padding(end = 4.dp)
                     .semantics { contentDescription = "$caffeineAmountDesc -1" }
             ) {
-                Text(stringResource(R.string.caffeine_adjustment_decrease_fine))
+                Text(stringResource(R.string.caffeine_adjustment_decrease, CaffeineFineStepMg))
             }
             Button(
-                onClick = { caffeineMg += 1 },
+                onClick = { caffeineMg += CaffeineFineStepMg },
                 modifier = Modifier
                     .weight(1f)
                     .padding(start = 4.dp)
                     .semantics { contentDescription = "$caffeineAmountDesc +1" }
             ) {
-                Text(stringResource(R.string.caffeine_adjustment_increase_fine))
+                Text(stringResource(R.string.caffeine_adjustment_increase, CaffeineFineStepMg))
             }
         }
 
@@ -251,3 +251,4 @@ fun AddEditDrinkForm(
 }
 
 private const val CaffeineCoarseStepMg = 5
+private const val CaffeineFineStepMg = 1
