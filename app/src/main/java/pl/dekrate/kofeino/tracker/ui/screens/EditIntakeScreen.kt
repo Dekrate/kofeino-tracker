@@ -169,6 +169,7 @@ fun EditIntakeScreen(
 
                             Spacer(modifier = Modifier.height(12.dp))
 
+                            // Coarse adjustment (±5 mg)
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -185,6 +186,28 @@ fun EditIntakeScreen(
                                     modifier = Modifier.weight(1f)
                                 ) {
                                     Text(stringResource(R.string.caffeine_adjustment_increase, 5))
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            // Fine adjustment (±1 mg)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                OutlinedButton(
+                                    onClick = { viewModel.updateCaffeineMg(-1) },
+                                    enabled = state.caffeineMg >= 1,
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(stringResource(R.string.caffeine_adjustment_decrease, 1))
+                                }
+                                Button(
+                                    onClick = { viewModel.updateCaffeineMg(1) },
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(stringResource(R.string.caffeine_adjustment_increase, 1))
                                 }
                             }
                         }

@@ -97,6 +97,8 @@
 
     <!-- Intake screen -->
     <string name="intake_not_found">Nie znaleziono wpisu</string>
+    <string name="caffeine_adjustment_decrease">-%d mg</string>
+    <string name="caffeine_adjustment_increase">+%d mg</string>
     <string name="caffeine_label">Kofeina: %d mg</string>
     <string name="saving">Zapisywanie…</string>
     <string name="deleting">Usuwanie…</string>

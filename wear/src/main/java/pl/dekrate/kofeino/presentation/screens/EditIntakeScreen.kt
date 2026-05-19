@@ -110,29 +110,55 @@ fun EditIntakeScreen(
                 style = MaterialTheme.typography.bodyMedium
             )
 
-            // Caffeine adjustment buttons
+            // Caffeine adjustment coarse ±5
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 Button(
-                    onClick = { if (caffeineMg >= 5) caffeineMg -= 5 },
-                    enabled = caffeineMg >= 5,
+                    onClick = { if (caffeineMg >= CaffeineCoarseStepMg) caffeineMg -= CaffeineCoarseStepMg },
+                    enabled = caffeineMg >= CaffeineCoarseStepMg,
                     modifier = Modifier
                         .weight(1f)
                         .padding(end = 4.dp)
                         .semantics { contentDescription = "$caffeineDesc -5" }
                 ) {
-                    Text("-5")
+                    Text(stringResource(R.string.caffeine_adjustment_decrease, CaffeineCoarseStepMg))
                 }
                 Button(
-                    onClick = { caffeineMg += 5 },
+                    onClick = { caffeineMg += CaffeineCoarseStepMg },
                     modifier = Modifier
                         .weight(1f)
                         .padding(start = 4.dp)
                         .semantics { contentDescription = "$caffeineDesc +5" }
                 ) {
-                    Text("+5")
+                    Text(stringResource(R.string.caffeine_adjustment_increase, CaffeineCoarseStepMg))
+                }
+            }
+
+            // Caffeine adjustment fine ±1
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Button(
+                    onClick = { if (caffeineMg >= CaffeineFineStepMg) caffeineMg -= CaffeineFineStepMg },
+                    enabled = caffeineMg >= CaffeineFineStepMg,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 4.dp)
+                        .semantics { contentDescription = "$caffeineDesc -1" }
+                ) {
+                    Text(stringResource(R.string.caffeine_adjustment_decrease, CaffeineFineStepMg))
+                }
+                Button(
+                    onClick = { caffeineMg += CaffeineFineStepMg },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 4.dp)
+                        .semantics { contentDescription = "$caffeineDesc +1" }
+                ) {
+                    Text(stringResource(R.string.caffeine_adjustment_increase, CaffeineFineStepMg))
                 }
             }
 
@@ -254,3 +280,6 @@ fun EditIntakeScreen(
         }
     }
 }
+
+private const val CaffeineCoarseStepMg = 5
+private const val CaffeineFineStepMg = 1

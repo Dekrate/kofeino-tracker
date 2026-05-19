@@ -182,7 +182,7 @@ fun AddDrinkScreen(
 
 /**
  * Full-screen confirmation content shown after tapping a drink in [AddDrinkScreen].
- * Allows adjusting caffeine (+/-5) and volume (+/-10) before logging.
+ * Allows adjusting caffeine (+/-5, +/-1) and volume (+/-10) before logging.
  */
 @Composable
 private fun AddDrinkConfirmationContent(
@@ -215,46 +215,20 @@ private fun AddDrinkConfirmationContent(
             text = stringResource(R.string.caffeine_label, caffeineMg),
             style = MaterialTheme.typography.titleMedium
         )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            OutlinedButton(
-                onClick = { if (caffeineMg >= 5) caffeineMg -= 5 },
-                enabled = caffeineMg >= 5
-            ) {
-                Text("-5")
-            }
-            Spacer(modifier = Modifier.width(16.dp))
-            Button(
-                onClick = { caffeineMg += 5 }
-            ) {
-                Text("+5")
-            }
-        }
+        CaffeineStepper(
+            caffeineMg = caffeineMg,
+            onCaffeineChange = { delta -> caffeineMg += delta }
+        )
 
         // Volume section
         Text(
             text = stringResource(R.string.volume_label, volumeMl),
             style = MaterialTheme.typography.titleMedium
         )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            OutlinedButton(
-                onClick = { if (volumeMl >= 10) volumeMl -= 10 },
-                enabled = volumeMl >= 10
-            ) {
-                Text("-10")
-            }
-            Spacer(modifier = Modifier.width(16.dp))
-            Button(
-                onClick = { volumeMl += 10 }
-            ) {
-                Text("+10")
-            }
-        }
+        VolumeStepper(
+            volumeMl = volumeMl,
+            onVolumeChange = { delta -> volumeMl += delta }
+        )
 
         Spacer(modifier = Modifier.weight(1f))
 
@@ -283,6 +257,79 @@ private fun AddDrinkConfirmationContent(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.cancel))
+        }
+    }
+}
+
+private const val CaffeineCoarseStepMg = 5
+private const val CaffeineFineStepMg = 1
+private const val VolumeStepMl = 10
+
+@Composable
+private fun CaffeineStepper(
+    caffeineMg: Int,
+    onCaffeineChange: (Int) -> Unit,
+) {
+    Column {
+        // Coarse adjustment (±5 mg)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            OutlinedButton(
+                onClick = { onCaffeineChange(-CaffeineCoarseStepMg) },
+                enabled = caffeineMg >= CaffeineCoarseStepMg
+            ) {
+                Text(stringResource(R.string.caffeine_adjustment_decrease, CaffeineCoarseStepMg))
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Button(
+                onClick = { onCaffeineChange(CaffeineCoarseStepMg) }
+            ) {
+                Text(stringResource(R.string.caffeine_adjustment_increase, CaffeineCoarseStepMg))
+            }
+        }
+        // Fine adjustment (±1 mg)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            OutlinedButton(
+                onClick = { onCaffeineChange(-CaffeineFineStepMg) },
+                enabled = caffeineMg >= CaffeineFineStepMg
+            ) {
+                Text(stringResource(R.string.caffeine_adjustment_decrease, CaffeineFineStepMg))
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Button(
+                onClick = { onCaffeineChange(CaffeineFineStepMg) }
+            ) {
+                Text(stringResource(R.string.caffeine_adjustment_increase, CaffeineFineStepMg))
+            }
+        }
+    }
+}
+
+@Composable
+private fun VolumeStepper(
+    volumeMl: Int,
+    onVolumeChange: (Int) -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        OutlinedButton(
+            onClick = { onVolumeChange(-VolumeStepMl) },
+            enabled = volumeMl >= VolumeStepMl
+        ) {
+            Text("-10")
+        }
+        Spacer(modifier = Modifier.width(16.dp))
+        Button(
+            onClick = { onVolumeChange(VolumeStepMl) }
+        ) {
+            Text("+10")
         }
     }
 }
