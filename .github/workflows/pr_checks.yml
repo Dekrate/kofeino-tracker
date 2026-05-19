@@ -80,8 +80,24 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - name: Make gradlew executable
         run: chmod +x gradlew
-      - name: Run detekt
-        run: ./gradlew detektMain
+      - name: Path filter (changed modules)
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            app:
+              - 'app/**'
+            wear:
+              - 'wear/**'
+      - name: Run detekt (app)
+        if: steps.filter.outputs.app == 'true'
+        run: ./gradlew :app:detektMain
+      - name: Run detekt (wear)
+        if: steps.filter.outputs.wear == 'true'
+        run: ./gradlew :wear:detektMain
+      - name: Run detekt (fallback — other changes)
+        if: steps.filter.outputs.app != 'true' && steps.filter.outputs.wear != 'true'
+        run: ./gradlew :app:detektMain :wear:detektMain
       - uses: actions/upload-artifact@v4
         if: always()
         with:

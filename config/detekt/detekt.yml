@@ -263,7 +263,7 @@ style:
       - value: 'STOPSHIP:'
         reason: 'Forbidden STOPSHIP marker, please address before shipping.'
       - value: 'TODO:'
-        reason: 'Forbidden TODO marker, please do the changes.'
+        reason: 'Forbidden TODO marker, please address this item.'
   ForbiddenVoid:
     active: true
   FunctionOnlyReturningConstant:
@@ -374,7 +374,7 @@ style:
     excludeImports:
       - 'java.util.*'
 
-# ── COMPOSE RULES (mrmans0n/compose-rules) ────
+# ── COMPOSE RULES (io.nlopez.compose.rules:detekt) ────
 Compose:
   active: true
   ComposableAnnotationNaming:

@@ -14,6 +14,8 @@ detekt {
     basePath = rootProject.projectDir
     parallel = true
     ignoredBuildTypes = listOf("release")
+    source.setFrom("src/main/kotlin", "src/main/java")
+    baseline.set(file("detekt-baseline-main-debug.xml"))
 }
 
 tasks.withType<dev.detekt.gradle.Detekt>().configureEach {
