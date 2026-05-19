@@ -125,7 +125,7 @@ fun AddEditDrinkForm(
                     .padding(end = 4.dp)
                     .semantics { contentDescription = "$caffeineAmountDesc -5" }
             ) {
-                Text(stringResource(R.string.caffeine_adjustment_decrease, 5))
+                Text(stringResource(R.string.caffeine_adjustment_decrease, CaffeineCoarseStepMg))
             }
             Button(
                 onClick = { caffeineMg += 5 },
@@ -134,7 +134,7 @@ fun AddEditDrinkForm(
                     .padding(start = 4.dp)
                     .semantics { contentDescription = "$caffeineAmountDesc +5" }
             ) {
-                Text(stringResource(R.string.caffeine_adjustment_increase, 5))
+                Text(stringResource(R.string.caffeine_adjustment_increase, CaffeineCoarseStepMg))
             }
         }
         // Fine adjustment (±1)
@@ -249,3 +249,5 @@ fun AddEditDrinkForm(
         }
     }
 }
+
+private const val CaffeineCoarseStepMg = 5

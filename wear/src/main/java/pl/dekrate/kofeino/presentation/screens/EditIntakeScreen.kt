@@ -123,7 +123,7 @@ fun EditIntakeScreen(
                         .padding(end = 4.dp)
                         .semantics { contentDescription = "$caffeineDesc -5" }
                 ) {
-                    Text(stringResource(R.string.caffeine_adjustment_decrease, 5))
+                    Text(stringResource(R.string.caffeine_adjustment_decrease, CaffeineCoarseStepMg))
                 }
                 Button(
                     onClick = { caffeineMg += 5 },
@@ -132,7 +132,7 @@ fun EditIntakeScreen(
                         .padding(start = 4.dp)
                         .semantics { contentDescription = "$caffeineDesc +5" }
                 ) {
-                    Text(stringResource(R.string.caffeine_adjustment_increase, 5))
+                    Text(stringResource(R.string.caffeine_adjustment_increase, CaffeineCoarseStepMg))
                 }
             }
 
@@ -280,3 +280,5 @@ fun EditIntakeScreen(
         }
     }
 }
+
+private const val CaffeineCoarseStepMg = 5
