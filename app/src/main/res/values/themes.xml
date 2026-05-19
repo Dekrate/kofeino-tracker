@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.KofeinoTracker" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.KofeinoTracker" parent="android:Theme.Material.Light.NoActionBar">
+        <!-- Edge-to-edge is handled programmatically via enableEdgeToEdge().
+             These values provide a graceful fallback on older platforms. -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
 </resources>
