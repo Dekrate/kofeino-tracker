@@ -1,6 +1,6 @@
 package pl.dekrate.kofeino.tracker.ui.screens
 
-import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -147,8 +147,8 @@ class ManageDrinksScreenTest {
                 )
             }
         }
-        composeTestRule.onNodeWithContentDescription(context.getString(R.string.edit_drink_form_title)).assertIsNotDisplayed()
-        composeTestRule.onNodeWithContentDescription(context.getString(R.string.delete)).assertIsNotDisplayed()
+        composeTestRule.onNodeWithContentDescription(context.getString(R.string.edit_drink_form_title)).assertDoesNotExist()
+        composeTestRule.onNodeWithContentDescription(context.getString(R.string.delete)).assertDoesNotExist()
     }
 
     // ===== Interaction tests =====
