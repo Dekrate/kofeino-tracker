@@ -9,7 +9,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
-import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -102,7 +101,6 @@ class CaffeineLiveNotificationManager @Inject constructor(
      * @param currentMg total caffeine consumed today
      * @param targetMg  daily target (default 400 mg)
      */
-    @RequiresPermission("android.permission.POST_NOTIFICATIONS")
     fun update(currentMg: Int, targetMg: Int = TARGET_MG) {
         if (isUserDismissed) {
             Timber.tag(TAG).d("Skipping update — user dismissed")
