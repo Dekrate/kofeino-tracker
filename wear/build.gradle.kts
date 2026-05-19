@@ -1,8 +1,31 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.detekt)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.ksp)
+}
+
+detekt {
+    toolVersion = libs.versions.detekt.get()
+    config.setFrom(rootProject.file("config/detekt/detekt.yml"))
+    buildUponDefaultConfig = true
+    allRules = false
+    basePath = rootProject.projectDir
+    parallel = true
+    ignoredBuildTypes = listOf("release")
+    source.setFrom("src/main/kotlin", "src/main/java")
+    baseline.set(file("detekt-baseline-main-debug.xml"))
+}
+
+tasks.withType<dev.detekt.gradle.Detekt>().configureEach {
+    jvmTarget = "21"
+    reports {
+        html.required.set(true)
+        sarif.required.set(false)
+        checkstyle.required.set(false)
+        markdown.required.set(false)
+    }
 }
 
 android {
@@ -86,6 +109,8 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
     implementation(libs.gson)
+
+    detektPlugins(libs.detekt.compose.rules)
 
     debugImplementation(libs.compose.ui.tooling)
     debugImplementation(libs.compose.ui.test.manifest)

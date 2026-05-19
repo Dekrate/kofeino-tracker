@@ -1,0 +1,243 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>AbstractClassCanBeConcreteClass:BaseViewModel.kt:BaseViewModel$BaseViewModel</ID>
+    <ID>ClassNaming:CaffeineDatabase_Impl.kt:CaffeineDatabase_Impl : CaffeineDatabase</ID>
+    <ID>ClassNaming:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl : CaffeineIntakeDao</ID>
+    <ID>ClassNaming:DrinkDao_Impl.kt:DrinkDao_Impl : DrinkDao</ID>
+    <ID>ClassNaming:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl : OfficialDrinkCacheDao</ID>
+    <ID>CognitiveComplexMethod:EditIntakeScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun EditIntakeScreen</ID>
+    <ID>CognitiveComplexMethod:OfficialDrinksScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun OfficialDrinksScreen</ID>
+    <ID>ComposableParamOrder:CoffeeCupIndicator.kt:@Composable fun CoffeeCupIndicator</ID>
+    <ID>ConstructorParameterNaming:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl$__db: RoomDatabase</ID>
+    <ID>ConstructorParameterNaming:DrinkDao_Impl.kt:DrinkDao_Impl$__db: RoomDatabase</ID>
+    <ID>ConstructorParameterNaming:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl$__db: RoomDatabase</ID>
+    <ID>CyclomaticComplexMethod:EditIntakeScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun EditIntakeScreen</ID>
+    <ID>CyclomaticComplexMethod:OfficialDrinksScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun OfficialDrinksScreen</ID>
+    <ID>EmptyFunctionBlock:CaffeineDatabase_Impl.kt:CaffeineDatabase_Impl.&lt;no name provided&gt;${ }</ID>
+    <ID>InjectDispatcher:CaffeineLiveNotificationObserver.kt:CaffeineLiveNotificationObserver$Default</ID>
+    <ID>InjectDispatcher:DataStorePreferences.kt:DataStorePreferences$IO</ID>
+    <ID>LongMethod:AddDrinkScreen.kt:@Composable private fun AddDrinkConfirmationContent</ID>
+    <ID>LongMethod:AddDrinkScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun AddDrinkScreen</ID>
+    <ID>LongMethod:CaffeineDatabase_Impl.kt:CaffeineDatabase_Impl.&lt;no name provided&gt;$public override fun onValidateSchema: RoomOpenDelegate.ValidationResult</ID>
+    <ID>LongMethod:CoffeeCupIndicator.kt:@Composable fun CoffeeCupIndicator</ID>
+    <ID>LongMethod:CoffeeCupIndicator.kt:private fun DrawScope.drawCoffeeCup</ID>
+    <ID>LongMethod:EditIntakeScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun EditIntakeScreen</ID>
+    <ID>LongMethod:HistoryScreen.kt:@Composable private fun DateNavigationRow</ID>
+    <ID>LongMethod:HomeScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun HomeScreen</ID>
+    <ID>LongMethod:ManageDrinksScreen.kt:@Composable private fun AddEditDrinkDialog</ID>
+    <ID>LongMethod:ManageDrinksScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun ManageDrinksScreen</ID>
+    <ID>LongMethod:OfficialDrinksScreen.kt:@Composable private fun OfficialDrinkItem</ID>
+    <ID>LongMethod:OfficialDrinksScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun OfficialDrinksScreen</ID>
+    <ID>LongMethod:SettingsScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun SettingsScreen</ID>
+    <ID>LongParameterList:HistoryScreen.kt:@Composable private fun DateNavigationRow</ID>
+    <ID>LongParameterList:HistoryScreen.kt:@Composable private fun HistoryContent</ID>
+    <ID>MagicNumber:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl.&lt;no name provided&gt;$3</ID>
+    <ID>MagicNumber:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl.&lt;no name provided&gt;$4</ID>
+    <ID>MagicNumber:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl.&lt;no name provided&gt;$5</ID>
+    <ID>MagicNumber:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl.&lt;no name provided&gt;$6</ID>
+    <ID>MagicNumber:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl.&lt;no name provided&gt;$7</ID>
+    <ID>MagicNumber:CaffeineLiveNotificationManager.kt:CaffeineLiveNotificationManager$36</ID>
+    <ID>MagicNumber:CaffeineLiveNotificationObserver.kt:CaffeineLiveNotificationObserver$31</ID>
+    <ID>MagicNumber:CaffeineReminderManager.kt:CaffeineReminderManager$1000L</ID>
+    <ID>MagicNumber:CaffeineReminderManager.kt:CaffeineReminderManager$20</ID>
+    <ID>MagicNumber:CaffeineReminderManager.kt:CaffeineReminderManager$3</ID>
+    <ID>MagicNumber:CaffeineReminderManager.kt:CaffeineReminderManager$60</ID>
+    <ID>MagicNumber:CaffeineReminderManager.kt:CaffeineReminderManager$8</ID>
+    <ID>MagicNumber:CoffeeCupIndicator.kt:0.04f</ID>
+    <ID>MagicNumber:CoffeeCupIndicator.kt:0.05f</ID>
+    <ID>MagicNumber:CoffeeCupIndicator.kt:0.08f</ID>
+    <ID>MagicNumber:CoffeeCupIndicator.kt:1.1f</ID>
+    <ID>MagicNumber:CoffeeCupIndicator.kt:2.2f</ID>
+    <ID>MagicNumber:CoffeeCupIndicator.kt:3</ID>
+    <ID>MagicNumber:DatabaseModule.kt:DatabaseModule$3</ID>
+    <ID>MagicNumber:DatabaseModule.kt:DatabaseModule$4</ID>
+    <ID>MagicNumber:DatabaseModule.kt:DatabaseModule$5</ID>
+    <ID>MagicNumber:DatabaseModule.kt:DatabaseModule$6</ID>
+    <ID>MagicNumber:DatabaseModule.kt:DatabaseModule$7</ID>
+    <ID>MagicNumber:DrinkDao_Impl.kt:DrinkDao_Impl.&lt;no name provided&gt;$3</ID>
+    <ID>MagicNumber:DrinkDao_Impl.kt:DrinkDao_Impl.&lt;no name provided&gt;$4</ID>
+    <ID>MagicNumber:DrinkDao_Impl.kt:DrinkDao_Impl.&lt;no name provided&gt;$5</ID>
+    <ID>MagicNumber:DrinkDao_Impl.kt:DrinkDao_Impl.&lt;no name provided&gt;$6</ID>
+    <ID>MagicNumber:EditIntakeScreen.kt:10</ID>
+    <ID>MagicNumber:EditIntakeScreen.kt:5</ID>
+    <ID>MagicNumber:MainActivity.kt:MainActivity$33</ID>
+    <ID>MagicNumber:ManageDrinksScreen.kt:10</ID>
+    <ID>MagicNumber:ManageDrinksScreen.kt:5</ID>
+    <ID>MagicNumber:NetworkModule.kt:NetworkModule$1024</ID>
+    <ID>MagicNumber:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl.&lt;no name provided&gt;$3</ID>
+    <ID>MagicNumber:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl.&lt;no name provided&gt;$4</ID>
+    <ID>MagicNumber:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl.&lt;no name provided&gt;$5</ID>
+    <ID>MagicNumber:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl.&lt;no name provided&gt;$6</ID>
+    <ID>MagicNumber:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl.&lt;no name provided&gt;$7</ID>
+    <ID>MaxLineLength:CaffeineDatabase_Impl.kt:CaffeineDatabase_Impl.&lt;no name provided&gt;$connection.execSQL("CREATE TABLE IF NOT EXISTS `caffeine_intakes` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `drinkId` INTEGER, `drinkName` TEXT NOT NULL, `caffeineMg` INTEGER NOT NULL, `volumeMl` INTEGER NOT NULL, `timestamp` INTEGER NOT NULL)")</ID>
+    <ID>MaxLineLength:CaffeineDatabase_Impl.kt:CaffeineDatabase_Impl.&lt;no name provided&gt;$connection.execSQL("CREATE TABLE IF NOT EXISTS `drinks` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `caffeineMg` INTEGER NOT NULL, `volumeMl` INTEGER NOT NULL, `isDefault` INTEGER NOT NULL)")</ID>
+    <ID>MaxLineLength:CaffeineDatabase_Impl.kt:CaffeineDatabase_Impl.&lt;no name provided&gt;$connection.execSQL("CREATE TABLE IF NOT EXISTS `official_drink_cache` (`barcode` TEXT NOT NULL, `name` TEXT NOT NULL, `brand` TEXT, `caffeineMgPer100ml` REAL NOT NULL, `energyKcalPer100ml` REAL, `quantity` TEXT, `fetchedAtMillis` INTEGER NOT NULL, PRIMARY KEY(`barcode`))")</ID>
+    <ID>MaxLineLength:CaffeineDatabase_Impl.kt:CaffeineDatabase_Impl.&lt;no name provided&gt;$connection.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c1f82bb0b69c64c5cba764e64d787ffb')")</ID>
+    <ID>MaxLineLength:CaffeineIntakeDao.kt:CaffeineIntakeDao$@Query("SELECT * FROM caffeine_intakes WHERE timestamp &gt;= :startOfDay AND timestamp &lt; :endOfDay ORDER BY timestamp DESC")</ID>
+    <ID>MaxLineLength:CaffeineIntakeDao.kt:CaffeineIntakeDao$@Query("SELECT COALESCE(SUM(caffeineMg), 0) FROM caffeine_intakes WHERE timestamp &gt;= :startOfDay AND timestamp &lt; :endOfDay")</ID>
+    <ID>MaxLineLength:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl$OfficialDrinkCacheEntity(_tmpBarcode,_tmpName,_tmpBrand,_tmpCaffeineMgPer100ml,_tmpEnergyKcalPer100ml,_tmpQuantity,_tmpFetchedAtMillis)</ID>
+    <ID>MaxLineLength:SettingsScreen.kt:Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = backDesc, tint = MaterialTheme.colorScheme.onSurfaceVariant)</ID>
+    <ID>MaxLineLength:SettingsScreen.kt:IconButton</ID>
+    <ID>MaxLineLength:SettingsScreen.kt:LanguageOption</ID>
+    <ID>MaxLineLength:SettingsScreen.kt:Row</ID>
+    <ID>MaxLineLength:SettingsScreen.kt:SectionHeader(stringResource(R.string.notification_section), Modifier.padding(horizontal = 16.dp, vertical = 12.dp))</ID>
+    <ID>MaxLineLength:SettingsScreen.kt:Text(description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)</ID>
+    <ID>MaxLineLength:SettingsScreen.kt:Text(label, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))</ID>
+    <ID>MaxLineLength:SettingsScreen.kt:Text(text, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, modifier = modifier)</ID>
+    <ID>MaxLineLength:SettingsScreen.kt:ThemeOption</ID>
+    <ID>MaxLineLength:SettingsScreen.kt:colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface, titleContentColor = MaterialTheme.colorScheme.onSurface)</ID>
+    <ID>MaxLineLength:SettingsScreen.kt:private</ID>
+    <ID>MaxLineLength:SettingsScreen.kt:stringResource(R.string.version_format, versionName)</ID>
+    <ID>MaxLineLength:SettingsScreen.kt:{ viewModel.setLanguage(DataStorePreferences.LANGUAGE_EN) }</ID>
+    <ID>MaxLineLength:SettingsScreen.kt:{ viewModel.setLanguage(DataStorePreferences.LANGUAGE_PL) }</ID>
+    <ID>MaxLineLength:SettingsScreen.kt:{ viewModel.setLanguage(DataStorePreferences.LANGUAGE_SYSTEM) }</ID>
+    <ID>MaxLineLength:SettingsScreen.kt:{ viewModel.setThemeMode(DataStorePreferences.THEME_DARK) }</ID>
+    <ID>MaxLineLength:SettingsScreen.kt:{ viewModel.setThemeMode(DataStorePreferences.THEME_LIGHT) }</ID>
+    <ID>MaxLineLength:SettingsScreen.kt:{ viewModel.setThemeMode(DataStorePreferences.THEME_SYSTEM) }</ID>
+    <ID>ModifierMissing:AddDrinkScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun AddDrinkScreen</ID>
+    <ID>ModifierMissing:EditIntakeScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun EditIntakeScreen</ID>
+    <ID>ModifierMissing:HistoryScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun HistoryScreen</ID>
+    <ID>ModifierMissing:HomeScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun HomeScreen</ID>
+    <ID>ModifierMissing:ManageDrinksScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun ManageDrinksScreen</ID>
+    <ID>ModifierMissing:OfficialDrinksScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun OfficialDrinksScreen</ID>
+    <ID>ModifierMissing:SettingsScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun SettingsScreen</ID>
+    <ID>NullableToStringCall:OfficialDrinksViewModel.kt:OfficialDrinksViewModel$${error.message}</ID>
+    <ID>ReturnCount:CaffeineDatabase_Impl.kt:CaffeineDatabase_Impl.&lt;no name provided&gt;$public override fun onValidateSchema: RoomOpenDelegate.ValidationResult</ID>
+    <ID>ReturnCount:OfficialDrinkRepositoryImpl.kt:OfficialDrinkRepositoryImpl$override suspend fun getOfficialDrinks: Result&lt;List&lt;OfficialDrink&gt;&gt;</ID>
+    <ID>SuspendFunSwallowedCancellation:BaseViewModel.kt:BaseViewModel$catch (e: Exception) { emitError(e.message ?: "Unknown error") }</ID>
+    <ID>SuspendFunSwallowedCancellation:DataStorePreferences.kt:DataStorePreferences$catch (e: Exception) { // Fallback to SharedPreferences cachedLanguage = LanguagePreferences.getLanguage(context) cachedThemeMode = ThemePreferences.getThemeMode(context) initialized = true Timber.w(e, "DataStore init failed, using SharedPreferences fallback") }</ID>
+    <ID>SuspendFunSwallowedCancellation:DrinkViewModel.kt:DrinkViewModel$catch (e: Exception) { Timber.e(e, "Failed to log drink") _uiState.update { it.copy(error = DrinkError.AddIntakeFailed) } onError() }</ID>
+    <ID>SuspendFunSwallowedCancellation:EditIntakeViewModel.kt:EditIntakeViewModel$catch (e: Exception) { Timber.e(e, "Failed to delete intake") _uiState.update { it.copy(error = EditIntakeError.DeleteFailed) } onError() }</ID>
+    <ID>SuspendFunSwallowedCancellation:EditIntakeViewModel.kt:EditIntakeViewModel$catch (e: Exception) { Timber.e(e, "Failed to load intake $intakeId") _uiState.update { EditIntakeUiState(isLoading = false, error = EditIntakeError.LoadFailed) } }</ID>
+    <ID>SuspendFunSwallowedCancellation:EditIntakeViewModel.kt:EditIntakeViewModel$catch (e: Exception) { Timber.e(e, "Failed to save intake") _uiState.update { it.copy(error = EditIntakeError.SaveFailed) } onError() }</ID>
+    <ID>SuspendFunSwallowedCancellation:ManageDrinksViewModel.kt:ManageDrinksViewModel$catch (e: Exception) { Timber.e(e, "Failed to delete drink") _uiState.update { it.copy(deleteConfirmation = null, error = ManageDrinksError.DeleteFailed) } }</ID>
+    <ID>SuspendFunSwallowedCancellation:ManageDrinksViewModel.kt:ManageDrinksViewModel$catch (e: Exception) { Timber.e(e, "Failed to save drink") _uiState.update { it.copy(error = ManageDrinksError.SaveFailed) } }</ID>
+    <ID>SuspendFunSwallowedCancellation:OfficialDrinkRepositoryImpl.kt:OfficialDrinkRepositoryImpl$catch (e: Exception) { Timber.w(e, "API load failed, falling back to stale cache") loadStaleFromCache() }</ID>
+    <ID>SuspendFunSwallowedCancellation:OfficialDrinkRepositoryImpl.kt:OfficialDrinkRepositoryImpl$catch (e: Exception) { Timber.w(e, "API search failed for '%s', searching local cache", query) searchLocalCache(query) }</ID>
+    <ID>SuspendFunSwallowedCancellation:OfficialDrinksViewModel.kt:OfficialDrinksViewModel$catch (e: Exception) { Timber.e(e, "Failed to import drink: ${official.name}") _uiState.update { it.copy(importingBarcode = null, error = OfficialDrinksError.ImportFailed) } }</ID>
+    <ID>SuspendFunSwallowedCancellation:OfficialDrinksViewModel.kt:OfficialDrinksViewModel$catch (e: Exception) { Timber.e(e, "Search crashed for: $query") _uiState.update { it.copy(isLoading = false, error = OfficialDrinksError.SearchFailed) } }</ID>
+    <ID>SuspendFunSwallowedCancellation:OfficialDrinksViewModel.kt:OfficialDrinksViewModel$catch (e: Exception) { Timber.e(e, "Unexpected error loading official drinks") _uiState.update { it.copy(isLoading = false, drinks = emptyList()) } }</ID>
+    <ID>SwallowedException:CaffeineLiveNotificationManager.kt:CaffeineLiveNotificationManager$e: IllegalArgumentException</ID>
+    <ID>TooGenericExceptionCaught:BaseViewModel.kt:BaseViewModel$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:DataStorePreferences.kt:DataStorePreferences$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:DatabaseModule.kt:DatabaseModule$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:DrinkViewModel.kt:DrinkViewModel$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:EditIntakeViewModel.kt:EditIntakeViewModel$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:ManageDrinksViewModel.kt:ManageDrinksViewModel$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:OfficialDrinkRepositoryImpl.kt:OfficialDrinkRepositoryImpl$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:OfficialDrinksViewModel.kt:OfficialDrinksViewModel$e: Exception</ID>
+    <ID>TooManyFunctions:CaffeineRepository.kt:CaffeineRepository</ID>
+    <ID>TooManyFunctions:DataStorePreferences.kt:DataStorePreferences</ID>
+    <ID>TopLevelPropertyNaming:OfficialDrinksViewModel.kt:private const val SEARCH_DEBOUNCE_MS = 500L</ID>
+    <ID>UnnecessaryLet:OfficialDrinksScreen.kt:let { snackbarHostState.showSnackbar(message = importedText) viewModel.clearSuccessMessage() }</ID>
+    <ID>UnnecessaryParentheses:OfficialDrinkRepositoryImpl.kt:OfficialDrinkRepositoryImpl$(it.brand?.lowercase()?.contains(lower) == true)</ID>
+    <ID>UnnecessaryParentheses:OfficialDrinksViewModel.kt:OfficialDrinksViewModel$(official.caffeineMgPer100ml)</ID>
+    <ID>UnusedImport:CaffeineLiveNotificationObserver.kt:import kotlinx.coroutines.cancel</ID>
+    <ID>UnusedImport:CaffeineReminderManager.kt:import android.os.Build</ID>
+    <ID>UnusedImport:DatabaseModule.kt:import pl.dekrate.kofeino.tracker.domain.model.DrinkEntity</ID>
+    <ID>UnusedImport:HomeScreen.kt:import androidx.compose.foundation.layout.size</ID>
+    <ID>UnusedImport:MainActivity.kt:import androidx.compose.runtime.LaunchedEffect</ID>
+    <ID>UnusedImport:ManageDrinksScreen.kt:import androidx.compose.foundation.clickable</ID>
+    <ID>UnusedImport:ManageDrinksScreen.kt:import androidx.compose.material3.Button</ID>
+    <ID>UnusedImport:ManageDrinksScreen.kt:import androidx.compose.material3.ButtonDefaults</ID>
+    <ID>UnusedParameter:DatabaseModule.kt:DatabaseModule$context: Context</ID>
+    <ID>UnusedParameter:OfficialDrinksScreen.kt:searchQuery: String</ID>
+    <ID>UseOrEmpty:ManageDrinksScreen.kt:editDrink?.name ?: ""</ID>
+    <ID>UseOrEmpty:SettingsScreen.kt:context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: ""</ID>
+    <ID>VarCouldBeVal:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl$var _argIndex: Int = 1</ID>
+    <ID>VarCouldBeVal:DrinkDao_Impl.kt:DrinkDao_Impl$var _argIndex: Int = 1</ID>
+    <ID>VarCouldBeVal:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl$var _argIndex: Int = 1</ID>
+    <ID>VariableNaming:BaseViewModel.kt:BaseViewModel$protected val _uiState = MutableStateFlow&lt;UiState&lt;T&gt;&gt;(UiState.Loading)</ID>
+    <ID>VariableNaming:CaffeineDatabase_Impl.kt:CaffeineDatabase_Impl$val _autoMigrationSpecsSet: MutableSet&lt;KClass&lt;out AutoMigrationSpec&gt;&gt; = mutableSetOf()</ID>
+    <ID>VariableNaming:CaffeineDatabase_Impl.kt:CaffeineDatabase_Impl$val _autoMigrations: MutableList&lt;Migration&gt; = mutableListOf()</ID>
+    <ID>VariableNaming:CaffeineDatabase_Impl.kt:CaffeineDatabase_Impl$val _openDelegate: RoomOpenDelegate = object : RoomOpenDelegate(3, "c1f82bb0b69c64c5cba764e64d787ffb", "9ecc9730d34404478a036284b680ff2b") { public override fun createAllTables(connection: SQLiteConnection) { connection.execSQL("CREATE TABLE IF NOT EXISTS `caffeine_intakes` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `drinkId` INTEGER, `drinkName` TEXT NOT NULL, `caffeineMg` INTEGER NOT NULL, `volumeMl` INTEGER NOT NULL, `timestamp` INTEGER NOT NULL)") connection.execSQL("CREATE INDEX IF NOT EXISTS `idx_intakes_timestamp` ON `caffeine_intakes` (`timestamp`)") connection.execSQL("CREATE TABLE IF NOT EXISTS `drinks` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `caffeineMg` INTEGER NOT NULL, `volumeMl` INTEGER NOT NULL, `isDefault` INTEGER NOT NULL)") connection.execSQL("CREATE INDEX IF NOT EXISTS `idx_drinks_name` ON `drinks` (`name`)") connection.execSQL("CREATE TABLE IF NOT EXISTS `official_drink_cache` (`barcode` TEXT NOT NULL, `name` TEXT NOT NULL, `brand` TEXT, `caffeineMgPer100ml` REAL NOT NULL, `energyKcalPer100ml` REAL, `quantity` TEXT, `fetchedAtMillis` INTEGER NOT NULL, PRIMARY KEY(`barcode`))") connection.execSQL("CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)") connection.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c1f82bb0b69c64c5cba764e64d787ffb')") } public override fun dropAllTables(connection: SQLiteConnection) { connection.execSQL("DROP TABLE IF EXISTS `caffeine_intakes`") connection.execSQL("DROP TABLE IF EXISTS `drinks`") connection.execSQL("DROP TABLE IF EXISTS `official_drink_cache`") } public override fun onCreate(connection: SQLiteConnection) { } public override fun onOpen(connection: SQLiteConnection) { internalInitInvalidationTracker(connection) } public override fun onPreMigrate(connection: SQLiteConnection) { dropFtsSyncTriggers(connection) } public override fun onPostMigrate(connection: SQLiteConnection) { } public override fun onValidateSchema(connection: SQLiteConnection): RoomOpenDelegate.ValidationResult { val _columnsCaffeineIntakes: MutableMap&lt;String, TableInfo.Column&gt; = mutableMapOf() _columnsCaffeineIntakes.put("id", TableInfo.Column("id", "INTEGER", true, 1, null, TableInfo.CREATED_FROM_ENTITY)) _columnsCaffeineIntakes.put("drinkId", TableInfo.Column("drinkId", "INTEGER", false, 0, null, TableInfo.CREATED_FROM_ENTITY)) _columnsCaffeineIntakes.put("drinkName", TableInfo.Column("drinkName", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY)) _columnsCaffeineIntakes.put("caffeineMg", TableInfo.Column("caffeineMg", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY)) _columnsCaffeineIntakes.put("volumeMl", TableInfo.Column("volumeMl", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY)) _columnsCaffeineIntakes.put("timestamp", TableInfo.Column("timestamp", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY)) val _foreignKeysCaffeineIntakes: MutableSet&lt;TableInfo.ForeignKey&gt; = mutableSetOf() val _indicesCaffeineIntakes: MutableSet&lt;TableInfo.Index&gt; = mutableSetOf() _indicesCaffeineIntakes.add(TableInfo.Index("idx_intakes_timestamp", false, listOf("timestamp"), listOf("ASC"))) val _infoCaffeineIntakes: TableInfo = TableInfo("caffeine_intakes", _columnsCaffeineIntakes, _foreignKeysCaffeineIntakes, _indicesCaffeineIntakes) val _existingCaffeineIntakes: TableInfo = read(connection, "caffeine_intakes") if (!_infoCaffeineIntakes.equals(_existingCaffeineIntakes)) { return RoomOpenDelegate.ValidationResult(false, """ |caffeine_intakes(pl.dekrate.kofeino.tracker.domain.model.CaffeineIntake). | Expected: |""".trimMargin() + _infoCaffeineIntakes + """ | | Found: |""".trimMargin() + _existingCaffeineIntakes) } val _columnsDrinks: MutableMap&lt;String, TableInfo.Column&gt; = mutableMapOf() _columnsDrinks.put("id", TableInfo.Column("id", "INTEGER", true, 1, null, TableInfo.CREATED_FROM_ENTITY)) _columnsDrinks.put("name", TableInfo.Column("name", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY)) _columnsDrinks.put("caffeineMg", TableInfo.Column("caffeineMg", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY)) _columnsDrinks.put("volumeMl", TableInfo.Column("volumeMl", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY)) _columnsDrinks.put("isDefault", TableInfo.Column("isDefault", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY)) val _foreignKeysDrinks: MutableSet&lt;TableInfo.ForeignKey&gt; = mutableSetOf() val _indicesDrinks: MutableSet&lt;TableInfo.Index&gt; = mutableSetOf() _indicesDrinks.add(TableInfo.Index("idx_drinks_name", false, listOf("name"), listOf("ASC"))) val _infoDrinks: TableInfo = TableInfo("drinks", _columnsDrinks, _foreignKeysDrinks, _indicesDrinks) val _existingDrinks: TableInfo = read(connection, "drinks") if (!_infoDrinks.equals(_existingDrinks)) { return RoomOpenDelegate.ValidationResult(false, """ |drinks(pl.dekrate.kofeino.tracker.domain.model.DrinkEntity). | Expected: |""".trimMargin() + _infoDrinks + """ | | Found: |""".trimMargin() + _existingDrinks) } val _columnsOfficialDrinkCache: MutableMap&lt;String, TableInfo.Column&gt; = mutableMapOf() _columnsOfficialDrinkCache.put("barcode", TableInfo.Column("barcode", "TEXT", true, 1, null, TableInfo.CREATED_FROM_ENTITY)) _columnsOfficialDrinkCache.put("name", TableInfo.Column("name", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY)) _columnsOfficialDrinkCache.put("brand", TableInfo.Column("brand", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY)) _columnsOfficialDrinkCache.put("caffeineMgPer100ml", TableInfo.Column("caffeineMgPer100ml", "REAL", true, 0, null, TableInfo.CREATED_FROM_ENTITY)) _columnsOfficialDrinkCache.put("energyKcalPer100ml", TableInfo.Column("energyKcalPer100ml", "REAL", false, 0, null, TableInfo.CREATED_FROM_ENTITY)) _columnsOfficialDrinkCache.put("quantity", TableInfo.Column("quantity", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY)) _columnsOfficialDrinkCache.put("fetchedAtMillis", TableInfo.Column("fetchedAtMillis", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY)) val _foreignKeysOfficialDrinkCache: MutableSet&lt;TableInfo.ForeignKey&gt; = mutableSetOf() val _indicesOfficialDrinkCache: MutableSet&lt;TableInfo.Index&gt; = mutableSetOf() val _infoOfficialDrinkCache: TableInfo = TableInfo("official_drink_cache", _columnsOfficialDrinkCache, _foreignKeysOfficialDrinkCache, _indicesOfficialDrinkCache) val _existingOfficialDrinkCache: TableInfo = read(connection, "official_drink_cache") if (!_infoOfficialDrinkCache.equals(_existingOfficialDrinkCache)) { return RoomOpenDelegate.ValidationResult(false, """ |official_drink_cache(pl.dekrate.kofeino.tracker.data.local.OfficialDrinkCacheEntity). | Expected: |""".trimMargin() + _infoOfficialDrinkCache + """ | | Found: |""".trimMargin() + _existingOfficialDrinkCache) } return RoomOpenDelegate.ValidationResult(true, null) } }</ID>
+    <ID>VariableNaming:CaffeineDatabase_Impl.kt:CaffeineDatabase_Impl$val _shadowTablesMap: MutableMap&lt;String, String&gt; = mutableMapOf()</ID>
+    <ID>VariableNaming:CaffeineDatabase_Impl.kt:CaffeineDatabase_Impl$val _typeConvertersMap: MutableMap&lt;KClass&lt;*&gt;, List&lt;KClass&lt;*&gt;&gt;&gt; = mutableMapOf()</ID>
+    <ID>VariableNaming:CaffeineDatabase_Impl.kt:CaffeineDatabase_Impl$val _viewTables: MutableMap&lt;String, Set&lt;String&gt;&gt; = mutableMapOf()</ID>
+    <ID>VariableNaming:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl$private val __db: RoomDatabase</ID>
+    <ID>VariableNaming:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl$private val __deleteAdapterOfCaffeineIntake: EntityDeleteOrUpdateAdapter&lt;CaffeineIntake&gt;</ID>
+    <ID>VariableNaming:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl$private val __insertAdapterOfCaffeineIntake: EntityInsertAdapter&lt;CaffeineIntake&gt;</ID>
+    <ID>VariableNaming:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl$private val __updateAdapterOfCaffeineIntake: EntityDeleteOrUpdateAdapter&lt;CaffeineIntake&gt;</ID>
+    <ID>VariableNaming:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl$val _columnIndexOfCaffeineMg: Int = getColumnIndexOrThrow(_stmt, "caffeineMg")</ID>
+    <ID>VariableNaming:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl$val _columnIndexOfDrinkId: Int = getColumnIndexOrThrow(_stmt, "drinkId")</ID>
+    <ID>VariableNaming:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl$val _columnIndexOfDrinkName: Int = getColumnIndexOrThrow(_stmt, "drinkName")</ID>
+    <ID>VariableNaming:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl$val _columnIndexOfId: Int = getColumnIndexOrThrow(_stmt, "id")</ID>
+    <ID>VariableNaming:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl$val _columnIndexOfTimestamp: Int = getColumnIndexOrThrow(_stmt, "timestamp")</ID>
+    <ID>VariableNaming:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl$val _columnIndexOfVolumeMl: Int = getColumnIndexOrThrow(_stmt, "volumeMl")</ID>
+    <ID>VariableNaming:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl$val _item: CaffeineIntake</ID>
+    <ID>VariableNaming:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl$val _result: CaffeineIntake?</ID>
+    <ID>VariableNaming:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl$val _result: Int</ID>
+    <ID>VariableNaming:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl$val _result: Long = __insertAdapterOfCaffeineIntake.insertAndReturnId(_connection, intake)</ID>
+    <ID>VariableNaming:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl$val _result: MutableList&lt;CaffeineIntake&gt; = mutableListOf()</ID>
+    <ID>VariableNaming:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl$val _sql: String = "DELETE FROM caffeine_intakes WHERE timestamp &lt; ?"</ID>
+    <ID>VariableNaming:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl$val _sql: String = "DELETE FROM caffeine_intakes"</ID>
+    <ID>VariableNaming:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl$val _sql: String = "SELECT * FROM caffeine_intakes ORDER BY timestamp DESC LIMIT ?"</ID>
+    <ID>VariableNaming:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl$val _sql: String = "SELECT * FROM caffeine_intakes WHERE id = ?"</ID>
+    <ID>VariableNaming:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl$val _sql: String = "SELECT * FROM caffeine_intakes WHERE timestamp &gt;= ? AND timestamp &lt; ? ORDER BY timestamp DESC"</ID>
+    <ID>VariableNaming:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl$val _sql: String = "SELECT COALESCE(SUM(caffeineMg), 0) FROM caffeine_intakes WHERE timestamp &gt;= ? AND timestamp &lt; ?"</ID>
+    <ID>VariableNaming:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl$val _stmt: SQLiteStatement = _connection.prepare(_sql)</ID>
+    <ID>VariableNaming:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl$val _tmp: Int</ID>
+    <ID>VariableNaming:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl$val _tmpCaffeineMg: Int</ID>
+    <ID>VariableNaming:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl$val _tmpDrinkId: Long?</ID>
+    <ID>VariableNaming:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl$val _tmpDrinkName: String</ID>
+    <ID>VariableNaming:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl$val _tmpId: Long</ID>
+    <ID>VariableNaming:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl$val _tmpTimestamp: Long</ID>
+    <ID>VariableNaming:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl$val _tmpVolumeMl: Int</ID>
+    <ID>VariableNaming:CaffeineIntakeDao_Impl.kt:CaffeineIntakeDao_Impl$var _argIndex: Int = 1</ID>
+    <ID>VariableNaming:DrinkDao_Impl.kt:DrinkDao_Impl$private val __db: RoomDatabase</ID>
+    <ID>VariableNaming:DrinkDao_Impl.kt:DrinkDao_Impl$private val __deleteAdapterOfDrinkEntity: EntityDeleteOrUpdateAdapter&lt;DrinkEntity&gt;</ID>
+    <ID>VariableNaming:DrinkDao_Impl.kt:DrinkDao_Impl$private val __insertAdapterOfDrinkEntity: EntityInsertAdapter&lt;DrinkEntity&gt;</ID>
+    <ID>VariableNaming:DrinkDao_Impl.kt:DrinkDao_Impl$private val __updateAdapterOfDrinkEntity: EntityDeleteOrUpdateAdapter&lt;DrinkEntity&gt;</ID>
+    <ID>VariableNaming:DrinkDao_Impl.kt:DrinkDao_Impl$val _columnIndexOfCaffeineMg: Int = getColumnIndexOrThrow(_stmt, "caffeineMg")</ID>
+    <ID>VariableNaming:DrinkDao_Impl.kt:DrinkDao_Impl$val _columnIndexOfId: Int = getColumnIndexOrThrow(_stmt, "id")</ID>
+    <ID>VariableNaming:DrinkDao_Impl.kt:DrinkDao_Impl$val _columnIndexOfIsDefault: Int = getColumnIndexOrThrow(_stmt, "isDefault")</ID>
+    <ID>VariableNaming:DrinkDao_Impl.kt:DrinkDao_Impl$val _columnIndexOfName: Int = getColumnIndexOrThrow(_stmt, "name")</ID>
+    <ID>VariableNaming:DrinkDao_Impl.kt:DrinkDao_Impl$val _columnIndexOfVolumeMl: Int = getColumnIndexOrThrow(_stmt, "volumeMl")</ID>
+    <ID>VariableNaming:DrinkDao_Impl.kt:DrinkDao_Impl$val _item: DrinkEntity</ID>
+    <ID>VariableNaming:DrinkDao_Impl.kt:DrinkDao_Impl$val _result: DrinkEntity?</ID>
+    <ID>VariableNaming:DrinkDao_Impl.kt:DrinkDao_Impl$val _result: Int</ID>
+    <ID>VariableNaming:DrinkDao_Impl.kt:DrinkDao_Impl$val _result: Long = __insertAdapterOfDrinkEntity.insertAndReturnId(_connection, drink)</ID>
+    <ID>VariableNaming:DrinkDao_Impl.kt:DrinkDao_Impl$val _result: MutableList&lt;DrinkEntity&gt; = mutableListOf()</ID>
+    <ID>VariableNaming:DrinkDao_Impl.kt:DrinkDao_Impl$val _sql: String = "SELECT * FROM drinks ORDER BY name ASC"</ID>
+    <ID>VariableNaming:DrinkDao_Impl.kt:DrinkDao_Impl$val _sql: String = "SELECT * FROM drinks WHERE id = ?"</ID>
+    <ID>VariableNaming:DrinkDao_Impl.kt:DrinkDao_Impl$val _sql: String = "SELECT * FROM drinks WHERE name LIKE '%' || ? || '%' ORDER BY name ASC"</ID>
+    <ID>VariableNaming:DrinkDao_Impl.kt:DrinkDao_Impl$val _sql: String = "SELECT COUNT(*) FROM drinks"</ID>
+    <ID>VariableNaming:DrinkDao_Impl.kt:DrinkDao_Impl$val _stmt: SQLiteStatement = _connection.prepare(_sql)</ID>
+    <ID>VariableNaming:DrinkDao_Impl.kt:DrinkDao_Impl$val _tmp: Int</ID>
+    <ID>VariableNaming:DrinkDao_Impl.kt:DrinkDao_Impl$val _tmpCaffeineMg: Int</ID>
+    <ID>VariableNaming:DrinkDao_Impl.kt:DrinkDao_Impl$val _tmpId: Long</ID>
+    <ID>VariableNaming:DrinkDao_Impl.kt:DrinkDao_Impl$val _tmpIsDefault: Boolean</ID>
+    <ID>VariableNaming:DrinkDao_Impl.kt:DrinkDao_Impl$val _tmpName: String</ID>
+    <ID>VariableNaming:DrinkDao_Impl.kt:DrinkDao_Impl$val _tmpVolumeMl: Int</ID>
+    <ID>VariableNaming:DrinkDao_Impl.kt:DrinkDao_Impl$var _argIndex: Int = 1</ID>
+    <ID>VariableNaming:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl$private val __db: RoomDatabase</ID>
+    <ID>VariableNaming:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl$private val __insertAdapterOfOfficialDrinkCacheEntity: EntityInsertAdapter&lt;OfficialDrinkCacheEntity&gt;</ID>
+    <ID>VariableNaming:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl$val _columnIndexOfBarcode: Int = getColumnIndexOrThrow(_stmt, "barcode")</ID>
+    <ID>VariableNaming:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl$val _columnIndexOfBrand: Int = getColumnIndexOrThrow(_stmt, "brand")</ID>
+    <ID>VariableNaming:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl$val _columnIndexOfCaffeineMgPer100ml: Int = getColumnIndexOrThrow(_stmt, "caffeineMgPer100ml")</ID>
+    <ID>VariableNaming:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl$val _columnIndexOfEnergyKcalPer100ml: Int = getColumnIndexOrThrow(_stmt, "energyKcalPer100ml")</ID>
+    <ID>VariableNaming:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl$val _columnIndexOfFetchedAtMillis: Int = getColumnIndexOrThrow(_stmt, "fetchedAtMillis")</ID>
+    <ID>VariableNaming:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl$val _columnIndexOfName: Int = getColumnIndexOrThrow(_stmt, "name")</ID>
+    <ID>VariableNaming:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl$val _columnIndexOfQuantity: Int = getColumnIndexOrThrow(_stmt, "quantity")</ID>
+    <ID>VariableNaming:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl$val _item: OfficialDrinkCacheEntity</ID>
+    <ID>VariableNaming:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl$val _result: Int</ID>
+    <ID>VariableNaming:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl$val _result: MutableList&lt;OfficialDrinkCacheEntity&gt; = mutableListOf()</ID>
+    <ID>VariableNaming:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl$val _result: OfficialDrinkCacheEntity?</ID>
+    <ID>VariableNaming:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl$val _sql: String = "DELETE FROM official_drink_cache"</ID>
+    <ID>VariableNaming:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl$val _sql: String = "SELECT * FROM official_drink_cache ORDER BY name ASC"</ID>
+    <ID>VariableNaming:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl$val _sql: String = "SELECT * FROM official_drink_cache WHERE barcode = ?"</ID>
+    <ID>VariableNaming:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl$val _sql: String = "SELECT COUNT(*) FROM official_drink_cache"</ID>
+    <ID>VariableNaming:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl$val _stmt: SQLiteStatement = _connection.prepare(_sql)</ID>
+    <ID>VariableNaming:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl$val _tmp: Int</ID>
+    <ID>VariableNaming:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl$val _tmpBarcode: String</ID>
+    <ID>VariableNaming:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl$val _tmpBrand: String?</ID>
+    <ID>VariableNaming:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl$val _tmpCaffeineMgPer100ml: Double</ID>
+    <ID>VariableNaming:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl$val _tmpEnergyKcalPer100ml: Double?</ID>
+    <ID>VariableNaming:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl$val _tmpFetchedAtMillis: Long</ID>
+    <ID>VariableNaming:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl$val _tmpName: String</ID>
+    <ID>VariableNaming:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl$val _tmpQuantity: String?</ID>
+    <ID>VariableNaming:OfficialDrinkCacheDao_Impl.kt:OfficialDrinkCacheDao_Impl$var _argIndex: Int = 1</ID>
+  </CurrentIssues>
+</SmellBaseline>
