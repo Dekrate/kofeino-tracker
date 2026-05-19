@@ -112,6 +112,7 @@ fun AddEditDrinkForm(
             text = "${stringResource(R.string.caffeine_amount)}: $caffeineMg",
             style = MaterialTheme.typography.labelMedium
         )
+        // Coarse adjustment (±5)
         Row(
             modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -134,6 +135,31 @@ fun AddEditDrinkForm(
                     .semantics { contentDescription = "$caffeineAmountDesc +5" }
             ) {
                 Text("+5")
+            }
+        }
+        // Fine adjustment (±1)
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Button(
+                onClick = { if (caffeineMg >= 1) caffeineMg -= 1 },
+                enabled = caffeineMg >= 1,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 4.dp)
+                    .semantics { contentDescription = "$caffeineAmountDesc -1" }
+            ) {
+                Text(stringResource(R.string.caffeine_adjustment_decrease_fine))
+            }
+            Button(
+                onClick = { caffeineMg += 1 },
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 4.dp)
+                    .semantics { contentDescription = "$caffeineAmountDesc +1" }
+            ) {
+                Text(stringResource(R.string.caffeine_adjustment_increase_fine))
             }
         }
 

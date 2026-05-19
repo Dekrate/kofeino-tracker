@@ -138,6 +138,52 @@ class CaffeineTrackerE2ETest {
     }
 
     @Test
+    fun fullFlow_fineAdjustCaffeineAndSeeCorrectTotal() {
+        // Home screen visible
+        composeRule.onNodeWithContentDescription(
+            context.getString(R.string.add_drink)
+        ).assertIsDisplayed()
+
+        // Click FAB -> AddDrink screen
+        composeRule.onNodeWithContentDescription(
+            context.getString(R.string.add_drink)
+        ).performClick()
+        composeRule.waitForIdle()
+
+        // Select "Espresso" (default 63 mg)
+        composeRule.onNodeWithText("Espresso", substring = true).performClick()
+        composeRule.waitForIdle()
+
+        // Use fine adjustment: +1 three times -> 66
+        repeat(3) {
+            composeRule.onNodeWithText(
+                context.getString(R.string.caffeine_adjustment_increase_fine)
+            ).performClick()
+            composeRule.waitForIdle()
+        }
+
+        // Verify the displayed value
+        composeRule.onNodeWithText(
+            context.getString(R.string.caffeine_label, 66)
+        ).assertIsDisplayed()
+
+        // Log the drink
+        composeRule.onNodeWithText(
+            context.getString(R.string.log_drink)
+        ).performClick()
+        composeRule.waitForIdle()
+
+        // Navigate back to Home
+        composeRule.onNodeWithContentDescription(
+            context.getString(R.string.back)
+        ).performClick()
+        composeRule.waitForIdle()
+
+        // Home screen — total should show "66 mg"
+        composeRule.onNodeWithText("66 mg", substring = true).assertIsDisplayed()
+    }
+
+    @Test
     fun fullFlow_navigateDateInHistory() {
         // Add 1 espresso first
         composeRule.onNodeWithContentDescription(

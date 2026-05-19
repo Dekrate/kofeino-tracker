@@ -215,6 +215,7 @@ private fun AddDrinkConfirmationContent(
             text = stringResource(R.string.caffeine_label, caffeineMg),
             style = MaterialTheme.typography.titleMedium
         )
+        // Coarse adjustment (±5 mg)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center
@@ -230,6 +231,24 @@ private fun AddDrinkConfirmationContent(
                 onClick = { caffeineMg += 5 }
             ) {
                 Text("+5")
+            }
+        }
+        // Fine adjustment (±1 mg)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            OutlinedButton(
+                onClick = { if (caffeineMg >= 1) caffeineMg -= 1 },
+                enabled = caffeineMg >= 1
+            ) {
+                Text(stringResource(R.string.caffeine_adjustment_decrease_fine))
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Button(
+                onClick = { caffeineMg += 1 }
+            ) {
+                Text(stringResource(R.string.caffeine_adjustment_increase_fine))
             }
         }
 

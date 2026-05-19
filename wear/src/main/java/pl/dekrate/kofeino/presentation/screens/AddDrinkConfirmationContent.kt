@@ -87,7 +87,7 @@ fun AddDrinkConfirmationContent(
                 )
             }
 
-            // Caffeine stepper +/- 5
+            // Caffeine stepper coarse +/- 5
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -112,6 +112,35 @@ fun AddDrinkConfirmationContent(
                             .semantics { contentDescription = "$caffeineDesc +5" }
                     ) {
                         Text("+5")
+                    }
+                }
+            }
+
+            // Caffeine stepper fine +/- 1
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    Button(
+                        onClick = { if (caffeineMg >= 1) caffeineMg -= 1 },
+                        enabled = !isLogging && caffeineMg >= 1,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 4.dp)
+                            .semantics { contentDescription = "$caffeineDesc -1" }
+                    ) {
+                        Text(stringResource(R.string.caffeine_adjustment_decrease_fine))
+                    }
+                    Button(
+                        onClick = { caffeineMg += 1 },
+                        enabled = !isLogging,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 4.dp)
+                            .semantics { contentDescription = "$caffeineDesc +1" }
+                    ) {
+                        Text(stringResource(R.string.caffeine_adjustment_increase_fine))
                     }
                 }
             }

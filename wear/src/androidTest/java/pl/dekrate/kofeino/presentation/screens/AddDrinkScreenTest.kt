@@ -134,6 +134,52 @@ class AddDrinkScreenTest {
     }
 
     @Test
+    fun addDrinkScreen_confirmation_caffeineFineStepper_adjustsValue() {
+        val drinks = listOf(
+            DrinkEntity(1, "Espresso", 63, 30, true)
+        )
+        val fakeViewModel = createFakeViewModel(drinks)
+        composeTestRule.setContent {
+            KofeinoTrackerTheme {
+                AddDrinkScreen(
+                    onDrinkAdded = {},
+                    viewModel = fakeViewModel
+                )
+            }
+        }
+
+        // Tap the drink -> confirmation shown
+        composeTestRule.onNodeWithText("Espresso", substring = true).performClick()
+
+        // Default caffeine value
+        composeTestRule.onNodeWithText(
+            context.getString(R.string.caffeine_label, 63),
+            substring = true
+        ).assertIsDisplayed()
+
+        // Tap +1 -> 64
+        composeTestRule.onNodeWithText(
+            context.getString(R.string.caffeine_adjustment_increase_fine)
+        ).performClick()
+        composeTestRule.onNodeWithText(
+            context.getString(R.string.caffeine_label, 64),
+            substring = true
+        ).assertIsDisplayed()
+
+        // Tap -1 twice -> 62
+        composeTestRule.onNodeWithText(
+            context.getString(R.string.caffeine_adjustment_decrease_fine)
+        ).performClick()
+        composeTestRule.onNodeWithText(
+            context.getString(R.string.caffeine_adjustment_decrease_fine)
+        ).performClick()
+        composeTestRule.onNodeWithText(
+            context.getString(R.string.caffeine_label, 62),
+            substring = true
+        ).assertIsDisplayed()
+    }
+
+    @Test
     fun addDrinkScreen_confirmation_caffeineStepper_adjustsValue() {
         val drinks = listOf(
             DrinkEntity(1, "Espresso", 63, 30, true)

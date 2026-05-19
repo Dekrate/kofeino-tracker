@@ -159,6 +159,62 @@ class EditIntakeViewModelTest {
         assertEquals(0, viewModel.uiState.value.caffeineMg)
     }
 
+    @Test
+    fun `updateCaffeineMg with +1 should increase caffeine by exactly 1`() = runTest {
+        coEvery { repository.getIntakeById(1L) } returns sampleIntake
+
+        viewModel = EditIntakeViewModel(repository)
+        viewModel.loadIntake(1L)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.updateCaffeineMg(1)
+
+        assertEquals(64, viewModel.uiState.value.caffeineMg)
+    }
+
+    @Test
+    fun `updateCaffeineMg with -1 should decrease caffeine by exactly 1`() = runTest {
+        coEvery { repository.getIntakeById(1L) } returns sampleIntake
+
+        viewModel = EditIntakeViewModel(repository)
+        viewModel.loadIntake(1L)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.updateCaffeineMg(-1)
+
+        assertEquals(62, viewModel.uiState.value.caffeineMg)
+    }
+
+    @Test
+    fun `updateCaffeineMg with -1 should not go below 0`() = runTest {
+        coEvery { repository.getIntakeById(1L) } returns sampleIntake.copy(caffeineMg = 0)
+
+        viewModel = EditIntakeViewModel(repository)
+        viewModel.loadIntake(1L)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.updateCaffeineMg(-1)
+
+        assertEquals(0, viewModel.uiState.value.caffeineMg)
+    }
+
+    @Test
+    fun `updateCaffeineMg fine and coarse adjustments should accumulate correctly`() = runTest {
+        coEvery { repository.getIntakeById(1L) } returns sampleIntake
+
+        viewModel = EditIntakeViewModel(repository)
+        viewModel.loadIntake(1L)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.updateCaffeineMg(5)  // 63 → 68
+        viewModel.updateCaffeineMg(1)  // 68 → 69
+        viewModel.updateCaffeineMg(1)  // 69 → 70
+        viewModel.updateCaffeineMg(-5) // 70 → 65
+        viewModel.updateCaffeineMg(-1) // 65 → 64
+
+        assertEquals(64, viewModel.uiState.value.caffeineMg)
+    }
+
     // ===== updateVolumeMl tests =====
 
     @Test
