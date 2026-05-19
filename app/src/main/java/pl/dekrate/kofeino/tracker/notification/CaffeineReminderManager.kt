@@ -8,6 +8,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -131,6 +132,7 @@ class CaffeineReminderManager @Inject constructor(
         alarm.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.timeInMillis, pi)
     }
 
+    @SuppressLint("MissingPermission")
     fun showReminder(reminderType: String) {
         // Skip regular reminders during nighttime (22:00–08:00) and reschedule
         if (reminderType == ACTION_REGULAR && isNighttime()) {

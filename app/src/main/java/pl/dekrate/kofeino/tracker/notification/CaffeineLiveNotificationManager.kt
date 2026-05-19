@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
+import android.annotation.SuppressLint
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -101,6 +102,7 @@ class CaffeineLiveNotificationManager @Inject constructor(
      * @param currentMg total caffeine consumed today
      * @param targetMg  daily target (default 400 mg)
      */
+    @SuppressLint("MissingPermission")
     fun update(currentMg: Int, targetMg: Int = TARGET_MG) {
         if (isUserDismissed) {
             Timber.tag(TAG).d("Skipping update — user dismissed")
@@ -162,6 +164,7 @@ class CaffeineLiveNotificationManager @Inject constructor(
         )
     }
 
+    @SuppressLint("NewApi")
     private fun buildApi36Notification(
         currentMg: Int, targetMg: Int, isOverLimit: Boolean,
         openIntent: PendingIntent, dismissIntent: PendingIntent
