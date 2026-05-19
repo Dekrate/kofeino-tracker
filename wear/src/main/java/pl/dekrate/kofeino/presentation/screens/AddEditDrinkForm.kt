@@ -125,7 +125,7 @@ fun AddEditDrinkForm(
                     .padding(end = 4.dp)
                     .semantics { contentDescription = "$caffeineAmountDesc -5" }
             ) {
-                Text("-5")
+                Text(stringResource(R.string.caffeine_adjustment_decrease, 5))
             }
             Button(
                 onClick = { caffeineMg += 5 },
@@ -134,7 +134,7 @@ fun AddEditDrinkForm(
                     .padding(start = 4.dp)
                     .semantics { contentDescription = "$caffeineAmountDesc +5" }
             ) {
-                Text("+5")
+                Text(stringResource(R.string.caffeine_adjustment_increase, 5))
             }
         }
         // Fine adjustment (±1)

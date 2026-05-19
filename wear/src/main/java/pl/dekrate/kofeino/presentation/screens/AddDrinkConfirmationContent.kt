@@ -101,7 +101,7 @@ fun AddDrinkConfirmationContent(
                             .padding(end = 4.dp)
                             .semantics { contentDescription = "$caffeineDesc -5" }
                     ) {
-                        Text("-5")
+                        Text(stringResource(R.string.caffeine_adjustment_decrease, 5))
                     }
                     Button(
                         onClick = { caffeineMg += 5 },
@@ -111,7 +111,7 @@ fun AddDrinkConfirmationContent(
                             .padding(start = 4.dp)
                             .semantics { contentDescription = "$caffeineDesc +5" }
                     ) {
-                        Text("+5")
+                        Text(stringResource(R.string.caffeine_adjustment_increase, 5))
                     }
                 }
             }

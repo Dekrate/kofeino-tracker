@@ -224,13 +224,13 @@ private fun AddDrinkConfirmationContent(
                 onClick = { if (caffeineMg >= 5) caffeineMg -= 5 },
                 enabled = caffeineMg >= 5
             ) {
-                Text("-5")
+                Text(stringResource(R.string.caffeine_adjustment_decrease, 5))
             }
             Spacer(modifier = Modifier.width(16.dp))
             Button(
                 onClick = { caffeineMg += 5 }
             ) {
-                Text("+5")
+                Text(stringResource(R.string.caffeine_adjustment_increase, 5))
             }
         }
         // Fine adjustment (±1 mg)
