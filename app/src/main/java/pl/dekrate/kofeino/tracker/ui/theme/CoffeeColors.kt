@@ -7,11 +7,17 @@ import androidx.compose.ui.graphics.Color
 /**
  * Coffee-inspired color palette for KofeinoTracker.
  *
- * Matches [pl.dekrate.kofeino.presentation.theme.CoffeeColors] on Wear OS
+ * Shares the core coffee browns and creams (espresso … foam) with
+ * [pl.dekrate.kofeino.presentation.theme.CoffeeColors] on Wear OS
  * to maintain visual consistency across form factors.
  *
- * Designed for Material 3 [lightColorScheme] / [darkColorScheme] color roles.
- * All foreground/background pairs meet WCAG AA contrast ratio ≥ 4.5:1.
+ * Some roles intentionally differ on phone for Material 3 usage, including
+ * phone-only accents ([warmWhite], [darkSurface], [darkContainer]) and
+ * functional/error colors as needed by the phone colour schemes.
+ *
+ * All foreground/background pairs in
+ * [LightCoffeeColorScheme] / [DarkCoffeeColorScheme] meet WCAG AA
+ * contrast ratio ≥ 4.5:1.
  */
 object CoffeeColors {
     // -- Core palette (shared with Wear) --
