@@ -26,13 +26,7 @@
             android:exported="false" />
         <receiver
             android:name=".notification.CaffeineReminderManager$ReminderReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="pl.dekrate.kofeino.tracker.action.REMINDER_MORNING" />
-                <action android:name="pl.dekrate.kofeino.tracker.action.REMINDER_REGULAR" />
-                <action android:name="pl.dekrate.kofeino.tracker.action.REMINDER_EVENING" />
-            </intent-filter>
-        </receiver>
+            android:exported="false" />
     </application>
 
 </manifest>

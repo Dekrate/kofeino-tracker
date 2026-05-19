@@ -97,11 +97,7 @@ class CaffeineReminderManager @Inject constructor(
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         if (enabled) {
             val trigger = System.currentTimeMillis() + 3 * 60 * 60 * 1000L
-            if (Build.VERSION.SDK_INT >= 23) {
-                alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, trigger, 3 * 60 * 60 * 1000L, pi)
-            } else {
-                alarm.setRepeating(AlarmManager.RTC_WAKEUP, trigger, 3 * 60 * 60 * 1000L, pi)
-            }
+            alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, trigger, 3 * 60 * 60 * 1000L, pi)
         } else { alarm.cancel(pi) }
     }
     fun scheduleEvening(enabled: Boolean) { scheduleAlarm(enabled, RC_EVENING, ACTION_EVENING, 20, 0) }
@@ -117,11 +113,7 @@ class CaffeineReminderManager @Inject constructor(
                 set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
                 if (before(Calendar.getInstance())) add(Calendar.DAY_OF_YEAR, 1)
             }
-            if (Build.VERSION.SDK_INT >= 23) {
-                alarm.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.timeInMillis, pi)
-            } else {
-                alarm.set(AlarmManager.RTC_WAKEUP, cal.timeInMillis, pi)
-            }
+            alarm.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.timeInMillis, pi)
         } else { alarm.cancel(pi) }
     }
 
@@ -136,11 +128,7 @@ class CaffeineReminderManager @Inject constructor(
             set(Calendar.HOUR_OF_DAY, NIGHT_END_HOUR); set(Calendar.MINUTE, 0)
             set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
         }
-        if (Build.VERSION.SDK_INT >= 23) {
-            alarm.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.timeInMillis, pi)
-        } else {
-            alarm.set(AlarmManager.RTC_WAKEUP, cal.timeInMillis, pi)
-        }
+        alarm.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.timeInMillis, pi)
     }
 
     fun showReminder(reminderType: String) {

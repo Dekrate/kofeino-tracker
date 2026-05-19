@@ -164,7 +164,6 @@ class CaffeineLiveNotificationManager @Inject constructor(
         )
     }
 
-    @RequiresPermission("android.permission.POST_NOTIFICATIONS")
     private fun buildApi36Notification(
         currentMg: Int, targetMg: Int, isOverLimit: Boolean,
         openIntent: PendingIntent, dismissIntent: PendingIntent

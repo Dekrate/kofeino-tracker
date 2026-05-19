@@ -47,14 +47,6 @@ class MainActivity : ComponentActivity() {
     }
 
     /**
-     * Requests notification permissions required for the live updates feature.
-     *
-     * - [Manifest.permission.POST_NOTIFICATIONS] (Android 13+)
-     * - [Manifest.permission.POST_PROMOTED_NOTIFICATIONS] (Android 16+)
-     *
-     * The notification manager gracefully degrades if permissions are denied.
-     */
-    /**
      * Requests notification permission required for the live updates feature.
      *
      * - [Manifest.permission.POST_NOTIFICATIONS] (Android 13+)

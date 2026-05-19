@@ -56,6 +56,8 @@ class CaffeineLiveNotificationObserver @Inject constructor(
         Timber.tag(TAG).i("Starting notification observer")
         CaffeineLiveNotificationManager.instance = notificationManager
         CaffeineReminderManager.instance = reminderManager
+        // Recreate scope in case it was cancelled by a previous stop()
+        scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
         observeLiveToggle()
         observeReminderToggles()
@@ -66,7 +68,11 @@ class CaffeineLiveNotificationObserver @Inject constructor(
         if (!isRunning) return
         isRunning = false
         observeJob?.cancel()
-        scope.cancel()
+        observeJob = null
+        repositoryJob?.cancel()
+        repositoryJob = null
+        reminderJob?.cancel()
+        reminderJob = null
         dismiss()
         Timber.tag(TAG).i("Observer stopped")
     }
