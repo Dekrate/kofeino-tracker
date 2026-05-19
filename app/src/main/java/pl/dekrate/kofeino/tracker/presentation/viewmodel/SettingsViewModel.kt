@@ -16,18 +16,16 @@ data class SettingsUiState(
     val currentLanguage: String = DataStorePreferences.DEFAULT_LANGUAGE,
     val languageChanged: Boolean = false,
     val currentThemeMode: String = DataStorePreferences.DEFAULT_THEME,
-    val themeChanged: Boolean = false
+    val themeChanged: Boolean = false,
+    // Notification toggles
+    val notifLiveEnabled: Boolean = DataStorePreferences.DEFAULT_NOTIF_LIVE,
+    val notifMorningEnabled: Boolean = DataStorePreferences.DEFAULT_NOTIF_MORNING,
+    val notifRegularEnabled: Boolean = DataStorePreferences.DEFAULT_NOTIF_REGULAR,
+    val notifEveningEnabled: Boolean = DataStorePreferences.DEFAULT_NOTIF_EVENING
 )
 
 /**
  * ViewModel for the Settings screen.
- *
- * Uses [DataStorePreferences] (DataStore-backed) for persistence.
- * The DataStore is the source of truth; SharedPreferences mirror exists
- * only for pre-Hilt [android.app.Application.attachBaseContext] reads.
- *
- * **Thread safety**: All preference reads go through the in-memory cache
- * after initial DataStore warm-up. Writes are dispatched via [viewModelScope].
  */
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
@@ -38,56 +36,76 @@ class SettingsViewModel @Inject constructor(
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
     init {
-        // Initialize state from preferences (async warm-up, then cache hit)
         viewModelScope.launch {
             val lang = preferences.observeLanguage().first()
             val theme = preferences.observeThemeMode().first()
+            val notifLive = preferences.observeNotificationLiveEnabled().first()
+            val notifMorning = preferences.observeNotificationMorningEnabled().first()
+            val notifRegular = preferences.observeNotificationRegularEnabled().first()
+            val notifEvening = preferences.observeNotificationEveningEnabled().first()
             _uiState.update {
-                it.copy(currentLanguage = lang, currentThemeMode = theme)
+                it.copy(
+                    currentLanguage = lang, currentThemeMode = theme,
+                    notifLiveEnabled = notifLive,
+                    notifMorningEnabled = notifMorning,
+                    notifRegularEnabled = notifRegular,
+                    notifEveningEnabled = notifEvening
+                )
             }
         }
     }
 
-    /**
-     * Persists the selected language and signals the UI to recreate the activity.
-     * If the same language is selected, this is a no-op.
-     */
     fun setLanguage(lang: String) {
         if (lang == _uiState.value.currentLanguage) return
         viewModelScope.launch {
             preferences.setLanguage(lang)
-            _uiState.update {
-                it.copy(currentLanguage = lang, languageChanged = true)
-            }
+            _uiState.update { it.copy(currentLanguage = lang, languageChanged = true) }
         }
     }
 
-    /**
-     * Resets the languageChanged flag after the UI has handled the recreate side-effect.
-     * Prevents infinite loops when the ViewModel survives across the activity cycle.
-     */
     fun consumeLanguageChanged() {
         _uiState.update { it.copy(languageChanged = false) }
     }
 
-    /**
-     * Persists the selected theme mode and signals the UI to recreate the activity.
-     * If the same theme mode is selected, this is a no-op.
-     */
     fun setThemeMode(mode: String) {
         if (mode == _uiState.value.currentThemeMode) return
         viewModelScope.launch {
             preferences.setThemeMode(mode)
-            _uiState.update {
-                it.copy(currentThemeMode = mode, themeChanged = true)
-            }
+            _uiState.update { it.copy(currentThemeMode = mode, themeChanged = true) }
         }
     }
 
-    /**
-     * Resets the themeChanged flag after the UI has handled the recreate side-effect.
-     */
     fun consumeThemeChanged() {
         _uiState.update { it.copy(themeChanged = false) }
+    }
+
+    // ===== Notification toggles =====
+
+    fun setNotifLiveEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            preferences.setNotificationLiveEnabled(enabled)
+            _uiState.update { it.copy(notifLiveEnabled = enabled) }
+        }
+    }
+
+    fun setNotifMorningEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            preferences.setNotificationMorningEnabled(enabled)
+            _uiState.update { it.copy(notifMorningEnabled = enabled) }
+        }
+    }
+
+    fun setNotifRegularEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            preferences.setNotificationRegularEnabled(enabled)
+            _uiState.update { it.copy(notifRegularEnabled = enabled) }
+        }
+    }
+
+    fun setNotifEveningEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            preferences.setNotificationEveningEnabled(enabled)
+            _uiState.update { it.copy(notifEveningEnabled = enabled) }
+        }
     }
 }

@@ -5,8 +5,10 @@ import android.content.Context
 import dagger.hilt.android.HiltAndroidApp
 import pl.dekrate.kofeino.tracker.data.local.DataStorePreferences
 import pl.dekrate.kofeino.tracker.data.local.LanguagePreferences
+import pl.dekrate.kofeino.tracker.notification.CaffeineLiveNotificationObserver
 import pl.dekrate.kofeino.tracker.util.LocaleHelper
 import timber.log.Timber
+import javax.inject.Inject
 
 /**
  * Application entry point.
@@ -24,11 +26,15 @@ import timber.log.Timber
 @HiltAndroidApp
 class KofeinoTrackerApplication : Application() {
 
+    @Inject
+    lateinit var caffeineNotificationObserver: CaffeineLiveNotificationObserver
+
     override fun onCreate() {
         super.onCreate()
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
         }
+        caffeineNotificationObserver.start()
     }
 
     override fun attachBaseContext(base: Context) {
