@@ -68,6 +68,27 @@ jobs:
             wear/build/test-results/testDebugUnitTest/*.xml
           check_name: Unit Test Results
 
+  detekt:
+    name: Detekt Static Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: temurin
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+      - name: Run detekt
+        run: ./gradlew detektMain
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: detekt-reports
+          path: "**/build/reports/detekt/**"
+          retention-days: 14
+
   lint:
     name: Lint
     runs-on: ubuntu-latest

@@ -1,6 +1,8 @@
 [versions]
 agp = "9.1.0"
 kotlin = "2.3.21"
+detekt = "2.0.0-alpha.3"
+detektComposeRules = "0.5.9"
 composeCompiler = "2.3.21"
 coreKtx = "1.16.0"
 playServicesWearable = "19.0.0"
@@ -87,8 +89,11 @@ gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 
 datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
 
+detekt-compose-rules = { group = "io.nlopez.compose.rules", name = "detekt", version.ref = "detektComposeRules" }
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "composeCompiler" }
+detekt = { id = "dev.detekt", version.ref = "detekt" }
 hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 ksp = { id = "com.google.devtools.ksp", version = "2.3.7" }
