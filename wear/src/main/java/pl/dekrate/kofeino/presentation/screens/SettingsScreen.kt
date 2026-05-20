@@ -50,6 +50,8 @@ fun SettingsScreen(
     val listScrollState = rememberTransformingLazyColumnState()
     val languageDesc = stringResource(R.string.language)
     val profileDesc = stringResource(R.string.caffeine_limit_title)
+    val decreaseDesc = stringResource(R.string.custom_limit_decrease)
+    val increaseDesc = stringResource(R.string.custom_limit_increase)
 
     ScreenScaffold(scrollState = listScrollState) { contentPadding ->
         TransformingLazyColumn(
@@ -235,7 +237,7 @@ fun SettingsScreen(
                                 },
                                 modifier = Modifier
                                     .weight(1f)
-                                    .semantics { contentDescription = stringResource(R.string.custom_limit_decrease) }
+                                    .semantics { contentDescription = decreaseDesc }
                             ) {
                                 Text("-25")
                             }
@@ -247,7 +249,7 @@ fun SettingsScreen(
                                 },
                                 modifier = Modifier
                                     .weight(1f)
-                                    .semantics { contentDescription = stringResource(R.string.custom_limit_increase) }
+                                    .semantics { contentDescription = increaseDesc }
                             ) {
                                 Text("+25")
                             }
