@@ -44,8 +44,8 @@ fun CoffeeCupIndicator(
     total: Int,
     progress: Float,
     exceeded: Boolean,
-    safeLimit: Int = 400,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    safeLimit: Int = 400
 ) {
     val animatedProgress by animateFloatAsState(
         targetValue = progress.coerceIn(0f, 1f),

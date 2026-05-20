@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.wear.compose.foundation.lazy.TransformingLazyColumn
 import androidx.wear.compose.foundation.lazy.rememberTransformingLazyColumnState
 import androidx.wear.compose.material3.Button
-import androidx.wear.compose.material3.ButtonDefaults
+
 import androidx.wear.compose.material3.ListHeader
 import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.material3.OutlinedButton
@@ -37,8 +37,7 @@ import pl.dekrate.kofeino.data.local.LanguagePreferences
 import pl.dekrate.kofeino.domain.model.CaffeineLimitProfile
 
 @Composable
-fun SettingsScreen(
-) {
+fun SettingsScreen() {
     val context = androidx.compose.ui.platform.LocalContext.current
     val activity = context.findActivity()
     val langPrefs = remember { LanguagePreferences(context) }
@@ -60,7 +59,6 @@ fun SettingsScreen(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.Top)
         ) {
-
             // ===== Language section =====
             item {
                 ListHeader {
@@ -70,75 +68,16 @@ fun SettingsScreen(
                     )
                 }
             }
-
             item {
-                Column(
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = stringResource(R.string.language),
-                        style = MaterialTheme.typography.labelLarge,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        val isEnglish = currentLang == LanguagePreferences.LANGUAGE_EN
-                        val isPolish = currentLang == LanguagePreferences.LANGUAGE_PL
-
-                        if (isEnglish) {
-                            Button(
-                                onClick = { /* already active */ },
-                                enabled = false,
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .semantics { contentDescription = languageDesc }
-                            ) {
-                                Text(stringResource(R.string.english))
-                            }
-                        } else {
-                            OutlinedButton(
-                                onClick = {
-                                    langPrefs.setLanguage(LanguagePreferences.LANGUAGE_EN)
-                                    currentLang = LanguagePreferences.LANGUAGE_EN
-                                    activity?.recreate()
-                                },
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .semantics { contentDescription = languageDesc }
-                            ) {
-                                Text(stringResource(R.string.english))
-                            }
-                        }
-
-                        if (isPolish) {
-                            Button(
-                                onClick = { /* already active */ },
-                                enabled = false,
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .semantics { contentDescription = languageDesc }
-                            ) {
-                                Text(stringResource(R.string.polish))
-                            }
-                        } else {
-                            OutlinedButton(
-                                onClick = {
-                                    langPrefs.setLanguage(LanguagePreferences.LANGUAGE_PL)
-                                    currentLang = LanguagePreferences.LANGUAGE_PL
-                                    activity?.recreate()
-                                },
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .semantics { contentDescription = languageDesc }
-                            ) {
-                                Text(stringResource(R.string.polish))
-                            }
-                        }
+                LanguageSection(
+                    currentLang = currentLang,
+                    languageDesc = languageDesc,
+                    onLanguageSelected = { lang ->
+                        langPrefs.setLanguage(lang)
+                        currentLang = lang
+                        activity?.recreate()
                     }
-                }
+                )
             }
 
             // ===== Caffeine limit section =====
@@ -150,7 +89,6 @@ fun SettingsScreen(
                     )
                 }
             }
-
             item {
                 Text(
                     text = stringResource(R.string.caffeine_limit_summary),
@@ -159,102 +97,38 @@ fun SettingsScreen(
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                 )
             }
-
-            // Profile buttons
             CaffeineLimitProfile.entries.forEach { profile ->
                 item {
-                    val isActive = currentProfile == profile
-                    val buttonModifier = Modifier
-                        .padding(horizontal = 8.dp)
-                        .semantics { contentDescription = profileDesc }
-
-                    if (isActive) {
-                        Button(
-                            onClick = { /* already active */ },
-                            enabled = false,
-                            modifier = buttonModifier
-                        ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(
-                                    text = stringResource(profile.displayNameResId),
-                                    style = MaterialTheme.typography.labelLarge
-                                )
-                                Text(
-                                    text = stringResource(profile.descriptionResId),
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                            }
+                    ProfileSection(
+                        profile = profile,
+                        isActive = currentProfile == profile,
+                        contentDesc = profileDesc,
+                        onSelect = {
+                            caffeinePrefs.setProfile(profile)
+                            currentProfile = profile
                         }
-                    } else {
-                        OutlinedButton(
-                            onClick = {
-                                caffeinePrefs.setProfile(profile)
-                                currentProfile = profile
-                            },
-                            modifier = buttonModifier
-                        ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(
-                                    text = stringResource(profile.displayNameResId),
-                                    style = MaterialTheme.typography.labelLarge
-                                )
-                                Text(
-                                    text = stringResource(profile.descriptionResId),
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                            }
-                        }
-                    }
+                    )
                 }
             }
-
-            // Custom limit controls (only visible when CUSTOM is selected)
             if (currentProfile == CaffeineLimitProfile.CUSTOM) {
                 item {
-                    Column(
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = stringResource(R.string.custom_limit),
-                            style = MaterialTheme.typography.labelLarge,
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
-                        Text(
-                            text = stringResource(R.string.custom_limit_value, customLimit),
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.padding(vertical = 4.dp)
-                        )
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            OutlinedButton(
-                                onClick = {
-                                    val newValue = (customLimit - 25).coerceAtLeast(CaffeinePreferences.MIN_CUSTOM_LIMIT)
-                                    customLimit = newValue
-                                    caffeinePrefs.setCustomLimit(newValue)
-                                },
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .semantics { contentDescription = decreaseDesc }
-                            ) {
-                                Text("-25")
-                            }
-                            OutlinedButton(
-                                onClick = {
-                                    val newValue = (customLimit + 25).coerceAtMost(CaffeinePreferences.MAX_CUSTOM_LIMIT)
-                                    customLimit = newValue
-                                    caffeinePrefs.setCustomLimit(newValue)
-                                },
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .semantics { contentDescription = increaseDesc }
-                            ) {
-                                Text("+25")
-                            }
+                    CustomLimitControls(
+                        customLimit = customLimit,
+                        decreaseDesc = decreaseDesc,
+                        increaseDesc = increaseDesc,
+                        onDecrease = {
+                            val newValue = (customLimit - 25)
+                                .coerceAtLeast(CaffeinePreferences.MIN_CUSTOM_LIMIT)
+                            customLimit = newValue
+                            caffeinePrefs.setCustomLimit(newValue)
+                        },
+                        onIncrease = {
+                            val newValue = (customLimit + 25)
+                                .coerceAtMost(CaffeinePreferences.MAX_CUSTOM_LIMIT)
+                            customLimit = newValue
+                            caffeinePrefs.setCustomLimit(newValue)
                         }
-                    }
+                    )
                 }
             }
 
@@ -267,18 +141,9 @@ fun SettingsScreen(
                     )
                 }
             }
-
             item {
-                Text(
-                    text = stringResource(R.string.health_disclaimer_text),
-                    style = MaterialTheme.typography.bodySmall,
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                )
+                HealthDisclaimerContent()
             }
-
-            // Source references
             item {
                 ListHeader {
                     Text(
@@ -287,18 +152,193 @@ fun SettingsScreen(
                     )
                 }
             }
-
             item {
+                HealthReferencesContent()
+            }
+        }
+    }
+}
+
+@Composable
+private fun LanguageSection(
+    currentLang: String,
+    languageDesc: String,
+    onLanguageSelected: (String) -> Unit
+) {
+    Column(
+        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = stringResource(R.string.language),
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            val isEnglish = currentLang == LanguagePreferences.LANGUAGE_EN
+            val isPolish = currentLang == LanguagePreferences.LANGUAGE_PL
+
+            if (isEnglish) {
+                Button(
+                    onClick = { },
+                    enabled = false,
+                    modifier = Modifier
+                        .weight(1f)
+                        .semantics { contentDescription = languageDesc }
+                ) {
+                    Text(stringResource(R.string.english))
+                }
+            } else {
+                OutlinedButton(
+                    onClick = { onLanguageSelected(LanguagePreferences.LANGUAGE_EN) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .semantics { contentDescription = languageDesc }
+                ) {
+                    Text(stringResource(R.string.english))
+                }
+            }
+
+            if (isPolish) {
+                Button(
+                    onClick = { },
+                    enabled = false,
+                    modifier = Modifier
+                        .weight(1f)
+                        .semantics { contentDescription = languageDesc }
+                ) {
+                    Text(stringResource(R.string.polish))
+                }
+            } else {
+                OutlinedButton(
+                    onClick = { onLanguageSelected(LanguagePreferences.LANGUAGE_PL) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .semantics { contentDescription = languageDesc }
+                ) {
+                    Text(stringResource(R.string.polish))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProfileSection(
+    profile: CaffeineLimitProfile,
+    isActive: Boolean,
+    contentDesc: String,
+    onSelect: () -> Unit
+) {
+    val buttonModifier = Modifier
+        .padding(horizontal = 8.dp)
+        .semantics { contentDescription = contentDesc }
+
+    if (isActive) {
+        Button(
+            onClick = { },
+            enabled = false,
+            modifier = buttonModifier
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = stringResource(R.string.health_references_text),
-                    style = MaterialTheme.typography.bodySmall,
-                    textAlign = TextAlign.Start,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    text = stringResource(profile.displayNameResId),
+                    style = MaterialTheme.typography.labelLarge
+                )
+                Text(
+                    text = stringResource(profile.descriptionResId),
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+        }
+    } else {
+        OutlinedButton(
+            onClick = onSelect,
+            modifier = buttonModifier
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = stringResource(profile.displayNameResId),
+                    style = MaterialTheme.typography.labelLarge
+                )
+                Text(
+                    text = stringResource(profile.descriptionResId),
+                    style = MaterialTheme.typography.bodySmall
                 )
             }
         }
     }
+}
+
+@Composable
+private fun CustomLimitControls(
+    customLimit: Int,
+    decreaseDesc: String,
+    increaseDesc: String,
+    onDecrease: () -> Unit,
+    onIncrease: () -> Unit
+) {
+    Column(
+        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = stringResource(R.string.custom_limit),
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.padding(bottom = 4.dp)
+        )
+        Text(
+            text = stringResource(R.string.custom_limit_value, customLimit),
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(vertical = 4.dp)
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            OutlinedButton(
+                onClick = onDecrease,
+                modifier = Modifier
+                    .weight(1f)
+                    .semantics { contentDescription = decreaseDesc }
+            ) {
+                Text("-25")
+            }
+            OutlinedButton(
+                onClick = onIncrease,
+                modifier = Modifier
+                    .weight(1f)
+                    .semantics { contentDescription = increaseDesc }
+            ) {
+                Text("+25")
+            }
+        }
+    }
+}
+
+@Composable
+private fun HealthDisclaimerContent() {
+    Text(
+        text = stringResource(R.string.health_disclaimer_text),
+        style = MaterialTheme.typography.bodySmall,
+        textAlign = TextAlign.Center,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+    )
+}
+
+@Composable
+private fun HealthReferencesContent() {
+    Text(
+        text = stringResource(R.string.health_references_text),
+        style = MaterialTheme.typography.bodySmall,
+        textAlign = TextAlign.Start,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+    )
 }
 
 /** Recursively finds the Activity from a Context. */
