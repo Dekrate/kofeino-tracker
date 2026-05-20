@@ -3,6 +3,9 @@ package pl.dekrate.kofeino.data.local
 import android.content.Context
 import android.content.SharedPreferences
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import pl.dekrate.kofeino.domain.model.CaffeineLimitProfile
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -35,7 +38,9 @@ class CaffeinePreferences @Inject constructor(
     }
 
     /** Returns the custom limit in mg (default: 400). Only meaningful for [CaffeineLimitProfile.CUSTOM]. */
-    fun getCustomLimit(): Int = prefs.getInt(KEY_CUSTOM_LIMIT, DEFAULT_CUSTOM_LIMIT)
+    fun getCustomLimit(): Int = prefs
+        .getInt(KEY_CUSTOM_LIMIT, DEFAULT_CUSTOM_LIMIT)
+        .coerceIn(MIN_CUSTOM_LIMIT, MAX_CUSTOM_LIMIT)
 
     /** Persists the custom limit. */
     fun setCustomLimit(mg: Int) {
@@ -49,6 +54,21 @@ class CaffeinePreferences @Inject constructor(
     fun getLimitMg(): Int {
         val profile = getProfile()
         return profile.limitMg ?: getCustomLimit()
+    }
+
+    /**
+     * Emits the effective daily limit whenever the profile or custom limit changes.
+     * Uses SharedPreferences change listener under the hood.
+     */
+    val limitFlow: Flow<Int> = callbackFlow {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == KEY_PROFILE || key == KEY_CUSTOM_LIMIT) {
+                trySend(getLimitMg())
+            }
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        trySend(getLimitMg())
+        awaitClose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }
 
     companion object {

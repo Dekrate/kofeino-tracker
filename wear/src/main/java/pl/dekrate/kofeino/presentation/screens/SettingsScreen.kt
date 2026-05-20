@@ -41,14 +41,13 @@ fun SettingsScreen() {
     val context = androidx.compose.ui.platform.LocalContext.current
     val activity = context.findActivity()
     val langPrefs = remember { LanguagePreferences(context) }
-    val caffeinePrefs = remember { CaffeinePreferences(context) }
+    val caffeinePrefs = remember { CaffeinePreferences(context.applicationContext) }
     var currentLang by remember { mutableStateOf(langPrefs.getLanguage()) }
     var currentProfile by remember { mutableStateOf(caffeinePrefs.getProfile()) }
     var customLimit by remember { mutableIntStateOf(caffeinePrefs.getCustomLimit()) }
 
     val listScrollState = rememberTransformingLazyColumnState()
     val languageDesc = stringResource(R.string.language)
-    val profileDesc = stringResource(R.string.caffeine_limit_title)
     val decreaseDesc = stringResource(R.string.custom_limit_decrease)
     val increaseDesc = stringResource(R.string.custom_limit_increase)
 
@@ -102,7 +101,6 @@ fun SettingsScreen() {
                     ProfileSection(
                         profile = profile,
                         isActive = currentProfile == profile,
-                        contentDesc = profileDesc,
                         onSelect = {
                             caffeinePrefs.setProfile(profile)
                             currentProfile = profile
@@ -230,12 +228,12 @@ private fun LanguageSection(
 private fun ProfileSection(
     profile: CaffeineLimitProfile,
     isActive: Boolean,
-    contentDesc: String,
     onSelect: () -> Unit
 ) {
+    val profileContentDesc = stringResource(profile.displayNameResId)
     val buttonModifier = Modifier
         .padding(horizontal = 8.dp)
-        .semantics { contentDescription = contentDesc }
+        .semantics { contentDescription = profileContentDesc }
 
     if (isActive) {
         Button(

@@ -56,10 +56,10 @@ class CaffeineViewModel @Inject constructor(
             _selectedDateMillis,
             dateIntakesFlow,
             dateTotalFlow,
-            repository.getAllDrinks()
-        ) { dateMillis, intakes, total, drinks ->
+            repository.getAllDrinks(),
+            caffeinePreferences.limitFlow
+        ) { dateMillis, intakes, total, drinks, safeLimitMg ->
             val dateLabel = formatDateLabel(dateMillis)
-            val safeLimitMg = caffeinePreferences.getLimitMg()
             CaffeineUiState(
                 selectedDateMillis = dateMillis,
                 dateIntakes = intakes,

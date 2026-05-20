@@ -71,8 +71,8 @@ class CaffeineViewModelTest {
         every { repository.getIntakesForDate(any()) } returns flowOf(emptyList())
         every { repository.getTotalCaffeineForDate(any()) } returns flowOf(0)
         every { repository.getAllDrinks() } returns flowOf(emptyList())
-        // Default limit: adult 400 mg
-        every { caffeinePreferences.getLimitMg() } returns 400
+        // Default limit: adult 400 mg via flow
+        every { caffeinePreferences.limitFlow } returns flowOf(400)
     }
 
     // ===== Initial state tests =====
@@ -502,7 +502,7 @@ class CaffeineViewModelTest {
 
     @Test
     fun `state should contain safeLimitMg from preferences`() = runTest {
-        every { caffeinePreferences.getLimitMg() } returns 400
+        every { caffeinePreferences.limitFlow } returns flowOf(400)
 
         viewModel = CaffeineViewModel(repository, caffeinePreferences, context)
         testDispatcher.scheduler.advanceUntilIdle()
@@ -516,7 +516,7 @@ class CaffeineViewModelTest {
 
     @Test
     fun `isLimitExceeded should use 200 mg limit for pregnant profile`() = runTest {
-        every { caffeinePreferences.getLimitMg() } returns 200
+        every { caffeinePreferences.limitFlow } returns flowOf(200)
         every { repository.getTotalCaffeineForDate(any()) } returns flowOf(250)
 
         viewModel = CaffeineViewModel(repository, caffeinePreferences, context)
@@ -534,7 +534,7 @@ class CaffeineViewModelTest {
 
     @Test
     fun `progress should use custom limit when profile is CUSTOM`() = runTest {
-        every { caffeinePreferences.getLimitMg() } returns 150
+        every { caffeinePreferences.limitFlow } returns flowOf(150)
         every { repository.getTotalCaffeineForDate(any()) } returns flowOf(75)
 
         viewModel = CaffeineViewModel(repository, caffeinePreferences, context)
