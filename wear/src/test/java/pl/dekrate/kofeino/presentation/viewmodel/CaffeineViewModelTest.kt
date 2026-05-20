@@ -2,6 +2,7 @@ package pl.dekrate.kofeino.presentation.viewmodel
 
 import android.content.Context
 import app.cash.turbine.test
+import pl.dekrate.kofeino.data.local.CaffeinePreferences
 import pl.dekrate.kofeino.data.repository.CaffeineRepository
 import pl.dekrate.kofeino.domain.model.CaffeineIntake
 import pl.dekrate.kofeino.domain.model.DrinkEntity
@@ -49,12 +50,14 @@ class CaffeineViewModelTest {
     }
 
     private lateinit var repository: CaffeineRepository
+    private lateinit var caffeinePreferences: CaffeinePreferences
     private lateinit var context: Context
     private lateinit var viewModel: CaffeineViewModel
 
     @Before
     fun setup() {
         repository = mockk(relaxed = true)
+        caffeinePreferences = mockk(relaxed = true)
         context = mockk(relaxed = true)
         every { context.getString(any<Int>()) } answers {
             "string_${firstArg<Int>()}"
@@ -68,13 +71,15 @@ class CaffeineViewModelTest {
         every { repository.getIntakesForDate(any()) } returns flowOf(emptyList())
         every { repository.getTotalCaffeineForDate(any()) } returns flowOf(0)
         every { repository.getAllDrinks() } returns flowOf(emptyList())
+        // Default limit: adult 400 mg via flow
+        every { caffeinePreferences.limitFlow } returns flowOf(400)
     }
 
     // ===== Initial state tests =====
 
     @Test
     fun `initial state should be empty with zero total`() = runTest {
-        viewModel = CaffeineViewModel(repository, context)
+        viewModel = CaffeineViewModel(repository, caffeinePreferences, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -89,7 +94,7 @@ class CaffeineViewModelTest {
 
     @Test
     fun `initial state should have today date label`() = runTest {
-        viewModel = CaffeineViewModel(repository, context)
+        viewModel = CaffeineViewModel(repository, caffeinePreferences, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -106,7 +111,7 @@ class CaffeineViewModelTest {
     fun `adding drink should call repository addIntake`() = runTest {
         coEvery { repository.addIntake(any()) } returns 1L
 
-        viewModel = CaffeineViewModel(repository, context)
+        viewModel = CaffeineViewModel(repository, caffeinePreferences, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         val drink = DrinkEntity(id = 1, name = "Espresso", caffeineMg = 63, volumeMl = 30)
@@ -124,7 +129,7 @@ class CaffeineViewModelTest {
     fun `adding drink with DrinkEntity should set correct fields`() = runTest {
         coEvery { repository.addIntake(any()) } returns 1L
 
-        viewModel = CaffeineViewModel(repository, context)
+        viewModel = CaffeineViewModel(repository, caffeinePreferences, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         val drink = DrinkEntity(id = 5, name = "Latte", caffeineMg = 63, volumeMl = 250)
@@ -150,7 +155,7 @@ class CaffeineViewModelTest {
         every { repository.getIntakesForDate(any()) } returns flowOf(intakes)
         every { repository.getTotalCaffeineForDate(any()) } returns flowOf(158)
 
-        viewModel = CaffeineViewModel(repository, context)
+        viewModel = CaffeineViewModel(repository, caffeinePreferences, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -167,7 +172,7 @@ class CaffeineViewModelTest {
     fun `limit exceeded should be true when total over 400mg`() = runTest {
         every { repository.getTotalCaffeineForDate(any()) } returns flowOf(450)
 
-        viewModel = CaffeineViewModel(repository, context)
+        viewModel = CaffeineViewModel(repository, caffeinePreferences, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -182,7 +187,7 @@ class CaffeineViewModelTest {
     fun `progress should be capped at 1 when over limit`() = runTest {
         every { repository.getTotalCaffeineForDate(any()) } returns flowOf(800)
 
-        viewModel = CaffeineViewModel(repository, context)
+        viewModel = CaffeineViewModel(repository, caffeinePreferences, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -198,7 +203,7 @@ class CaffeineViewModelTest {
     fun `updateIntake should call repository updateIntake`() = runTest {
         coEvery { repository.updateIntake(any()) } just Runs
 
-        viewModel = CaffeineViewModel(repository, context)
+        viewModel = CaffeineViewModel(repository, caffeinePreferences, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         val intake = CaffeineIntake(1, drinkId = 1, "Test", 50, 200, System.currentTimeMillis())
@@ -212,7 +217,7 @@ class CaffeineViewModelTest {
     fun `updateIntake onComplete should fire after successful save`() = runTest {
         coEvery { repository.updateIntake(any()) } just Runs
 
-        viewModel = CaffeineViewModel(repository, context)
+        viewModel = CaffeineViewModel(repository, caffeinePreferences, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         var callbackFired = false
@@ -228,7 +233,7 @@ class CaffeineViewModelTest {
     fun `updateIntake onError should fire when save fails`() = runTest {
         coEvery { repository.updateIntake(any()) } throws RuntimeException("DB error")
 
-        viewModel = CaffeineViewModel(repository, context)
+        viewModel = CaffeineViewModel(repository, caffeinePreferences, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         var onCompleteFired = false
@@ -250,7 +255,7 @@ class CaffeineViewModelTest {
     fun `updateIntake onComplete should NOT fire when save fails`() = runTest {
         coEvery { repository.updateIntake(any()) } throws RuntimeException("DB error")
 
-        viewModel = CaffeineViewModel(repository, context)
+        viewModel = CaffeineViewModel(repository, caffeinePreferences, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         var callbackFired = false
@@ -266,7 +271,7 @@ class CaffeineViewModelTest {
     fun `updateIntake should set error state on failure`() = runTest {
         coEvery { repository.updateIntake(any()) } throws RuntimeException("DB error")
 
-        viewModel = CaffeineViewModel(repository, context)
+        viewModel = CaffeineViewModel(repository, caffeinePreferences, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         val intake = CaffeineIntake(1, drinkId = 1, "Test", 50, 200, System.currentTimeMillis())
@@ -280,7 +285,7 @@ class CaffeineViewModelTest {
     fun `deleteIntake should call repository deleteIntake`() = runTest {
         coEvery { repository.deleteIntake(any()) } just Runs
 
-        viewModel = CaffeineViewModel(repository, context)
+        viewModel = CaffeineViewModel(repository, caffeinePreferences, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         val intake = CaffeineIntake(1, drinkId = 1, "Test", 50, 200, System.currentTimeMillis())
@@ -294,7 +299,7 @@ class CaffeineViewModelTest {
     fun `deleteIntake onComplete should fire after successful delete`() = runTest {
         coEvery { repository.deleteIntake(any()) } just Runs
 
-        viewModel = CaffeineViewModel(repository, context)
+        viewModel = CaffeineViewModel(repository, caffeinePreferences, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         var callbackFired = false
@@ -310,7 +315,7 @@ class CaffeineViewModelTest {
     fun `deleteIntake onError should fire when delete fails`() = runTest {
         coEvery { repository.deleteIntake(any()) } throws RuntimeException("DB error")
 
-        viewModel = CaffeineViewModel(repository, context)
+        viewModel = CaffeineViewModel(repository, caffeinePreferences, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         var onCompleteFired = false
@@ -335,7 +340,7 @@ class CaffeineViewModelTest {
         val intake = CaffeineIntake(1, drinkId = 1, "Test", 50, 200, System.currentTimeMillis())
         coEvery { repository.getIntakeById(1L) } returns intake
 
-        viewModel = CaffeineViewModel(repository, context)
+        viewModel = CaffeineViewModel(repository, caffeinePreferences, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         val result = viewModel.getIntakeById(1L)
@@ -348,7 +353,7 @@ class CaffeineViewModelTest {
     fun `getIntakeById should return null for non-existent id`() = runTest {
         coEvery { repository.getIntakeById(999L) } returns null
 
-        viewModel = CaffeineViewModel(repository, context)
+        viewModel = CaffeineViewModel(repository, caffeinePreferences, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         val result = viewModel.getIntakeById(999L)
@@ -359,7 +364,7 @@ class CaffeineViewModelTest {
 
     @Test
     fun `previousDay should move date one day back`() = runTest {
-        viewModel = CaffeineViewModel(repository, context)
+        viewModel = CaffeineViewModel(repository, caffeinePreferences, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         val initialDate = viewModel.uiState.value.selectedDateMillis
@@ -374,7 +379,7 @@ class CaffeineViewModelTest {
 
     @Test
     fun `nextDay should move date one day forward`() = runTest {
-        viewModel = CaffeineViewModel(repository, context)
+        viewModel = CaffeineViewModel(repository, caffeinePreferences, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         val initialDate = viewModel.uiState.value.selectedDateMillis
@@ -389,7 +394,7 @@ class CaffeineViewModelTest {
 
     @Test
     fun `goToToday should reset date to start of today`() = runTest {
-        viewModel = CaffeineViewModel(repository, context)
+        viewModel = CaffeineViewModel(repository, caffeinePreferences, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         val initialDate = viewModel.uiState.value.selectedDateMillis
@@ -407,14 +412,14 @@ class CaffeineViewModelTest {
 
     @Test
     fun `isToday should return true when on today`() = runTest {
-        viewModel = CaffeineViewModel(repository, context)
+        viewModel = CaffeineViewModel(repository, caffeinePreferences, context)
         testDispatcher.scheduler.advanceUntilIdle()
         assertTrue(viewModel.isToday())
     }
 
     @Test
     fun `isToday should return false after navigating away`() = runTest {
-        viewModel = CaffeineViewModel(repository, context)
+        viewModel = CaffeineViewModel(repository, caffeinePreferences, context)
         testDispatcher.scheduler.advanceUntilIdle()
         viewModel.previousDay()
         testDispatcher.scheduler.advanceUntilIdle()
@@ -431,7 +436,7 @@ class CaffeineViewModelTest {
         )
         every { repository.getAllDrinks() } returns flowOf(drinks)
 
-        viewModel = CaffeineViewModel(repository, context)
+        viewModel = CaffeineViewModel(repository, caffeinePreferences, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -448,7 +453,7 @@ class CaffeineViewModelTest {
     fun `clearError should set error to null`() = runTest {
         coEvery { repository.addIntake(any()) } throws RuntimeException("DB error")
 
-        viewModel = CaffeineViewModel(repository, context)
+        viewModel = CaffeineViewModel(repository, caffeinePreferences, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         val drink = DrinkEntity(id = 1, name = "Espresso", caffeineMg = 63, volumeMl = 30)
@@ -465,7 +470,7 @@ class CaffeineViewModelTest {
 
     @Test
     fun `clearError should be idempotent when error is null`() = runTest {
-        viewModel = CaffeineViewModel(repository, context)
+        viewModel = CaffeineViewModel(repository, caffeinePreferences, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         assertNull("Error should be null initially", viewModel.uiState.value.error)
@@ -482,7 +487,7 @@ class CaffeineViewModelTest {
     fun `addDrink should set error state on failure`() = runTest {
         coEvery { repository.addIntake(any()) } throws RuntimeException("DB error")
 
-        viewModel = CaffeineViewModel(repository, context)
+        viewModel = CaffeineViewModel(repository, caffeinePreferences, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         val drink = DrinkEntity(id = 1, name = "Espresso", caffeineMg = 63, volumeMl = 30)
@@ -491,6 +496,57 @@ class CaffeineViewModelTest {
 
         val error = viewModel.uiState.value.error
         assertNotNull("Error should be set when addDrink fails", error)
+    }
+
+    // ===== Caffeine limit profile tests =====
+
+    @Test
+    fun `state should contain safeLimitMg from preferences`() = runTest {
+        every { caffeinePreferences.limitFlow } returns flowOf(400)
+
+        viewModel = CaffeineViewModel(repository, caffeinePreferences, context)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.uiState.test {
+            val state = awaitItem()
+            assertEquals(400, state.safeLimitMg)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `isLimitExceeded should use 200 mg limit for pregnant profile`() = runTest {
+        every { caffeinePreferences.limitFlow } returns flowOf(200)
+        every { repository.getTotalCaffeineForDate(any()) } returns flowOf(250)
+
+        viewModel = CaffeineViewModel(repository, caffeinePreferences, context)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.uiState.test {
+            val state = awaitItem()
+            assertEquals(250, state.totalCaffeineMg)
+            assertTrue("250 > 200 should exceed pregnant limit", state.isLimitExceeded)
+            assertEquals(1f, state.progress)
+            assertEquals(200, state.safeLimitMg)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `progress should use custom limit when profile is CUSTOM`() = runTest {
+        every { caffeinePreferences.limitFlow } returns flowOf(150)
+        every { repository.getTotalCaffeineForDate(any()) } returns flowOf(75)
+
+        viewModel = CaffeineViewModel(repository, caffeinePreferences, context)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.uiState.test {
+            val state = awaitItem()
+            assertEquals(150, state.safeLimitMg)
+            assertEquals(0.5f, state.progress, 0.001f)
+            assertFalse("75 < 150 should not exceed limit", state.isLimitExceeded)
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
     @Test
@@ -503,7 +559,7 @@ class CaffeineViewModelTest {
         every { repository.getIntakesForDate(any()) } returns intakesFlow
         every { repository.getTotalCaffeineForDate(any()) } returns totalFlow
 
-        viewModel = CaffeineViewModel(repository, context)
+        viewModel = CaffeineViewModel(repository, caffeinePreferences, context)
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.uiState.test {

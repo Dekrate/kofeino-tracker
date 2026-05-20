@@ -115,7 +115,8 @@ fun HomeScreen(
                 CoffeeCupIndicator(
                     total = state.totalCaffeineMg,
                     progress = state.progress,
-                    exceeded = state.isLimitExceeded
+                    exceeded = state.isLimitExceeded,
+                    safeLimit = state.safeLimitMg
                 )
             }
 
