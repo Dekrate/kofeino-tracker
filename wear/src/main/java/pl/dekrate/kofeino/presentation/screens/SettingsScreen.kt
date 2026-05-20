@@ -72,7 +72,7 @@ fun SettingsScreen() {
                 LanguageSection(
                     currentLang = currentLang,
                     languageDesc = languageDesc,
-                    onLanguageSelected = { lang ->
+                    onLanguageSelect = { lang ->
                         langPrefs.setLanguage(lang)
                         currentLang = lang
                         activity?.recreate()
@@ -163,7 +163,7 @@ fun SettingsScreen() {
 private fun LanguageSection(
     currentLang: String,
     languageDesc: String,
-    onLanguageSelected: (String) -> Unit
+    onLanguageSelect: (String) -> Unit
 ) {
     Column(
         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
@@ -193,7 +193,7 @@ private fun LanguageSection(
                 }
             } else {
                 OutlinedButton(
-                    onClick = { onLanguageSelected(LanguagePreferences.LANGUAGE_EN) },
+                    onClick = { onLanguageSelect(LanguagePreferences.LANGUAGE_EN) },
                     modifier = Modifier
                         .weight(1f)
                         .semantics { contentDescription = languageDesc }
@@ -214,7 +214,7 @@ private fun LanguageSection(
                 }
             } else {
                 OutlinedButton(
-                    onClick = { onLanguageSelected(LanguagePreferences.LANGUAGE_PL) },
+                    onClick = { onLanguageSelect(LanguagePreferences.LANGUAGE_PL) },
                     modifier = Modifier
                         .weight(1f)
                         .semantics { contentDescription = languageDesc }
