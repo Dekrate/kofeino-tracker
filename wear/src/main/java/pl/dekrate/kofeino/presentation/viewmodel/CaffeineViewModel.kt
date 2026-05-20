@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import pl.dekrate.kofeino.R
+import pl.dekrate.kofeino.data.local.CaffeinePreferences
 import pl.dekrate.kofeino.data.repository.CaffeineRepository
 import pl.dekrate.kofeino.domain.model.CaffeineIntake
 import pl.dekrate.kofeino.domain.model.DrinkEntity
@@ -30,6 +31,7 @@ import javax.inject.Inject
 @HiltViewModel
 class CaffeineViewModel @Inject constructor(
     private val repository: CaffeineRepository,
+    private val caffeinePreferences: CaffeinePreferences,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -57,12 +59,14 @@ class CaffeineViewModel @Inject constructor(
             repository.getAllDrinks()
         ) { dateMillis, intakes, total, drinks ->
             val dateLabel = formatDateLabel(dateMillis)
+            val safeLimitMg = caffeinePreferences.getLimitMg()
             CaffeineUiState(
                 selectedDateMillis = dateMillis,
                 dateIntakes = intakes,
                 totalCaffeineMg = total,
-                isLimitExceeded = total > SAFE_LIMIT_MG,
-                progress = (total / SAFE_LIMIT_MG.toFloat()).coerceIn(0f, 1f),
+                isLimitExceeded = total > safeLimitMg,
+                progress = (total / safeLimitMg.toFloat()).coerceIn(0f, 1f),
+                safeLimitMg = safeLimitMg,
                 drinks = drinks,
                 dateLabel = dateLabel
             )
@@ -204,7 +208,8 @@ class CaffeineViewModel @Inject constructor(
     }
 
     companion object {
-        const val SAFE_LIMIT_MG = 400
+        /** Default adult safe limit (EFSA/FDA). Kept for reference / legacy use. */
+        const val DEFAULT_SAFE_LIMIT_MG = 400
     }
 }
 
@@ -214,6 +219,8 @@ data class CaffeineUiState(
     val totalCaffeineMg: Int = 0,
     val isLimitExceeded: Boolean = false,
     val progress: Float = 0f,
+    /** The current safe daily limit in mg (from user's selected profile). */
+    val safeLimitMg: Int = CaffeineViewModel.DEFAULT_SAFE_LIMIT_MG,
     val drinks: List<DrinkEntity> = emptyList(),
     val dateLabel: String = "",
     val error: String? = null

@@ -44,6 +44,7 @@ fun CoffeeCupIndicator(
     total: Int,
     progress: Float,
     exceeded: Boolean,
+    safeLimit: Int = 400,
     modifier: Modifier = Modifier
 ) {
     val animatedProgress by animateFloatAsState(
@@ -60,10 +61,11 @@ fun CoffeeCupIndicator(
         else -> CoffeeColors.darkRoast
     }
 
+    val safeLimitText = stringResource(R.string.safe_limit_format, safeLimit)
     val contentDesc = if (exceeded) {
         "${stringResource(R.string.limit_exceeded)}: $total mg"
     } else {
-        "$total mg ${stringResource(R.string.safe_limit)}"
+        "$total mg / $safeLimitText"
     }
 
     Column(
@@ -107,7 +109,7 @@ fun CoffeeCupIndicator(
             )
         } else {
             Text(
-                text = stringResource(R.string.safe_limit),
+                text = stringResource(R.string.safe_limit_format, safeLimit),
                 style = MaterialTheme.typography.labelMedium
             )
         }

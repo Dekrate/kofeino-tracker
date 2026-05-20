@@ -7,7 +7,7 @@
     <string name="history">Historia</string>
     <string name="drinks">Napoje</string>
     <string name="settings">Ustawienia</string>
-    <string name="safe_limit">Bezpieczny limit: 400 mg</string>
+    <string name="safe_limit_format">Bezpieczny limit: %d mg</string>
     <string name="limit_exceeded">Przekroczono bezpieczny limit!</string>
 
     <!-- Predefined drinks -->
@@ -116,4 +116,26 @@
     <string name="language">Język</string>
     <string name="polish">Polski</string>
     <string name="english">Angielski</string>
+
+    <!-- Caffeine limit profiles -->
+    <string name="caffeine_limit_title">Dzienny limit kofeiny</string>
+    <string name="caffeine_limit_summary">Ustaw maksymalne dzienne spożycie kofeiny na podstawie swojego profilu. Limity oparte na wytycznych EFSA, FDA i WHO.</string>
+    <string name="profile_adult">Dorosły (400 mg)</string>
+    <string name="profile_adult_desc">Standardowy bezpieczny limit dla zdrowych dorosłych. EFSA 2015, FDA 2024.</string>
+    <string name="profile_pregnant">W ciąży (200 mg)</string>
+    <string name="profile_pregnant_desc">Zalecany limit w ciąży. EFSA 2015, WHO 2023.</string>
+    <string name="profile_sensitive">Wrażliwy (100 mg)</string>
+    <string name="profile_sensitive_desc">Dla osób wrażliwych na kofeinę lub z chorobami współistniejącymi.</string>
+    <string name="profile_custom">Własny</string>
+    <string name="profile_custom_desc">Ustaw własny limit dzienny.</string>
+    <string name="custom_limit">Własny limit (mg)</string>
+    <string name="custom_limit_value">%d mg</string>
+    <string name="custom_limit_decrease">Zmniejsz limit</string>
+    <string name="custom_limit_increase">Zwiększ limit</string>
+
+    <!-- Health disclaimer -->
+    <string name="health_disclaimer_title">Zastrzeżenie</string>
+    <string name="health_disclaimer_text">Ta aplikacja służy wyłącznie do celów informacyjnych i nie stanowi porady medycznej. Tolerancja kofeiny różni się w zależności od osoby. Skonsultuj się z lekarzem przed znaczącą zmianą spożycia kofeiny. Twórca aplikacji nie ponosi odpowiedzialności za jakiekolwiek konsekwencje zdrowotne wynikające z jej używania. Źródła: EFSA (2015), FDA (2024), WHO (2023).</string>
+    <string name="health_references_title">Źródła</string>
+    <string name="health_references_text">• EFSA (2015): efsa.europa.eu/en/efsajournal/pub/4102\n• FDA (2024): fda.gov/consumers/consumer-updates/spilling-beans-how-much-caffeine-too-much\n• WHO (2023): who.int/tools/elena/interventions/caffeine-pregnancy</string>
 </resources>

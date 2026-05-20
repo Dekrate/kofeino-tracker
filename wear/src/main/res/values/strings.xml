@@ -7,7 +7,7 @@
     <string name="history">History</string>
     <string name="drinks">Drinks</string>
     <string name="settings">Settings</string>
-    <string name="safe_limit">Safe limit: 400 mg</string>
+    <string name="safe_limit_format">Safe limit: %d mg</string>
     <string name="limit_exceeded">Safe limit exceeded!</string>
 
     <!-- Predefined drinks -->
@@ -116,4 +116,26 @@
     <string name="language">Language</string>
     <string name="polish">Polish</string>
     <string name="english">English</string>
+
+    <!-- Caffeine limit profiles -->
+    <string name="caffeine_limit_title">Daily caffeine limit</string>
+    <string name="caffeine_limit_summary">Set your maximum daily caffeine intake based on your health profile. Limits are based on guidelines from EFSA, FDA and WHO.</string>
+    <string name="profile_adult">Adult (400 mg)</string>
+    <string name="profile_adult_desc">Standard safe limit for healthy adults. EFSA 2015, FDA 2024.</string>
+    <string name="profile_pregnant">Pregnant (200 mg)</string>
+    <string name="profile_pregnant_desc">Recommended limit during pregnancy. EFSA 2015, WHO 2023.</string>
+    <string name="profile_sensitive">Sensitive (100 mg)</string>
+    <string name="profile_sensitive_desc">For individuals sensitive to caffeine or with medical conditions.</string>
+    <string name="profile_custom">Custom</string>
+    <string name="profile_custom_desc">Set your own daily limit.</string>
+    <string name="custom_limit">Custom limit (mg)</string>
+    <string name="custom_limit_value">%d mg</string>
+    <string name="custom_limit_decrease">Decrease limit</string>
+    <string name="custom_limit_increase">Increase limit</string>
+
+    <!-- Health disclaimer -->
+    <string name="health_disclaimer_title">Disclaimer</string>
+    <string name="health_disclaimer_text">This app provides informational tracking only and does not constitute medical advice. Caffeine tolerance varies by individual. Consult a healthcare professional before making significant changes to your caffeine intake. The creator of this app assumes no responsibility for any health consequences arising from its use. Sources: EFSA (2015), FDA (2024), WHO (2023).</string>
+    <string name="health_references_title">Sources</string>
+    <string name="health_references_text">• EFSA (2015): efsa.europa.eu/en/efsajournal/pub/4102\n• FDA (2024): fda.gov/consumers/consumer-updates/spilling-beans-how-much-caffeine-too-much\n• WHO (2023): who.int/tools/elena/interventions/caffeine-pregnancy</string>
 </resources>
