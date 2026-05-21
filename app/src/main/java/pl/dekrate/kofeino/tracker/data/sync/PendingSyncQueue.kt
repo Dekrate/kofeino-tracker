@@ -1,7 +1,9 @@
 package pl.dekrate.kofeino.tracker.data.sync
 
 import com.google.android.gms.wearable.MessageClient
+import kotlinx.coroutines.CancellationException
 import timber.log.Timber
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -30,9 +32,6 @@ class PendingSyncQueue @Inject constructor(
     companion object {
         const val SYNC_PATH_PREFIX = "/sync"
         const val SYNC_PATH_FORMAT = "$SYNC_PATH_PREFIX/%s/%s"
-
-        /** Exponential backoff base in millis. */
-        private const val BACKOFF_BASE_MS = 1000L
 
         /** Maximum send attempts before a change is permanently marked FAILED. */
         private const val MAX_RETRIES = 5
@@ -109,6 +108,8 @@ class PendingSyncQueue @Inject constructor(
                 dao.delete(change)
                 sent++
                 Timber.d("Flushed %s id=%s → %s", change.entityType, change.entityId, path)
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Timber.w(e, "Flush FAILED %s id=%s", change.entityType, change.entityId)
                 handleFailure(change)
@@ -144,7 +145,7 @@ class PendingSyncQueue @Inject constructor(
      *   `/sync/<entityType>/<operationType>`
      */
     private fun pathFor(change: PendingChangeEntity): String =
-        SYNC_PATH_FORMAT.format(change.entityType, change.operationType.lowercase())
+        SYNC_PATH_FORMAT.format(Locale.ROOT, change.entityType, change.operationType.lowercase(Locale.ROOT))
 
     /**
      * Handle a send failure for [change]:
