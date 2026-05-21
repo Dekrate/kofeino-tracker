@@ -8,7 +8,10 @@ import pl.dekrate.kofeino.data.local.DrinkDao
 import pl.dekrate.kofeino.data.local.OfficialDrinkCacheDao
 import pl.dekrate.kofeino.data.repository.CaffeineRepository
 import pl.dekrate.kofeino.data.repository.CaffeineRepositoryImpl
+import pl.dekrate.kofeino.data.sync.PendingChangeDao
+import pl.dekrate.kofeino.data.sync.PendingSyncQueue
 import pl.dekrate.kofeino.domain.model.DrinkEntity
+import com.google.android.gms.wearable.MessageClient
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -47,6 +50,20 @@ object DatabaseModule {
     @Provides
     fun provideOfficialDrinkCacheDao(database: CaffeineDatabase): OfficialDrinkCacheDao {
         return database.officialDrinkCacheDao()
+    }
+
+    @Provides
+    fun providePendingChangeDao(database: CaffeineDatabase): PendingChangeDao {
+        return database.pendingChangeDao()
+    }
+
+    @Provides
+    @Singleton
+    fun providePendingSyncQueue(
+        dao: PendingChangeDao,
+        messageClient: MessageClient
+    ): PendingSyncQueue {
+        return PendingSyncQueue(dao, messageClient, nodeId = "")
     }
 
     @Provides

@@ -10,7 +10,10 @@ import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepository
 import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepositoryImpl
 import pl.dekrate.kofeino.tracker.data.repository.OfficialDrinkRepository
 import pl.dekrate.kofeino.tracker.data.repository.OfficialDrinkRepositoryImpl
+import pl.dekrate.kofeino.tracker.data.sync.PendingChangeDao
+import pl.dekrate.kofeino.tracker.data.sync.PendingSyncQueue
 import pl.dekrate.kofeino.tracker.domain.model.DrinkEntity
+import com.google.android.gms.wearable.MessageClient
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -49,6 +52,22 @@ object DatabaseModule {
     @Provides
     fun provideOfficialDrinkCacheDao(database: CaffeineDatabase): OfficialDrinkCacheDao {
         return database.officialDrinkCacheDao()
+    }
+
+    @Provides
+    fun providePendingChangeDao(database: CaffeineDatabase): PendingChangeDao {
+        return database.pendingChangeDao()
+    }
+
+    @Provides
+    @Singleton
+    fun providePendingSyncQueue(
+        dao: PendingChangeDao,
+        messageClient: MessageClient
+    ): PendingSyncQueue {
+        // nodeId is a placeholder; the real node id is resolved at runtime
+        // via CapabilityClient before flush() is called.
+        return PendingSyncQueue(dao, messageClient, nodeId = "")
     }
 
     @Provides
