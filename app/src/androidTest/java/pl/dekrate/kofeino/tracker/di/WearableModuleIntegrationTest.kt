@@ -7,9 +7,9 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.Before
 import org.junit.Rule
+import org.junit.Assert.assertNotNull
 import org.junit.Test
 import javax.inject.Inject
-import kotlin.test.assertNotNull
 
 /**
  * Hilt integration test for [WearableModule] in the phone (:app) module.
@@ -19,8 +19,8 @@ import kotlin.test.assertNotNull
  * that has Play Services installed.
  *
  * **Note:** These tests require an emulator with Google Play Services
- * (e.g. Google APIs system image). They will be skipped if Play Services
- * is unavailable.
+ * (e.g. Google APIs system image). Without Play Services these tests
+ * will fail at runtime.
  */
 @HiltAndroidTest
 class WearableModuleIntegrationTest {

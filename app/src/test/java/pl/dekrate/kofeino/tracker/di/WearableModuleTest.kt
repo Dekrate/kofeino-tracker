@@ -105,10 +105,12 @@ class WearableModuleTest {
     // --- Edge cases & error handling ---
 
     @Test
-    fun `successive calls return same mock instances`() {
+    fun `successive direct calls return same mock from Wearable API`() {
         val first = WearableModule.provideMessageClient(context)
         val second = WearableModule.provideMessageClient(context)
 
-        assert(first === second) { "Multiple calls must return the same instance (singleton scope)" }
+        assert(first === mockMessageClient) { "First call must return the instance from Wearable API" }
+        assert(second === mockMessageClient) { "Second call must return the instance from Wearable API" }
+        verify(exactly = 2) { Wearable.getMessageClient(context) }
     }
 }
