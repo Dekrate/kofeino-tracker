@@ -343,8 +343,8 @@ class OfficialDrinkRepositoryImplTest {
         )
         cacheDao.insertAll(listOf(entity))
 
-        // CaffeineRepositoryImpl uses System.currentTimeMillis() - CACHE_TTL_MILLIS,
-        // and our cache is 61 minutes old, which is > 60 minute TTL.
+        // OfficialDrinkRepositoryImpl uses System.currentTimeMillis() - CACHE_TTL_MILLIS,
+        // and our cache is 61 minutes old, which is greater than the 60 minute TTL.
         val fresh = repository.hasFreshCache()
         assertEquals(false, fresh)
     }
