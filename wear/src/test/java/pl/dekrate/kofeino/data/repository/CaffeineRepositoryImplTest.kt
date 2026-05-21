@@ -400,4 +400,44 @@ class CaffeineRepositoryImplTest {
         }
         return cal.timeInMillis
     }
+
+    // ===== Edge case tests =====
+
+    @Test
+    fun `addIntake with zero caffeine should persist`() = runTest {
+        val id = repository.addIntake(createIntake(caffeineMg = 0))
+        assertTrue("ID should be positive", id > 0)
+
+        val loaded = repository.getIntakeById(id)
+        assertEquals(0, loaded?.caffeineMg)
+    }
+
+    @Test
+    fun `addDrink with zero caffeine should persist`() = runTest {
+        val id = repository.addDrink(DrinkEntity(name = "Zero Caffeine", caffeineMg = 0, volumeMl = 100))
+        assertTrue("ID should be positive", id > 0)
+
+        val loaded = repository.getDrinkById(id)
+        assertEquals(0, loaded?.caffeineMg)
+    }
+
+    @Test
+    fun `getTotalCaffeineForDate with no intakes should emit zero`() = runTest {
+        val now = startOfDay(System.currentTimeMillis())
+        repository.getTotalCaffeineForDate(now).test {
+            assertEquals(0, awaitItem())
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `getIntakesForDate with future date should return empty`() = runTest {
+        repository.addIntake(createIntake(caffeineMg = 50))
+
+        val futureStart = startOfDay(System.currentTimeMillis()) + 86_400_000L * 365
+        repository.getIntakesForDate(futureStart).test {
+            assertEquals(emptyList<CaffeineIntake>(), awaitItem())
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
 }

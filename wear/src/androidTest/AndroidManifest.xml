@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Test APK AndroidManifest.xml for Wear OS instrumented tests.
+
+    When targeting SDK 35+, the compose-ui-test-manifest dependency injects a
+    default test activity (androidx.activity.ComponentActivity) with the theme
+    Theme.Material.Light.NoActionBar. That theme is incompatible with Wear OS.
+
+    This override ensures tests use @android:style/Theme.DeviceDefault — the
+    standard Wear-compatible base theme expected by Wear Compose Material3 and
+    the Hilt test infrastructure on API 36+.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application
+        android:theme="@android:style/Theme.DeviceDefault">
+
+        <activity
+            android:name="androidx.activity.ComponentActivity"
+            android:exported="true"
+            android:theme="@android:style/Theme.DeviceDefault" />
+
+    </application>
+
+</manifest>
