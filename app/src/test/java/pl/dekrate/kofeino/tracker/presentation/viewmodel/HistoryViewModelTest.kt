@@ -338,9 +338,10 @@ class HistoryViewModelTest {
 
     @Test
     fun `should use SavedStateHandle value when pre-populated`() = runTest {
-        val specificDate = viewModel.run {
-            HistoryViewModel(repository, SavedStateHandle()).getStartOfToday()
-        }
+        val tempVm = HistoryViewModel(repository, SavedStateHandle())
+        testDispatcher.scheduler.advanceUntilIdle()
+        val specificDate = tempVm.getStartOfToday()
+
         val savedHandle = SavedStateHandle(mapOf("selectedDateMillis" to specificDate))
 
         viewModel = HistoryViewModel(repository, savedHandle)
