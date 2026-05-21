@@ -109,6 +109,7 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
     implementation(libs.gson)
+    implementation(libs.profileinstaller)
 
     detektPlugins(libs.detekt.compose.rules)
 

@@ -3,10 +3,14 @@ package pl.dekrate.kofeino.tracker.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepository
 import pl.dekrate.kofeino.tracker.domain.model.CaffeineIntake
@@ -31,29 +35,59 @@ class HomeViewModel @Inject constructor(
     private val repository: CaffeineRepository
 ) : ViewModel() {
 
-    private val todayStartMillis = getStartOfToday()
+    /** Emits start-of-today millis, re-emitting at midnight when the date rolls over. */
+    private val todayStartMillis: Flow<Long> = todayStartOfDayFlow()
 
-    val uiState: StateFlow<HomeUiState> = combine(
-        repository.getIntakesForDate(todayStartMillis),
-        repository.getTotalCaffeineForDate(todayStartMillis)
-    ) { intakes, total ->
-        HomeUiState(
-            dateLabel = formatDateLabel(todayStartMillis),
-            totalCaffeineMg = total,
-            progress = (total / SAFE_LIMIT_MG.toFloat()).coerceIn(0f, 1f),
-            isLimitExceeded = total > SAFE_LIMIT_MG,
-            todayIntakes = intakes,
-            isLoading = false
-        )
-    }
+    val uiState: StateFlow<HomeUiState> = todayStartMillis
+        .flatMapLatest { startMillis ->
+            combine(
+                repository.getIntakesForDate(startMillis),
+                repository.getTotalCaffeineForDate(startMillis)
+            ) { intakes, total ->
+                HomeUiState(
+                    dateLabel = formatDateLabel(startMillis),
+                    totalCaffeineMg = total,
+                    progress = (total / SAFE_LIMIT_MG.toFloat()).coerceIn(0f, 1f),
+                    isLimitExceeded = total > SAFE_LIMIT_MG,
+                    todayIntakes = intakes,
+                    isLoading = false
+                )
+            }
+        }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = HomeUiState(isLoading = true)
         )
 
-    private fun getStartOfToday(): Long {
+    /** Returns a flow that emits the start-of-today timestamp, re-emitting at midnight. */
+    private fun todayStartOfDayFlow(): Flow<Long> = flow {
+        while (true) {
+            val startOfToday = getStartOfToday()
+            emit(startOfToday)
+            // DST-safe: compute next midnight via Calendar, add 1s buffer
+            val nextMidnight = getNextMidnight()
+            val delayMs = nextMidnight - System.currentTimeMillis() + MIDNIGHT_BUFFER_MS
+            delay(delayMs.coerceAtLeast(MIN_DELAY_MS))
+        }
+    }
+
+    // Package-private for testing
+    fun getStartOfToday(): Long {
         val cal = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        return cal.timeInMillis
+    }
+
+    /** Returns the start of the next calendar day (DST-safe via Calendar). */
+    // Package-private for testing
+    fun getNextMidnight(): Long {
+        val cal = Calendar.getInstance().apply {
+            add(Calendar.DAY_OF_YEAR, 1)
             set(Calendar.HOUR_OF_DAY, 0)
             set(Calendar.MINUTE, 0)
             set(Calendar.SECOND, 0)
@@ -74,5 +108,7 @@ class HomeViewModel @Inject constructor(
 
     companion object {
         const val SAFE_LIMIT_MG = 400
+        private const val MIDNIGHT_BUFFER_MS = 1000L
+        private const val MIN_DELAY_MS = 1000L
     }
 }

@@ -1,5 +1,6 @@
 package pl.dekrate.kofeino.tracker.presentation.viewmodel
 
+import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import io.mockk.every
 import io.mockk.mockk
@@ -55,7 +56,7 @@ class HistoryViewModelTest {
 
     @Test
     fun `initial state should be loading then emit empty data`() = runTest {
-        viewModel = HistoryViewModel(repository)
+        viewModel = HistoryViewModel(repository, SavedStateHandle())
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -69,7 +70,7 @@ class HistoryViewModelTest {
 
     @Test
     fun `initial state should have formatted date label`() = runTest {
-        viewModel = HistoryViewModel(repository)
+        viewModel = HistoryViewModel(repository, SavedStateHandle())
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -84,7 +85,7 @@ class HistoryViewModelTest {
 
     @Test
     fun `isToday should return true initially`() = runTest {
-        viewModel = HistoryViewModel(repository)
+        viewModel = HistoryViewModel(repository, SavedStateHandle())
         testDispatcher.scheduler.advanceUntilIdle()
 
         assertTrue("Should be today initially", viewModel.isToday())
@@ -94,7 +95,7 @@ class HistoryViewModelTest {
 
     @Test
     fun `previousDay should move date one day back`() = runTest {
-        viewModel = HistoryViewModel(repository)
+        viewModel = HistoryViewModel(repository, SavedStateHandle())
         testDispatcher.scheduler.advanceUntilIdle()
 
         val initialDate = viewModel.uiState.value.selectedDateMillis
@@ -109,7 +110,7 @@ class HistoryViewModelTest {
 
     @Test
     fun `nextDay should move date one day forward`() = runTest {
-        viewModel = HistoryViewModel(repository)
+        viewModel = HistoryViewModel(repository, SavedStateHandle())
         testDispatcher.scheduler.advanceUntilIdle()
 
         val initialDate = viewModel.uiState.value.selectedDateMillis
@@ -124,7 +125,7 @@ class HistoryViewModelTest {
 
     @Test
     fun `goToToday should reset date to start of today`() = runTest {
-        viewModel = HistoryViewModel(repository)
+        viewModel = HistoryViewModel(repository, SavedStateHandle())
         testDispatcher.scheduler.advanceUntilIdle()
 
         val initialDate = viewModel.uiState.value.selectedDateMillis
@@ -142,7 +143,7 @@ class HistoryViewModelTest {
 
     @Test
     fun `isToday should return false after navigating away`() = runTest {
-        viewModel = HistoryViewModel(repository)
+        viewModel = HistoryViewModel(repository, SavedStateHandle())
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.previousDay()
@@ -153,7 +154,7 @@ class HistoryViewModelTest {
 
     @Test
     fun `isToday should return true after navigating back to today`() = runTest {
-        viewModel = HistoryViewModel(repository)
+        viewModel = HistoryViewModel(repository, SavedStateHandle())
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.previousDay()
@@ -166,7 +167,7 @@ class HistoryViewModelTest {
 
     @Test
     fun `navigating to next day then previous day should return to today`() = runTest {
-        viewModel = HistoryViewModel(repository)
+        viewModel = HistoryViewModel(repository, SavedStateHandle())
         testDispatcher.scheduler.advanceUntilIdle()
 
         val initialDate = viewModel.uiState.value.selectedDateMillis
@@ -193,7 +194,7 @@ class HistoryViewModelTest {
         every { repository.getIntakesForDate(any()) } returns flowOf(intakes)
         every { repository.getTotalCaffeineForDate(any()) } returns flowOf(158)
 
-        viewModel = HistoryViewModel(repository)
+        viewModel = HistoryViewModel(repository, SavedStateHandle())
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -207,7 +208,7 @@ class HistoryViewModelTest {
 
     @Test
     fun `repository methods should be called with correct dates`() = runTest {
-        viewModel = HistoryViewModel(repository)
+        viewModel = HistoryViewModel(repository, SavedStateHandle())
         testDispatcher.scheduler.advanceUntilIdle()
 
         verify {
@@ -221,7 +222,7 @@ class HistoryViewModelTest {
         every { repository.getIntakesForDate(any()) } returns flowOf(emptyList())
         every { repository.getTotalCaffeineForDate(any()) } returns flowOf(0)
 
-        viewModel = HistoryViewModel(repository)
+        viewModel = HistoryViewModel(repository, SavedStateHandle())
         testDispatcher.scheduler.advanceUntilIdle()
 
         // Navigate 3 days ahead
@@ -246,7 +247,7 @@ class HistoryViewModelTest {
         every { repository.getIntakesForDate(any()) } returns flow { throw RuntimeException("DB error") }
         every { repository.getTotalCaffeineForDate(any()) } returns flowOf(0)
 
-        viewModel = HistoryViewModel(repository)
+        viewModel = HistoryViewModel(repository, SavedStateHandle())
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -259,7 +260,7 @@ class HistoryViewModelTest {
 
     @Test
     fun `clearError should set error to null`() = runTest {
-        viewModel = HistoryViewModel(repository)
+        viewModel = HistoryViewModel(repository, SavedStateHandle())
         testDispatcher.scheduler.advanceUntilIdle()
 
         // Initially no error
@@ -275,7 +276,7 @@ class HistoryViewModelTest {
 
     @Test
     fun `clearError should be idempotent`() = runTest {
-        viewModel = HistoryViewModel(repository)
+        viewModel = HistoryViewModel(repository, SavedStateHandle())
         testDispatcher.scheduler.advanceUntilIdle()
 
         // Call clearError multiple times
@@ -291,7 +292,7 @@ class HistoryViewModelTest {
 
     @Test
     fun `repeated previousDay calls should keep moving backward`() = runTest {
-        viewModel = HistoryViewModel(repository)
+        viewModel = HistoryViewModel(repository, SavedStateHandle())
         testDispatcher.scheduler.advanceUntilIdle()
 
         val initialDate = viewModel.uiState.value.selectedDateMillis
@@ -315,7 +316,7 @@ class HistoryViewModelTest {
 
     @Test
     fun `repeated nextDay calls should keep moving forward`() = runTest {
-        viewModel = HistoryViewModel(repository)
+        viewModel = HistoryViewModel(repository, SavedStateHandle())
         testDispatcher.scheduler.advanceUntilIdle()
 
         val initialDate = viewModel.uiState.value.selectedDateMillis
@@ -330,6 +331,71 @@ class HistoryViewModelTest {
         assertTrue(
             "Two steps forward should be greater than one step forward",
             afterTwoForward > afterOneForward
+        )
+    }
+
+    // ===== SavedStateHandle persistence tests =====
+
+    @Test
+    fun `should use SavedStateHandle value when pre-populated`() = runTest {
+        val tempVm = HistoryViewModel(repository, SavedStateHandle())
+        testDispatcher.scheduler.advanceUntilIdle()
+        val specificDate = tempVm.getStartOfToday()
+
+        val savedHandle = SavedStateHandle(mapOf("selectedDateMillis" to specificDate))
+
+        viewModel = HistoryViewModel(repository, savedHandle)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(
+            "Should use the date from SavedStateHandle",
+            specificDate,
+            viewModel.uiState.value.selectedDateMillis
+        )
+    }
+
+    @Test
+    fun `should persist date to SavedStateHandle on navigation`() = runTest {
+        val savedHandle = SavedStateHandle()
+        viewModel = HistoryViewModel(repository, savedHandle)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val initialDate = viewModel.uiState.value.selectedDateMillis
+
+        viewModel.previousDay()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val persistedDate = savedHandle.get<Long>("selectedDateMillis")
+        assertNotNull("SavedStateHandle should contain selectedDateMillis after navigation", persistedDate)
+        assertEquals(
+            "Persisted date should match ViewModel's current selection",
+            viewModel.uiState.value.selectedDateMillis,
+            persistedDate
+        )
+
+        // Navigate again to verify updates
+        viewModel.nextDay()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val updatedDate = savedHandle.get<Long>("selectedDateMillis")
+        assertNotNull("SavedStateHandle should be updated after second navigation", updatedDate)
+        assertEquals(
+            "Persisted date should match ViewModel after navigating back",
+            initialDate,
+            updatedDate
+        )
+    }
+
+    @Test
+    fun `should fall back to today when SavedStateHandle is empty`() = runTest {
+        viewModel = HistoryViewModel(repository, SavedStateHandle())
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val todayStart = viewModel.getStartOfToday()
+        assertEquals(
+            "Should fall back to today's start when SavedStateHandle is empty",
+            todayStart,
+            viewModel.uiState.value.selectedDateMillis
         )
     }
 }
