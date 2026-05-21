@@ -343,12 +343,14 @@ private fun DrinkItem(
     volumeMl: Int,
     onClick: () -> Unit
 ) {
+    val caffeineDesc = stringResource(R.string.drink_caffeine_unit, caffeineMg)
+    val volumeDesc = stringResource(R.string.drink_volume_unit, volumeMl)
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .semantics {
-                contentDescription = "$name, $caffeineMg mg, $volumeMl ml"
+                contentDescription = "$name, $caffeineDesc, $volumeDesc"
             },
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {

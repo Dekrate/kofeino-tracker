@@ -293,4 +293,54 @@ class HomeViewModelTest {
     fun `SAFE_LIMIT_MG should be 400`() {
         assertEquals(400, HomeViewModel.SAFE_LIMIT_MG)
     }
+
+    // ===== Midnight crossover tests =====
+
+    @Test
+    fun `getStartOfToday returns millis at start of current day`() {
+        viewModel = HomeViewModel(repository)
+        val startOfToday = viewModel.getStartOfToday()
+        val cal = Calendar.getInstance().apply {
+            timeInMillis = startOfToday
+        }
+        assertEquals(0, cal.get(Calendar.HOUR_OF_DAY))
+        assertEquals(0, cal.get(Calendar.MINUTE))
+        assertEquals(0, cal.get(Calendar.SECOND))
+        assertEquals(0, cal.get(Calendar.MILLISECOND))
+    }
+
+    @Test
+    fun `getNextMidnight returns start of tomorrow`() {
+        viewModel = HomeViewModel(repository)
+        val startOfToday = viewModel.getStartOfToday()
+        val nextMidnight = viewModel.getNextMidnight()
+
+        val cal = Calendar.getInstance().apply {
+            timeInMillis = nextMidnight
+        }
+        assertEquals(0, cal.get(Calendar.HOUR_OF_DAY))
+        assertEquals(0, cal.get(Calendar.MINUTE))
+        assertEquals(0, cal.get(Calendar.SECOND))
+        assertEquals(0, cal.get(Calendar.MILLISECOND))
+
+        // nextMidnight should be ~1 day after startOfToday (within 25h for DST)
+        val diffHours = (nextMidnight - startOfToday) / 3_600_000
+        assertTrue("Next midnight should be 23-25 hours ahead, got $diffHours", diffHours in 23..25)
+    }
+
+    @Test
+    fun `flow emits today date via uiState`() = runTest {
+        viewModel = HomeViewModel(repository)
+
+        viewModel.uiState.test {
+            awaitItem() // loading
+            val state = awaitItem()
+
+            // Date label should match today
+            val todayFormatted = SimpleDateFormat("EEEE, dd.MM.yyyy", Locale.getDefault())
+                .format(Date(viewModel.getStartOfToday()))
+            assertEquals(todayFormatted, state.dateLabel)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
 }

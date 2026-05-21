@@ -36,8 +36,7 @@ class HomeViewModel @Inject constructor(
 ) : ViewModel() {
 
     /** Emits start-of-today millis, re-emitting at midnight when the date rolls over. */
-    private val todayStartMillis: StateFlow<Long> = todayStartOfDayFlow()
-        .stateIn(viewModelScope, SharingStarted.Eagerly, getStartOfToday())
+    private val todayStartMillis: Flow<Long> = todayStartOfDayFlow()
 
     val uiState: StateFlow<HomeUiState> = todayStartMillis
         .flatMapLatest { startMillis ->
@@ -66,16 +65,29 @@ class HomeViewModel @Inject constructor(
         while (true) {
             val startOfToday = getStartOfToday()
             emit(startOfToday)
-            // Calculate delay until the next midnight boundary (+ 1s buffer)
-            val now = System.currentTimeMillis()
-            val nextMidnight = startOfToday + MILLIS_PER_DAY
-            val delayMs = nextMidnight - now + 1000L
-            delay(delayMs.coerceAtLeast(60_000L))
+            // DST-safe: compute next midnight via Calendar, add 1s buffer
+            val nextMidnight = getNextMidnight()
+            val delayMs = nextMidnight - System.currentTimeMillis() + MIDNIGHT_BUFFER_MS
+            delay(delayMs.coerceAtLeast(MIN_DELAY_MS))
         }
     }
 
-    private fun getStartOfToday(): Long {
+    // Package-private for testing
+    fun getStartOfToday(): Long {
         val cal = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        return cal.timeInMillis
+    }
+
+    /** Returns the start of the next calendar day (DST-safe via Calendar). */
+    // Package-private for testing
+    fun getNextMidnight(): Long {
+        val cal = Calendar.getInstance().apply {
+            add(Calendar.DAY_OF_YEAR, 1)
             set(Calendar.HOUR_OF_DAY, 0)
             set(Calendar.MINUTE, 0)
             set(Calendar.SECOND, 0)
@@ -96,6 +108,7 @@ class HomeViewModel @Inject constructor(
 
     companion object {
         const val SAFE_LIMIT_MG = 400
-        private const val MILLIS_PER_DAY = 86_400_000L
+        private const val MIDNIGHT_BUFFER_MS = 1000L
+        private const val MIN_DELAY_MS = 1000L
     }
 }
