@@ -108,6 +108,7 @@ dependencies {
     implementation(libs.okhttp.logging)
     implementation(libs.gson)
     implementation(libs.datastore.preferences)
+    implementation(libs.play.services.wearable)
     implementation(libs.profileinstaller)
 
     detektPlugins(libs.detekt.compose.rules)
