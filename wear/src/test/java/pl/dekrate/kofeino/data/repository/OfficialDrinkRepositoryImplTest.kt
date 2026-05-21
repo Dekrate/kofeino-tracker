@@ -246,4 +246,106 @@ class OfficialDrinkRepositoryImplTest {
         val afterCount = cacheDao.count()
         assertEquals(0, afterCount)
     }
+
+    // ===== Edge case tests =====
+
+    @Test
+    fun `when API returns empty products should fallback to cache`() = runTest {
+        cacheDao.insertAll(
+            listOf(
+                OfficialDrinkCacheEntity("001", "Cached", null, 10.0, null, null)
+            )
+        )
+        coEvery { apiService.searchBeveragesWithCaffeine(pageSize = 30) } returns
+            OpenFoodFactsSearchResponse(count = 0, products = emptyList())
+
+        val result = repository.getOfficialDrinks()
+
+        assertTrue(result.isSuccess)
+        val drinks = result.getOrThrow()
+        // Should return cached drinks
+        assertEquals(1, drinks.size)
+        assertEquals("Cached", drinks[0].name)
+    }
+
+    @Test
+    fun `when API returns only invalid caffeine products should return empty`() = runTest {
+        val products = listOf(
+            OpenFoodFactsProductDto(
+                code = "001", productName = "Water", brands = "Aqua",
+                nutriments = OpenFoodFactsNutrimentsDto(caffeine100g = 0.0)
+            ),
+            OpenFoodFactsProductDto(
+                code = "002", productName = "Juice", brands = "Tymbark",
+                nutriments = null
+            )
+        )
+        coEvery { apiService.searchBeveragesWithCaffeine(pageSize = 30) } returns
+            OpenFoodFactsSearchResponse(count = 2, products = products)
+
+        val result = repository.getOfficialDrinks()
+
+        assertTrue(result.isSuccess)
+        val drinks = result.getOrThrow()
+        // All products filtered out, empty result with no cache
+        assertEquals(0, drinks.size)
+    }
+
+    @Test
+    fun `when API fails and cache is empty returns failure`() = runTest {
+        coEvery { apiService.searchBeveragesWithCaffeine(pageSize = 30) } throws
+            RuntimeException("Network error")
+
+        val result = repository.getOfficialDrinks()
+
+        assertTrue("Expected failure when API fails and no cache", result.isFailure)
+    }
+
+    @Test
+    fun `searchOfficialDrinks with empty query should return cached drinks`() = runTest {
+        cacheDao.insertAll(
+            listOf(
+                OfficialDrinkCacheEntity("001", "Red Bull", null, 32.0, null, "250ml"),
+                OfficialDrinkCacheEntity("002", "Coca-Cola", null, 10.0, null, "330ml")
+            )
+        )
+        // API fails
+        coEvery { apiService.searchProducts(query = any(), locale = any(), country = any()) } throws
+            RuntimeException("API error")
+
+        val result = repository.searchOfficialDrinks("")
+
+        assertTrue(result.isSuccess)
+        val drinks = result.getOrThrow()
+        // Empty string matches everything in cache fallback
+        assertEquals(2, drinks.size)
+    }
+
+    @Test
+    fun `searchOfficialDrinks with very long query should not crash`() = runTest {
+        val longQuery = "a".repeat(1000)
+        coEvery { apiService.searchProducts(query = any(), locale = any(), country = any()) } returns
+            OpenFoodFactsSearchResponse(count = 0, products = emptyList())
+
+        val result = repository.searchOfficialDrinks(longQuery)
+
+        assertTrue(result.isSuccess)
+        // Should not throw or crash
+    }
+
+    @Test
+    fun `hasFreshCache with out-of-date cache returns false`() = runTest {
+        val oneHourAgo = System.currentTimeMillis() - 61 * 60 * 1000L
+        val entity = OfficialDrinkCacheEntity(
+            barcode = "001", name = "Stale", brand = null,
+            caffeineMgPer100ml = 10.0, energyKcalPer100ml = null, quantity = null,
+            fetchedAtMillis = oneHourAgo
+        )
+        cacheDao.insertAll(listOf(entity))
+
+        // OfficialDrinkRepositoryImpl uses System.currentTimeMillis() - CACHE_TTL_MILLIS,
+        // and our cache is 61 minutes old, which is greater than the 60 minute TTL.
+        val fresh = repository.hasFreshCache()
+        assertEquals(false, fresh)
+    }
 }
