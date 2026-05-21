@@ -1,0 +1,17 @@
+KofeinoTracker helps you monitor your daily caffeine consumption with an intuitive and beautiful interface. Whether you're trying to stay within recommended guidelines or just curious about your intake, KofeinoTracker makes it effortless.
+
+Features:
+
+• ONE-TAP LOGGING – Add pre-configured drinks with a single tap, or search the Open Food Facts database for official caffeine values.
+• DAILY TRACKING – See your total caffeine intake at a glance with a visual progress bar toward the 400 mg safe limit.
+• HISTORY VIEW – Browse past days to understand your patterns and trends.
+• CUSTOM DRINKS – Create your own drink profiles with exact caffeine and volume values.
+• LIVE NOTIFICATIONS – Keep track without opening the app with a real-time notification showing today's intake.
+• REMINDERS – Morning, regular, and evening reminders help you log consistently.
+• WEAR OS – Track your caffeine directly from your watch with a dedicated companion app.
+• ADJUSTABLE SERVINGS – Fine-tune caffeine and volume for each drink you log.
+• MULTIPLE LANGUAGES – Full support for English and Polish.
+• DARK THEME – Choose between light, dark, or system theme.
+• PRIVACY-FIRST – All data stays on your device. No accounts, no cloud sync, no tracking.
+
+KofeinoTracker is free, open source, and built with Material Design 3 for a modern, polished experience.

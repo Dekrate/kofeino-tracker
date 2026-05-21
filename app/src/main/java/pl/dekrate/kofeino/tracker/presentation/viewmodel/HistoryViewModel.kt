@@ -1,5 +1,6 @@
 package pl.dekrate.kofeino.tracker.presentation.viewmodel
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -7,12 +8,14 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepository
 import pl.dekrate.kofeino.tracker.domain.model.CaffeineIntake
 import java.text.SimpleDateFormat
@@ -33,14 +36,26 @@ data class HistoryUiState(
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class HistoryViewModel @Inject constructor(
-    private val repository: CaffeineRepository
+    private val repository: CaffeineRepository,
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val _selectedDateMillis = MutableStateFlow(getStartOfToday())
+    private val _selectedDateMillis = MutableStateFlow(
+        savedStateHandle.get<Long>(KEY_SELECTED_DATE) ?: getStartOfToday().also {
+            savedStateHandle[KEY_SELECTED_DATE] = it
+        }
+    )
     private val _uiState = MutableStateFlow(HistoryUiState(isLoading = true))
     val uiState: StateFlow<HistoryUiState> = _uiState.asStateFlow()
 
     init {
+        // Persist selected date to SavedStateHandle on every change (survives process death)
+        viewModelScope.launch {
+            _selectedDateMillis.collectLatest { dateMillis ->
+                savedStateHandle[KEY_SELECTED_DATE] = dateMillis
+            }
+        }
+
         _selectedDateMillis
             .flatMapLatest { dateMillis ->
                 combine(
@@ -137,5 +152,6 @@ class HistoryViewModel @Inject constructor(
 
     companion object {
         const val SAFE_LIMIT_MG = 400
+        private const val KEY_SELECTED_DATE = "selectedDateMillis"
     }
 }

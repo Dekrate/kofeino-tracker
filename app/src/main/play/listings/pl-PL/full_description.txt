@@ -1,0 +1,17 @@
+KofeinoTracker pomaga monitorować dzienne spożycie kofeiny dzięki intuicyjnemu i estetycznemu interfejsowi. Niezależnie od tego, czy starasz się trzymać zalecanych norm, czy po prostu chcesz poznać swoje nawyki, KofeinoTracker sprawia, że jest to proste.
+
+Funkcje:
+
+• LOGOWANIE JEDNYM KLIKNIĘCIEM – Dodawaj gotowe napoje jednym kliknięciem lub przeszukaj bazę Open Food Facts w poszukiwaniu oficjalnych wartości kofeiny.
+• CODZIENNE ŚLEDZENIE – Zobacz całkowite spożycie kofeiny na pierwszy rzut oka z wizualnym paskiem postępu w kierunku bezpiecznego limitu 400 mg.
+• HISTORIA – Przeglądaj poprzednie dni, aby zrozumieć swoje wzorce i trendy.
+• NIESTANDARDOWE NAPOJE – Twórz własne profile napojów z dokładnymi wartościami kofeiny i objętości.
+• POWIADOMIENIA NA ŻYWO – Śledź spożycie bez otwierania aplikacji dzięki powiadomieniom w czasie rzeczywistym.
+• PRZYPOMNIENIA – Poranne, regularne i wieczorne przypomnienia pomagają w systematycznym logowaniu.
+• WEAR OS – Śledź kofeinę bezpośrednio z zegarka dzięki dedykowanej aplikacji towarzyszącej.
+• REGULOWANE PORCJE – Dostosuj kofeinę i objętość dla każdego logowanego napoju.
+• WIELOJĘZYCZNOŚĆ – Pełne wsparcie dla języka angielskiego i polskiego.
+• MOTYW CIEMNY – Wybierz między jasnym, ciemnym a systemowym motywem.
+• PRYWATNOŚĆ – Wszystkie dane pozostają na Twoim urządzeniu. Bez kont, bez synchronizacji w chmurze, bez śledzenia.
+
+KofeinoTracker jest darmowy, open source i stworzony w Material Design 3 dla nowoczesnego, dopracowanego doświadczenia.
