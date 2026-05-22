@@ -12,5 +12,7 @@ data class CaffeineIntake(
     val drinkName: String,
     val caffeineMg: Int,
     val volumeMl: Int,
-    val timestamp: Long
+    val timestamp: Long,
+    val lastModifiedTimestamp: Long = System.currentTimeMillis(),
+    val sourceDeviceId: String = ""
 )

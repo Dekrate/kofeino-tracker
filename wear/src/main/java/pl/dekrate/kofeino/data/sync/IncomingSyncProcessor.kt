@@ -14,15 +14,19 @@ import javax.inject.Singleton
 /**
  * Processes incoming sync messages from the paired phone on the watch module.
  *
- * ## Design
- * Unlike the app module's [pl.dekrate.kofeino.tracker.data.sync.IncomingSyncProcessor],
- * this processor has **no ConflictResolver** — the watch is a secondary device and
- * always accepts changes from the phone as authoritative.
+ * ## Conflict Resolution (LWW)
+ * Before applying any incoming change, this processor uses [ConflictResolver]
+ * to detect and resolve conflicts using a Last-Write-Wins strategy:
+ * - Compare lastModifiedTimestamp: the newer timestamp wins.
+ * - Within 1ms tolerance: phone wins (phone is the primary device).
+ * - Delete always wins over modification.
+ * - Loser data is logged to the [ConflictLogDao] for user review.
  *
  * ## Flow
  * 1. Parse the [MessageEvent] path into entity type and operation type.
  * 2. Deserialize the payload JSON into a domain entity.
- * 3. Apply the change directly to Room DAOs — **bypassing the repository
+ * 3. Resolve conflict between local and incoming using [ConflictResolver].
+ * 4. Apply the winning entity to Room DAOs — **bypassing the repository
  *    layer** to prevent echo-loop re-sync.
  *
  * ## Echo-loop prevention
@@ -34,7 +38,8 @@ import javax.inject.Singleton
 @Singleton
 class IncomingSyncProcessor @Inject constructor(
     private val intakeDao: CaffeineIntakeDao,
-    private val drinkDao: DrinkDao
+    private val drinkDao: DrinkDao,
+    private val conflictLogDao: ConflictLogDao
 ) {
     companion object {
         private const val SYNC_PATH_PREFIX = "/sync"
@@ -107,18 +112,45 @@ class IncomingSyncProcessor @Inject constructor(
         }
 
         return try {
+            val existing = intakeDao.getIntakeById(incoming.id)
+
+            val result = ConflictResolver.resolveIntakeConflict(
+                local = existing,
+                incoming = incoming,
+                operationType = operationType
+            )
+
+            if (result.wasConflict) {
+                conflictLogDao.log(
+                    ConflictLogEntity(
+                        entityType = "intake",
+                        entityId = incoming.id.toString(),
+                        localEntityJson = ConflictResolver.serializeLoser(existing),
+                        incomingEntityJson = ConflictResolver.serializeLoser(incoming),
+                        decisionReason = result.reason,
+                        winningSourceDeviceId = result.winner.sourceDeviceId
+                    )
+                )
+                if (result.clockSkewWarning != null) {
+                    Timber.w(result.clockSkewWarning)
+                }
+            }
+
             when (operationType) {
                 PendingChangeEntity.OPERATION_DELETE -> {
-                    intakeDao.delete(incoming)
-                    Timber.d("Sync applied DELETE intake id=%s", incoming.id)
+                    if (existing != null) {
+                        intakeDao.delete(existing)
+                        Timber.d("Sync applied DELETE intake id=%s", incoming.id)
+                    } else {
+                        Timber.d("Sync received DELETE for non-existent intake id=%s (ignored)", incoming.id)
+                    }
                 }
                 else -> {
-                    val existing = intakeDao.getIntakeById(incoming.id)
                     if (existing != null) {
-                        intakeDao.update(incoming)
+                        intakeDao.update(result.winner)
                         Timber.d("Sync applied UPDATE intake id=%s", incoming.id)
                     } else {
-                        intakeDao.insert(incoming)
+                        intakeDao.insert(result.winner)
                         Timber.d("Sync applied INSERT intake id=%s", incoming.id)
                     }
                 }
@@ -148,18 +180,45 @@ class IncomingSyncProcessor @Inject constructor(
         }
 
         return try {
+            val existing = drinkDao.getDrinkById(incoming.id)
+
+            val result = ConflictResolver.resolveDrinkConflict(
+                local = existing,
+                incoming = incoming,
+                operationType = operationType
+            )
+
+            if (result.wasConflict) {
+                conflictLogDao.log(
+                    ConflictLogEntity(
+                        entityType = "drink",
+                        entityId = incoming.id.toString(),
+                        localEntityJson = ConflictResolver.serializeLoser(existing),
+                        incomingEntityJson = ConflictResolver.serializeLoser(incoming),
+                        decisionReason = result.reason,
+                        winningSourceDeviceId = result.winner.sourceDeviceId
+                    )
+                )
+                if (result.clockSkewWarning != null) {
+                    Timber.w(result.clockSkewWarning)
+                }
+            }
+
             when (operationType) {
                 PendingChangeEntity.OPERATION_DELETE -> {
-                    drinkDao.delete(incoming)
-                    Timber.d("Sync applied DELETE drink id=%s", incoming.id)
+                    if (existing != null) {
+                        drinkDao.delete(existing)
+                        Timber.d("Sync applied DELETE drink id=%s", incoming.id)
+                    } else {
+                        Timber.d("Sync received DELETE for non-existent drink id=%s (ignored)", incoming.id)
+                    }
                 }
                 else -> {
-                    val existing = drinkDao.getDrinkById(incoming.id)
                     if (existing != null) {
-                        drinkDao.update(incoming)
+                        drinkDao.update(result.winner)
                         Timber.d("Sync applied UPDATE drink id=%s", incoming.id)
                     } else {
-                        drinkDao.insert(incoming)
+                        drinkDao.insert(result.winner)
                         Timber.d("Sync applied INSERT drink id=%s", incoming.id)
                     }
                 }

@@ -18,14 +18,19 @@ import javax.inject.Singleton
 class CaffeineRepositoryImpl @Inject constructor(
     private val intakeDao: CaffeineIntakeDao,
     private val drinkDao: DrinkDao,
-    private val realTimeSyncService: RealTimeSyncService
+    private val realTimeSyncService: RealTimeSyncService,
+    private val sourceDeviceId: String = "watch"
 ) : CaffeineRepository {
 
     // --- Intake operations ---
 
     override suspend fun addIntake(intake: CaffeineIntake): Long {
-        val id = intakeDao.insert(intake)
-        val synced = intake.copy(id = id)
+        val stamped = intake.copy(
+            lastModifiedTimestamp = System.currentTimeMillis(),
+            sourceDeviceId = sourceDeviceId
+        )
+        val id = intakeDao.insert(stamped)
+        val synced = stamped.copy(id = id)
         propagateSync(
             entityType = "intake",
             entityId = id.toString(),
@@ -36,12 +41,16 @@ class CaffeineRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateIntake(intake: CaffeineIntake) {
-        intakeDao.update(intake)
+        val stamped = intake.copy(
+            lastModifiedTimestamp = System.currentTimeMillis(),
+            sourceDeviceId = sourceDeviceId
+        )
+        intakeDao.update(stamped)
         propagateSync(
             entityType = "intake",
             entityId = intake.id.toString(),
             operationType = PendingChangeEntity.OPERATION_UPDATE,
-            payload = SyncPayloadSerializer.serializeIntake(intake)
+            payload = SyncPayloadSerializer.serializeIntake(stamped)
         )
     }
 
@@ -85,23 +94,31 @@ class CaffeineRepositoryImpl @Inject constructor(
     }
 
     override suspend fun addDrink(drink: DrinkEntity): Long {
-        val id = drinkDao.insert(drink)
+        val stamped = drink.copy(
+            lastModifiedTimestamp = System.currentTimeMillis(),
+            sourceDeviceId = sourceDeviceId
+        )
+        val id = drinkDao.insert(stamped)
         propagateSync(
             entityType = "drink",
             entityId = id.toString(),
             operationType = PendingChangeEntity.OPERATION_INSERT,
-            payload = SyncPayloadSerializer.serializeDrink(drink.copy(id = id))
+            payload = SyncPayloadSerializer.serializeDrink(stamped.copy(id = id))
         )
         return id
     }
 
     override suspend fun updateDrink(drink: DrinkEntity) {
-        drinkDao.update(drink)
+        val stamped = drink.copy(
+            lastModifiedTimestamp = System.currentTimeMillis(),
+            sourceDeviceId = sourceDeviceId
+        )
+        drinkDao.update(stamped)
         propagateSync(
             entityType = "drink",
             entityId = drink.id.toString(),
             operationType = PendingChangeEntity.OPERATION_UPDATE,
-            payload = SyncPayloadSerializer.serializeDrink(drink)
+            payload = SyncPayloadSerializer.serializeDrink(stamped)
         )
     }
 
