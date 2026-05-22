@@ -33,7 +33,7 @@ import pl.dekrate.kofeino.tracker.ui.theme.KofeinoTrackerPhoneTheme
 import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
-fun HealthDisclaimerSection() {
+fun HealthDisclaimerSection(modifier: Modifier = Modifier) {
     var isDisclaimerExpanded by remember { mutableStateOf(false) }
     var isSourcesExpanded by remember { mutableStateOf(false) }
 
@@ -49,7 +49,7 @@ fun HealthDisclaimerSection() {
         stringResource(R.string.health_references_expand)
     }
 
-    Column {
+    Column(modifier = modifier) {
         // ── Disclaimer section ──
         SectionHeader(
             text = stringResource(R.string.health_disclaimer_title),
@@ -141,6 +141,7 @@ private fun ExpandableCard(
     }
 }
 
+@Suppress("UnusedPrivateFunction")
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 private fun HealthDisclaimerSectionPreview() {
