@@ -7,8 +7,10 @@ import app.cash.turbine.test
 import pl.dekrate.kofeino.data.local.CaffeineDatabase
 import pl.dekrate.kofeino.data.local.CaffeineIntakeDao
 import pl.dekrate.kofeino.data.local.DrinkDao
+import pl.dekrate.kofeino.data.sync.RealTimeSyncService
 import pl.dekrate.kofeino.domain.model.CaffeineIntake
 import pl.dekrate.kofeino.domain.model.DrinkEntity
+import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -26,6 +28,7 @@ class CaffeineRepositoryImplTest {
     private lateinit var database: CaffeineDatabase
     private lateinit var intakeDao: CaffeineIntakeDao
     private lateinit var drinkDao: DrinkDao
+    private val realTimeSyncService: RealTimeSyncService = mockk(relaxed = true)
     private lateinit var repository: CaffeineRepositoryImpl
 
     @Before
@@ -36,7 +39,7 @@ class CaffeineRepositoryImplTest {
             .build()
         intakeDao = database.caffeineIntakeDao()
         drinkDao = database.drinkDao()
-        repository = CaffeineRepositoryImpl(intakeDao, drinkDao)
+        repository = CaffeineRepositoryImpl(intakeDao, drinkDao, realTimeSyncService)
     }
 
     @After
