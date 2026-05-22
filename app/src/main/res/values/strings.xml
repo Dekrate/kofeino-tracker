@@ -78,6 +78,20 @@
     <string name="theme_light_description">Use light theme</string>
     <string name="theme_dark_description">Use dark theme</string>
 
+    <!-- Backup / Restore -->
+    <string name="backup_section">Backup &amp; Restore</string>
+    <string name="export_backup">Export backup</string>
+    <string name="import_backup">Import backup</string>
+    <string name="backup_exporting">Exporting…</string>
+    <string name="backup_importing">Importing…</string>
+    <string name="backup_export_success">Backup exported: %1$d intakes, %2$d drinks</string>
+    <string name="backup_import_success">Backup imported: %1$d intakes, %2$d drinks</string>
+    <string name="backup_error">Backup failed: %s</string>
+    <string name="backup_error_unknown">Unknown error</string>
+    <string name="backup_import_settings">Import settings</string>
+    <string name="backup_import_settings_desc">Restore language, theme, and notification preferences</string>
+    <string name="backup_file_name">KofeinoTracker_backup_%1$s.json</string>
+
     <!-- About -->
     <string name="about">About</string>
     <string name="version_format">Version %s</string>

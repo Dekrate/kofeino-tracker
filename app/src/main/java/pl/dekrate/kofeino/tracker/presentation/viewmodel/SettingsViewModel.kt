@@ -1,15 +1,28 @@
 package pl.dekrate.kofeino.tracker.presentation.viewmodel
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import pl.dekrate.kofeino.tracker.R
+import pl.dekrate.kofeino.tracker.data.backup.BackupIOException
+import pl.dekrate.kofeino.tracker.data.backup.BackupManager
+import pl.dekrate.kofeino.tracker.data.backup.BackupVersionException
 import pl.dekrate.kofeino.tracker.data.local.DataStorePreferences
+import pl.dekrate.kofeino.tracker.di.IoDispatcher
 import javax.inject.Inject
 
 data class SettingsUiState(
@@ -21,19 +34,47 @@ data class SettingsUiState(
     val notifLiveEnabled: Boolean = DataStorePreferences.DEFAULT_NOTIF_LIVE,
     val notifMorningEnabled: Boolean = DataStorePreferences.DEFAULT_NOTIF_MORNING,
     val notifRegularEnabled: Boolean = DataStorePreferences.DEFAULT_NOTIF_REGULAR,
-    val notifEveningEnabled: Boolean = DataStorePreferences.DEFAULT_NOTIF_EVENING
+    val notifEveningEnabled: Boolean = DataStorePreferences.DEFAULT_NOTIF_EVENING,
+    // Backup / Restore state
+    val backupState: BackupUiState = BackupUiState.Idle,
+    /** Whether to import settings from the backup file (toggled by user in UI). */
+    val importSettingsEnabled: Boolean = false
 )
+
+/** Sealed representation of the backup/restore UI state for button gating. */
+sealed interface BackupUiState {
+    data object Idle : BackupUiState
+    data object Exporting : BackupUiState
+    data object Importing : BackupUiState
+    data object Success : BackupUiState
+    data object Error : BackupUiState
+}
+
+/**
+ * One-shot navigation / snackbar events for the Settings screen.
+ * Messages are pre-resolved in the ViewModel via [context.getString] so the
+ * UI layer does not need to resolve resource IDs inside a LaunchedEffect.
+ */
+sealed interface SettingsEvent {
+    data class ShowSnackbar(val message: String) : SettingsEvent
+}
 
 /**
  * ViewModel for the Settings screen.
  */
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val preferences: DataStorePreferences
+    private val preferences: DataStorePreferences,
+    private val backupManager: BackupManager,
+    @ApplicationContext private val context: Context,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
+
+    private val _events = MutableSharedFlow<SettingsEvent>()
+    val events: SharedFlow<SettingsEvent> = _events.asSharedFlow()
 
     init {
         viewModelScope.launch {
@@ -106,6 +147,65 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             preferences.setNotificationEveningEnabled(enabled)
             _uiState.update { it.copy(notifEveningEnabled = enabled) }
+        }
+    }
+
+    // ===== Backup / Restore =====
+
+    /** Toggle whether to import settings from the backup file. */
+    fun setImportSettingsEnabled(enabled: Boolean) {
+        _uiState.update { it.copy(importSettingsEnabled = enabled) }
+    }
+
+    /** Export all data to the SAF-chosen [uri]. */
+    fun exportBackup(uri: Uri) {
+        if (_uiState.value.backupState is BackupUiState.Exporting) return
+        _uiState.update { it.copy(backupState = BackupUiState.Exporting) }
+
+        viewModelScope.launch {
+            try {
+                val result = withContext(ioDispatcher) {
+                    backupManager.exportBackup(uri)
+                }
+                _uiState.update { it.copy(backupState = BackupUiState.Success) }
+                _events.emit(SettingsEvent.ShowSnackbar(
+                    context.getString(R.string.backup_export_success, result.intakeCount, result.drinkCount)
+                ))
+            } catch (e: BackupIOException) {
+                _uiState.update { it.copy(backupState = BackupUiState.Error) }
+                _events.emit(SettingsEvent.ShowSnackbar(
+                    context.getString(R.string.backup_error, e.message.orEmpty())
+                ))
+            }
+        }
+    }
+
+    /** Import data from the SAF-chosen [uri]. */
+    fun importBackup(uri: Uri) {
+        if (_uiState.value.backupState is BackupUiState.Importing) return
+        val importSettings = _uiState.value.importSettingsEnabled
+        _uiState.update { it.copy(backupState = BackupUiState.Importing) }
+
+        viewModelScope.launch {
+            try {
+                val result = withContext(ioDispatcher) {
+                    backupManager.importBackup(uri, importSettings)
+                }
+                _uiState.update { it.copy(backupState = BackupUiState.Success) }
+                _events.emit(SettingsEvent.ShowSnackbar(
+                    context.getString(R.string.backup_import_success, result.intakesImported, result.drinksImported)
+                ))
+            } catch (e: BackupVersionException) {
+                _uiState.update { it.copy(backupState = BackupUiState.Error) }
+                _events.emit(SettingsEvent.ShowSnackbar(
+                    context.getString(R.string.backup_error, e.message.orEmpty())
+                ))
+            } catch (e: BackupIOException) {
+                _uiState.update { it.copy(backupState = BackupUiState.Error) }
+                _events.emit(SettingsEvent.ShowSnackbar(
+                    context.getString(R.string.backup_error, e.message.orEmpty())
+                ))
+            }
         }
     }
 }

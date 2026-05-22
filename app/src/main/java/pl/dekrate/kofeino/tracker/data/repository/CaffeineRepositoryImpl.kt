@@ -1,5 +1,7 @@
 package pl.dekrate.kofeino.tracker.data.repository
 
+import androidx.room.withTransaction
+import pl.dekrate.kofeino.tracker.data.local.CaffeineDatabase
 import pl.dekrate.kofeino.tracker.data.local.CaffeineIntakeDao
 import pl.dekrate.kofeino.tracker.data.local.DrinkDao
 import pl.dekrate.kofeino.tracker.domain.model.CaffeineIntake
@@ -9,10 +11,12 @@ import java.util.Calendar
 import javax.inject.Inject
 import javax.inject.Singleton
 
+@Suppress("TooManyFunctions")
 @Singleton
 class CaffeineRepositoryImpl @Inject constructor(
     private val intakeDao: CaffeineIntakeDao,
-    private val drinkDao: DrinkDao
+    private val drinkDao: DrinkDao,
+    private val database: CaffeineDatabase
 ) : CaffeineRepository {
 
     // --- Intake operations ---
@@ -75,6 +79,35 @@ class CaffeineRepositoryImpl @Inject constructor(
 
     override fun searchDrinks(query: String): Flow<List<DrinkEntity>> {
         return drinkDao.searchDrinks(query)
+    }
+
+    // --- Backup / Snapshot operations ---
+
+    override suspend fun getAllIntakesSnapshot(): List<CaffeineIntake> =
+        intakeDao.getAllIntakesSnapshot()
+
+    override suspend fun getAllDrinksSnapshot(): List<DrinkEntity> =
+        drinkDao.getAllDrinksSnapshot()
+
+    override suspend fun getAllIntakeIds(): List<Long> =
+        intakeDao.getAllIntakeIds()
+
+    override suspend fun getAllDrinkNames(): List<String> =
+        drinkDao.getAllDrinkNames()
+
+    override suspend fun bulkInsertIntakes(intakes: List<CaffeineIntake>) {
+        intakeDao.insertAll(intakes)
+    }
+
+    override suspend fun bulkInsertDrinks(drinks: List<DrinkEntity>) {
+        drinkDao.insertAll(drinks)
+    }
+
+    override suspend fun importAllAtomic(intakes: List<CaffeineIntake>, drinks: List<DrinkEntity>) {
+        database.withTransaction {
+            intakeDao.insertAll(intakes)
+            drinkDao.insertAll(drinks)
+        }
     }
 
     /**

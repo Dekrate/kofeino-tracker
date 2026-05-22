@@ -32,4 +32,16 @@ interface DrinkDao {
     /** Phone-specific: search drinks by name (for quick-add). */
     @Query("SELECT * FROM drinks WHERE name LIKE '%' || :query || '%' ORDER BY name ASC")
     fun searchDrinks(query: String): Flow<List<DrinkEntity>>
+
+    /** Snapshot: all drinks ordered by name (used for backup export). */
+    @Query("SELECT * FROM drinks ORDER BY name ASC")
+    suspend fun getAllDrinksSnapshot(): List<DrinkEntity>
+
+    /** Snapshot: all drink names (used for backup import conflict resolution). */
+    @Query("SELECT name FROM drinks")
+    suspend fun getAllDrinkNames(): List<String>
+
+    /** Bulk insert drinks for backup import (dedup handled by BackupConflictResolver upstream). */
+    @Insert
+    suspend fun insertAll(drinks: List<DrinkEntity>)
 }
