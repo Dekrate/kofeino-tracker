@@ -8,13 +8,14 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import pl.dekrate.kofeino.BuildConfig
 import pl.dekrate.kofeino.data.local.OfficialDrinkCacheDao
 import pl.dekrate.kofeino.data.remote.CaffeineApiService
 import pl.dekrate.kofeino.data.remote.ConnectivityObserver
 import pl.dekrate.kofeino.data.remote.CustomDns
+import pl.dekrate.kofeino.data.remote.OpenFoodFactsConfig
 import pl.dekrate.kofeino.data.repository.OfficialDrinkRepository
 import pl.dekrate.kofeino.data.repository.OfficialDrinkRepositoryImpl
-import pl.dekrate.kofeino.BuildConfig
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
@@ -23,8 +24,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-
-    private const val OPEN_FOOD_FACTS_BASE_URL = "https://world-fr.openfoodfacts.org/api/v2/"
 
     @Provides
     @Singleton
@@ -56,7 +55,7 @@ object NetworkModule {
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(OPEN_FOOD_FACTS_BASE_URL)
+            .baseUrl(OpenFoodFactsConfig.V2_BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()

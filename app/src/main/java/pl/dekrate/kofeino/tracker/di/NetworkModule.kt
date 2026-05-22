@@ -10,6 +10,7 @@ import okhttp3.Cache
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import pl.dekrate.kofeino.tracker.data.remote.OpenFoodFactsApi
+import pl.dekrate.kofeino.tracker.data.remote.OpenFoodFactsConfig
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import timber.log.Timber
@@ -22,8 +23,6 @@ import javax.inject.Singleton
 object NetworkModule {
 
     private const val TIMEOUT_SECONDS = 15L
-
-    /** OkHttp response cache: 20 MB — balances memory vs cache hit rate. */
     private const val CACHE_SIZE_BYTES = 20L * 1024 * 1024
 
     @Provides
@@ -37,7 +36,6 @@ object NetworkModule {
             level = HttpLoggingInterceptor.Level.BASIC
         }
 
-        // Dedicated cache subdirectory (cleared on clearCache() calls or system-triggered)
         val cacheDir = File(context.cacheDir, "okhttp_cache")
         val cache = Cache(cacheDir, CACHE_SIZE_BYTES)
         Timber.d("OkHttp cache at: %s (%d MB)", cacheDir.absolutePath, CACHE_SIZE_BYTES / 1024 / 1024)
@@ -55,7 +53,7 @@ object NetworkModule {
     @Singleton
     fun provideOpenFoodFactsApi(okHttpClient: OkHttpClient): OpenFoodFactsApi {
         return Retrofit.Builder()
-            .baseUrl("https://world.openfoodfacts.org/")
+            .baseUrl(OpenFoodFactsConfig.ROOT_BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
