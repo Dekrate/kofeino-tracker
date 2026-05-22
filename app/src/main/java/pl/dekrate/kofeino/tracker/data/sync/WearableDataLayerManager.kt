@@ -100,6 +100,7 @@ class WearableDataLayerManager @Inject constructor(
      * Safe to call even if Wear OS is not available — failures are caught
      * and logged as warnings.
      */
+    @Suppress("TooGenericExceptionCaught")
     fun register() {
         if (isRegistered) return
 
@@ -156,6 +157,7 @@ class WearableDataLayerManager @Inject constructor(
      *
      * Exposed primarily for test teardown.
      */
+    @Suppress("TooGenericExceptionCaught")
     fun unregister() {
         if (!isRegistered) return
 

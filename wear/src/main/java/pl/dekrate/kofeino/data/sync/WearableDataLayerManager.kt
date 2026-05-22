@@ -82,6 +82,7 @@ class WearableDataLayerManager @Inject constructor(
         Timber.d("Capability '${capabilityInfo.name}': $nodeCount node(s) available — $nodeIds")
     }
 
+    @Suppress("TooGenericExceptionCaught")
     fun register() {
         if (isRegistered) return
 
@@ -131,6 +132,7 @@ class WearableDataLayerManager @Inject constructor(
         Timber.i("Wearable DataLayer registration complete: $successCount registered, $failureCount failed")
     }
 
+    @Suppress("TooGenericExceptionCaught")
     fun unregister() {
         if (!isRegistered) return
 
