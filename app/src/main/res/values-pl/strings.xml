@@ -149,6 +149,20 @@
     <string name="reminder_evening_title_3">📋 Raport dnia</string>
     <string name="reminder_evening_body_3">Czas przejrzeć dzienne spożycie kofeiny. Stuknij, aby sprawdzić.</string>
 
+    <!-- Backup / Restore -->
+    <string name="backup_section">Kopia zapasowa</string>
+    <string name="export_backup">Eksportuj kopię</string>
+    <string name="import_backup">Importuj kopię</string>
+    <string name="backup_exporting">Eksportowanie…</string>
+    <string name="backup_importing">Importowanie…</string>
+    <string name="backup_export_success">Kopia zapasowa utworzona: %1$d wpisów, %2$d napojów</string>
+    <string name="backup_import_success">Kopia przywrócona: %1$d wpisów, %2$d napojów</string>
+    <string name="backup_error">Błąd kopii zapasowej: %s</string>
+    <string name="backup_error_unknown">Nieznany błąd</string>
+    <string name="backup_import_settings">Importuj ustawienia</string>
+    <string name="backup_import_settings_desc">Przywróć język, motyw i preferencje powiadomień</string>
+    <string name="backup_file_name">KofeinoTracker_kopia_%1$s.json</string>
+
     <!-- OfficialDrinksScreen -->
     <string name="search_hint">Szukaj napojów…</string>
     <string name="search_clear">Wyczyść wyszukiwanie</string>
