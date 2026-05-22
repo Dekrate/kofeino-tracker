@@ -84,6 +84,12 @@ class LanguagePreferencesTest {
     }
 
     @Test
+    fun `static getLanguage returns DEFAULT_LANGUAGE when preference is null`() {
+        every { prefs.getString("selected_language", "") } returns null
+        assertEquals(LanguagePreferences.DEFAULT_LANGUAGE, LanguagePreferences.getLanguage(context))
+    }
+
+    @Test
     fun `constants should be correct`() {
         assertEquals("", LanguagePreferences.LANGUAGE_SYSTEM)
         assertEquals("en", LanguagePreferences.LANGUAGE_EN)

@@ -117,6 +117,8 @@
     <string name="polish">Polish</string>
     <string name="english">English</string>
     <string name="language_system">System</string>
+    <string name="language_system_description">Use system language</string>
+    <string name="language_switch_description">Switch language to %s</string>
 
     <!-- Caffeine limit profiles -->
     <string name="caffeine_limit_title">Daily caffeine limit</string>

@@ -162,6 +162,10 @@ private fun LanguageSection(
     currentLang: String,
     onLanguageSelect: (String) -> Unit
 ) {
+    val systemDescription = stringResource(R.string.language_system_description)
+    val switchDescriptionEn = stringResource(R.string.language_switch_description, stringResource(R.string.english))
+    val switchDescriptionPl = stringResource(R.string.language_switch_description, stringResource(R.string.polish))
+
     Column(
         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -175,7 +179,8 @@ private fun LanguageSection(
         LanguageOptionButton(
             label = stringResource(R.string.language_system),
             isSelected = currentLang == LanguagePreferences.LANGUAGE_SYSTEM,
-            onClick = { onLanguageSelect(LanguagePreferences.LANGUAGE_SYSTEM) }
+            onClick = { onLanguageSelect(LanguagePreferences.LANGUAGE_SYSTEM) },
+            contentDescription = systemDescription
         )
 
         Spacer(modifier = Modifier.height(4.dp))
@@ -183,7 +188,8 @@ private fun LanguageSection(
         LanguageOptionButton(
             label = stringResource(R.string.english),
             isSelected = currentLang == LanguagePreferences.LANGUAGE_EN,
-            onClick = { onLanguageSelect(LanguagePreferences.LANGUAGE_EN) }
+            onClick = { onLanguageSelect(LanguagePreferences.LANGUAGE_EN) },
+            contentDescription = switchDescriptionEn
         )
 
         Spacer(modifier = Modifier.height(4.dp))
@@ -191,7 +197,8 @@ private fun LanguageSection(
         LanguageOptionButton(
             label = stringResource(R.string.polish),
             isSelected = currentLang == LanguagePreferences.LANGUAGE_PL,
-            onClick = { onLanguageSelect(LanguagePreferences.LANGUAGE_PL) }
+            onClick = { onLanguageSelect(LanguagePreferences.LANGUAGE_PL) },
+            contentDescription = switchDescriptionPl
         )
     }
 }
@@ -200,12 +207,12 @@ private fun LanguageSection(
 private fun LanguageOptionButton(
     label: String,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    contentDescription: String
 ) {
-    val languageDesc = stringResource(R.string.language)
     val buttonModifier = Modifier
         .fillMaxWidth()
-        .semantics { contentDescription = languageDesc }
+        .semantics { this.contentDescription = contentDescription }
 
     if (isSelected) {
         Button(
