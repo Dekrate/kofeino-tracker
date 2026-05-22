@@ -4,8 +4,10 @@ import android.app.Application
 import android.content.Context
 import dagger.hilt.android.HiltAndroidApp
 import pl.dekrate.kofeino.data.local.LanguagePreferences
+import pl.dekrate.kofeino.data.sync.WearableDataLayerManager
 import pl.dekrate.kofeino.presentation.util.LocaleHelper
 import timber.log.Timber
+import javax.inject.Inject
 
 /**
  * Application entry point for the Wear OS module.
@@ -18,11 +20,16 @@ import timber.log.Timber
  */
 @HiltAndroidApp
 class KofeinoTrackerApplication : Application() {
+
+    @Inject
+    lateinit var wearableDataLayerManager: WearableDataLayerManager
+
     override fun onCreate() {
         super.onCreate()
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
         }
+        wearableDataLayerManager.register()
     }
 
     override fun attachBaseContext(base: Context) {
