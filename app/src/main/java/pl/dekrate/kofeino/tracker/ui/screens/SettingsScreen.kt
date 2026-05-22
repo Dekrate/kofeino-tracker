@@ -89,11 +89,14 @@ fun SettingsScreen(
         }
     }
 
-    // Collect one-shot events (snackbar messages)
+    // Collect one-shot events (snackbar messages) — resolve resource IDs in UI layer
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                is SettingsEvent.ShowSnackbar -> snackbarHostState.showSnackbar(event.message)
+                is SettingsEvent.ShowSnackbar -> {
+                    val message = context.getString(event.messageRes, *event.formatArgs)
+                    snackbarHostState.showSnackbar(message)
+                }
             }
         }
     }
@@ -119,6 +122,9 @@ fun SettingsScreen(
     val systemThemeDesc = stringResource(R.string.theme_system_description)
     val lightThemeDesc = stringResource(R.string.theme_light_description)
     val darkThemeDesc = stringResource(R.string.theme_dark_description)
+
+    val isBackupInProgress = state.backupState is BackupUiState.Exporting ||
+        state.backupState is BackupUiState.Importing
 
     Scaffold(
         topBar = {
@@ -178,11 +184,12 @@ fun SettingsScreen(
             // ── Backup / Restore section ──
             SectionHeader(stringResource(R.string.backup_section), Modifier.padding(horizontal = 16.dp, vertical = 12.dp))
 
+            // Export button
             BackupButton(
                 label = stringResource(R.string.export_backup),
+                loadingLabel = stringResource(R.string.backup_exporting),
                 isLoading = state.backupState is BackupUiState.Exporting,
-                enabled = state.backupState !is BackupUiState.Exporting &&
-                    state.backupState !is BackupUiState.Importing,
+                enabled = !isBackupInProgress,
                 onClick = {
                     val today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE)
                     val filename = context.getString(R.string.backup_file_name, today)
@@ -190,11 +197,20 @@ fun SettingsScreen(
                 }
             )
 
+            // Import settings toggle
+            NotifToggle(
+                label = stringResource(R.string.backup_import_settings),
+                description = stringResource(R.string.backup_import_settings_desc),
+                checked = state.importSettingsEnabled,
+                onCheckedChange = { viewModel.setImportSettingsEnabled(it) }
+            )
+
+            // Import button
             BackupButton(
                 label = stringResource(R.string.import_backup),
+                loadingLabel = stringResource(R.string.backup_importing),
                 isLoading = state.backupState is BackupUiState.Importing,
-                enabled = state.backupState !is BackupUiState.Exporting &&
-                    state.backupState !is BackupUiState.Importing,
+                enabled = !isBackupInProgress,
                 onClick = {
                     importLauncher.launch(arrayOf("application/json"))
                 }
@@ -249,6 +265,7 @@ private fun NotifToggle(label: String, description: String, checked: Boolean, on
 @Composable
 private fun BackupButton(
     label: String,
+    loadingLabel: String,
     isLoading: Boolean,
     enabled: Boolean,
     onClick: () -> Unit,
@@ -262,7 +279,7 @@ private fun BackupButton(
             .padding(horizontal = 16.dp, vertical = 4.dp)
     ) {
         Text(
-            text = if (isLoading) stringResource(R.string.backup_exporting) else label,
+            text = if (isLoading) loadingLabel else label,
             style = MaterialTheme.typography.bodyLarge
         )
     }

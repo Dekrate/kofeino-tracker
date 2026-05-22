@@ -47,4 +47,10 @@ interface CaffeineRepository {
 
     /** Bulk insert drinks (for backup import). */
     suspend fun bulkInsertDrinks(drinks: List<DrinkEntity>)
+
+    /**
+     * Atomic import: inserts intakes and drinks in a single Room transaction.
+     * If either insert fails, the entire import is rolled back.
+     */
+    suspend fun importAllAtomic(intakes: List<CaffeineIntake>, drinks: List<DrinkEntity>)
 }

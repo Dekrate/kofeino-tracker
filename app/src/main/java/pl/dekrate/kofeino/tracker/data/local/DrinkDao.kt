@@ -4,7 +4,6 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
-import androidx.room.Transaction
 import androidx.room.Update
 import pl.dekrate.kofeino.tracker.domain.model.DrinkEntity
 import kotlinx.coroutines.flow.Flow
@@ -42,7 +41,7 @@ interface DrinkDao {
     @Query("SELECT name FROM drinks")
     suspend fun getAllDrinkNames(): List<String>
 
-    /** Bulk insert drinks for backup import (ignores duplicates by name). */
+    /** Bulk insert drinks for backup import (dedup handled by BackupConflictResolver upstream). */
     @Insert
     suspend fun insertAll(drinks: List<DrinkEntity>)
 }

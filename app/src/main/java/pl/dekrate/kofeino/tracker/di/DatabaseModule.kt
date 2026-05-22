@@ -19,8 +19,15 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import timber.log.Timber
+import javax.inject.Qualifier
 import javax.inject.Singleton
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class IoDispatcher
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -72,8 +79,20 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideCaffeineRepository(impl: CaffeineRepositoryImpl): CaffeineRepository {
+    fun provideCaffeineRepository(
+        impl: CaffeineRepositoryImpl
+    ): CaffeineRepository {
         return impl
+    }
+
+    @Provides
+    @Singleton
+    fun provideCaffeineRepositoryImpl(
+        intakeDao: CaffeineIntakeDao,
+        drinkDao: DrinkDao,
+        database: CaffeineDatabase
+    ): CaffeineRepositoryImpl {
+        return CaffeineRepositoryImpl(intakeDao, drinkDao, database)
     }
 
     @Provides
@@ -133,6 +152,11 @@ object DatabaseModule {
             Timber.e(e, "Failed to seed default drinks")
         }
     }
+
+    @Provides
+    @Singleton
+    @IoDispatcher
+    fun provideIoDispatcher(): CoroutineDispatcher = Dispatchers.IO
 
     private fun insertOfficialDrinkCache(db: androidx.sqlite.db.SupportSQLiteDatabase) {
         // Seed cache with common drinks (data sourced from Open Food Facts)

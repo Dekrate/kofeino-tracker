@@ -173,8 +173,7 @@ class BackupManagerTest {
         every { contentResolver.openInputStream(uri) } returns ByteArrayInputStream(json.toByteArray())
         coEvery { repository.getAllIntakeIds() } returns emptyList()
         coEvery { repository.getAllDrinkNames() } returns emptyList()
-        coEvery { repository.bulkInsertIntakes(any()) } just Runs
-        coEvery { repository.bulkInsertDrinks(any()) } just Runs
+        coEvery { repository.importAllAtomic(any(), any()) } just Runs
 
         val result = backupManager.importBackup(uri)
 
@@ -209,8 +208,7 @@ class BackupManagerTest {
         every { contentResolver.openInputStream(uri) } returns ByteArrayInputStream(json.toByteArray())
         coEvery { repository.getAllIntakeIds() } returns listOf(10L)
         coEvery { repository.getAllDrinkNames() } returns listOf("Espresso")
-        coEvery { repository.bulkInsertIntakes(any()) } just Runs
-        coEvery { repository.bulkInsertDrinks(any()) } just Runs
+        coEvery { repository.importAllAtomic(any(), any()) } just Runs
 
         val result = backupManager.importBackup(uri)
 
@@ -367,8 +365,7 @@ class BackupManagerTest {
         every { contentResolver.openInputStream(uri) } returns ByteArrayInputStream(json.toByteArray())
         coEvery { repository.getAllIntakeIds() } returns listOf(1L)
         coEvery { repository.getAllDrinkNames() } returns listOf("B")
-        coEvery { repository.bulkInsertIntakes(any()) } just Runs
-        coEvery { repository.bulkInsertDrinks(any()) } just Runs
+        coEvery { repository.importAllAtomic(any(), any()) } just Runs
 
         val result = backupManager.importBackup(uri)
 

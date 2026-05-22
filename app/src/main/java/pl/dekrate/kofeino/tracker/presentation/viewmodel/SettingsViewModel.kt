@@ -1,11 +1,14 @@
 package pl.dekrate.kofeino.tracker.presentation.viewmodel
 
+import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableSharedFlow
+import pl.dekrate.kofeino.tracker.di.IoDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,6 +18,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import pl.dekrate.kofeino.tracker.R
 import pl.dekrate.kofeino.tracker.data.backup.BackupManager
 import pl.dekrate.kofeino.tracker.data.backup.BackupVersionException
 import pl.dekrate.kofeino.tracker.data.local.DataStorePreferences
@@ -31,23 +35,26 @@ data class SettingsUiState(
     val notifRegularEnabled: Boolean = DataStorePreferences.DEFAULT_NOTIF_REGULAR,
     val notifEveningEnabled: Boolean = DataStorePreferences.DEFAULT_NOTIF_EVENING,
     // Backup / Restore state
-    val backupState: BackupUiState = BackupUiState.Idle
+    val backupState: BackupUiState = BackupUiState.Idle,
+    /** Whether to import settings from the backup file (toggled by user in UI). */
+    val importSettingsEnabled: Boolean = false
 )
 
-/** Sealed representation of the backup/restore UI state. */
+/** Sealed representation of the backup/restore UI state for button gating. */
 sealed interface BackupUiState {
     data object Idle : BackupUiState
     data object Exporting : BackupUiState
     data object Importing : BackupUiState
-    data class Success(val message: String) : BackupUiState
-    data class Error(val message: String) : BackupUiState
+    data object Success : BackupUiState
+    data object Error : BackupUiState
 }
 
 /**
  * One-shot navigation / snackbar events for the Settings screen.
+ * Carries string resource IDs with format args so the UI layer handles localization.
  */
 sealed interface SettingsEvent {
-    data class ShowSnackbar(val message: String) : SettingsEvent
+    data class ShowSnackbar(val messageRes: Int, val formatArgs: Array<out Any> = emptyArray()) : SettingsEvent
 }
 
 /**
@@ -56,7 +63,9 @@ sealed interface SettingsEvent {
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val preferences: DataStorePreferences,
-    private val backupManager: BackupManager
+    private val backupManager: BackupManager,
+    @ApplicationContext private val context: Context,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -141,6 +150,11 @@ class SettingsViewModel @Inject constructor(
 
     // ===== Backup / Restore =====
 
+    /** Toggle whether to import settings from the backup file. */
+    fun setImportSettingsEnabled(enabled: Boolean) {
+        _uiState.update { it.copy(importSettingsEnabled = enabled) }
+    }
+
     /** Export all data to the SAF-chosen [uri]. */
     fun exportBackup(uri: Uri) {
         if (_uiState.value.backupState is BackupUiState.Exporting) return
@@ -148,47 +162,55 @@ class SettingsViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                val result = withContext(Dispatchers.IO) {
+                val result = withContext(ioDispatcher) {
                     backupManager.exportBackup(uri)
                 }
-                val message = "Backup exported: ${result.intakeCount} intakes, ${result.drinkCount} drinks"
-                _uiState.update { it.copy(backupState = BackupUiState.Success(message)) }
-                _events.emit(SettingsEvent.ShowSnackbar(message))
+                _uiState.update { it.copy(backupState = BackupUiState.Success) }
+                _events.emit(SettingsEvent.ShowSnackbar(
+                    messageRes = R.string.backup_export_success,
+                    formatArgs = arrayOf(result.intakeCount, result.drinkCount)
+                ))
             } catch (e: Exception) {
-                val message = "Backup failed: ${e.message ?: "Unknown error"}"
-                _uiState.update { it.copy(backupState = BackupUiState.Error(message)) }
-                _events.emit(SettingsEvent.ShowSnackbar(message))
+                val message = e.message ?: context.getString(R.string.backup_error_unknown)
+                _uiState.update { it.copy(backupState = BackupUiState.Error) }
+                _events.emit(SettingsEvent.ShowSnackbar(
+                    messageRes = R.string.backup_error,
+                    formatArgs = arrayOf(message)
+                ))
             }
         }
     }
 
     /** Import data from the SAF-chosen [uri]. */
-    fun importBackup(uri: Uri, importSettings: Boolean = false) {
+    fun importBackup(uri: Uri) {
         if (_uiState.value.backupState is BackupUiState.Importing) return
+        val importSettings = _uiState.value.importSettingsEnabled
         _uiState.update { it.copy(backupState = BackupUiState.Importing) }
 
         viewModelScope.launch {
             try {
-                val result = withContext(Dispatchers.IO) {
+                val result = withContext(ioDispatcher) {
                     backupManager.importBackup(uri, importSettings)
                 }
-                val message = "Backup imported: ${result.intakesImported} intakes, ${result.drinksImported} drinks"
-                _uiState.update { it.copy(backupState = BackupUiState.Success(message)) }
-                _events.emit(SettingsEvent.ShowSnackbar(message))
+                _uiState.update { it.copy(backupState = BackupUiState.Success) }
+                _events.emit(SettingsEvent.ShowSnackbar(
+                    messageRes = R.string.backup_import_success,
+                    formatArgs = arrayOf(result.intakesImported, result.drinksImported)
+                ))
             } catch (e: BackupVersionException) {
-                val message = "Backup failed: ${e.message}"
-                _uiState.update { it.copy(backupState = BackupUiState.Error(message)) }
-                _events.emit(SettingsEvent.ShowSnackbar(message))
+                _uiState.update { it.copy(backupState = BackupUiState.Error) }
+                _events.emit(SettingsEvent.ShowSnackbar(
+                    messageRes = R.string.backup_error,
+                    formatArgs = arrayOf(e.message ?: "Unsupported backup version")
+                ))
             } catch (e: Exception) {
-                val message = "Backup failed: ${e.message ?: "Unknown error"}"
-                _uiState.update { it.copy(backupState = BackupUiState.Error(message)) }
-                _events.emit(SettingsEvent.ShowSnackbar(message))
+                val message = e.message ?: context.getString(R.string.backup_error_unknown)
+                _uiState.update { it.copy(backupState = BackupUiState.Error) }
+                _events.emit(SettingsEvent.ShowSnackbar(
+                    messageRes = R.string.backup_error,
+                    formatArgs = arrayOf(message)
+                ))
             }
         }
-    }
-
-    /** Dismiss the backup success/error state (e.g. after auto-hide timeout). */
-    fun dismissBackupState() {
-        _uiState.update { it.copy(backupState = BackupUiState.Idle) }
     }
 }

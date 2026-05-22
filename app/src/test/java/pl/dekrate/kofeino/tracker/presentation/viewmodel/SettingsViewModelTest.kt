@@ -1,10 +1,14 @@
 package pl.dekrate.kofeino.tracker.presentation.viewmodel
 
+import android.content.Context
+import android.net.Uri
 import app.cash.turbine.test
 import io.mockk.coEvery
+import io.mockk.coJustRun
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -17,13 +21,17 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
+import pl.dekrate.kofeino.tracker.R
 import pl.dekrate.kofeino.tracker.data.backup.BackupManager
+import pl.dekrate.kofeino.tracker.data.backup.ExportResult
+import pl.dekrate.kofeino.tracker.data.backup.ImportResult
 import pl.dekrate.kofeino.tracker.data.local.DataStorePreferences
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -43,6 +51,7 @@ class SettingsViewModelTest {
 
     private lateinit var preferences: DataStorePreferences
     private lateinit var backupManager: BackupManager
+    private lateinit var context: Context
     private lateinit var viewModel: SettingsViewModel
 
     /** Simulates the DataStore-backed reactive streams. */
@@ -57,6 +66,9 @@ class SettingsViewModelTest {
     fun setup() {
         preferences = mockk(relaxed = true)
         backupManager = mockk()
+        context = mockk()
+        every { context.getString(any()) } answers { "mocked string" }
+        every { context.getString(any(), *anyVararg()) } answers { "mocked string" }
         every { preferences.observeLanguage() } returns languageFlow
         every { preferences.observeThemeMode() } returns themeFlow
         every { preferences.observeNotificationLiveEnabled() } returns notifLiveFlow
@@ -71,7 +83,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `initial state should use default language`() = runTest {
-        viewModel = SettingsViewModel(preferences, backupManager)
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
         advanceUntilIdle() // let init coroutines complete
 
         val state = viewModel.uiState.value
@@ -84,7 +96,7 @@ class SettingsViewModelTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_PL
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_PL
 
-        viewModel = SettingsViewModel(preferences, backupManager)
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
@@ -94,7 +106,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `initial state should use default theme mode`() = runTest {
-        viewModel = SettingsViewModel(preferences, backupManager)
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
@@ -107,7 +119,7 @@ class SettingsViewModelTest {
         themeFlow.value = DataStorePreferences.THEME_DARK
         every { preferences.getThemeMode() } returns DataStorePreferences.THEME_DARK
 
-        viewModel = SettingsViewModel(preferences, backupManager)
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
@@ -121,7 +133,7 @@ class SettingsViewModelTest {
     fun `setLanguage to pl should update currentLanguage`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_EN
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_EN
-        viewModel = SettingsViewModel(preferences, backupManager)
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setLanguage("pl")
@@ -135,7 +147,7 @@ class SettingsViewModelTest {
     fun `setLanguage to pl should persist preference`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_EN
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_EN
-        viewModel = SettingsViewModel(preferences, backupManager)
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setLanguage("pl")
@@ -148,7 +160,7 @@ class SettingsViewModelTest {
     fun `setLanguage to en should update currentLanguage`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_PL
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_PL
-        viewModel = SettingsViewModel(preferences, backupManager)
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setLanguage("en")
@@ -162,7 +174,7 @@ class SettingsViewModelTest {
     fun `setLanguage to en should persist preference`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_PL
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_PL
-        viewModel = SettingsViewModel(preferences, backupManager)
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setLanguage("en")
@@ -175,7 +187,7 @@ class SettingsViewModelTest {
     fun `setLanguage should set languageChanged flag`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_EN
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_EN
-        viewModel = SettingsViewModel(preferences, backupManager)
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setLanguage("pl")
@@ -188,7 +200,7 @@ class SettingsViewModelTest {
     fun `setLanguage with same language should not update languageChanged`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_EN
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_EN
-        viewModel = SettingsViewModel(preferences, backupManager)
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
         advanceUntilIdle()
 
         // First change
@@ -206,7 +218,7 @@ class SettingsViewModelTest {
     fun `setLanguage with same language should not persist again`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_EN
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_EN
-        viewModel = SettingsViewModel(preferences, backupManager)
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setLanguage("pl")
@@ -223,7 +235,7 @@ class SettingsViewModelTest {
     fun `setLanguage to system empty should persist empty string`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_EN
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_EN
-        viewModel = SettingsViewModel(preferences, backupManager)
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setLanguage(DataStorePreferences.LANGUAGE_SYSTEM)
@@ -235,7 +247,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `setLanguage to system when already system is no-op`() = runTest {
-        viewModel = SettingsViewModel(preferences, backupManager)
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setLanguage(DataStorePreferences.LANGUAGE_SYSTEM)
@@ -249,7 +261,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `setThemeMode to dark should update currentThemeMode`() = runTest {
-        viewModel = SettingsViewModel(preferences, backupManager)
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setThemeMode(DataStorePreferences.THEME_DARK)
@@ -260,7 +272,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `setThemeMode to dark should persist preference`() = runTest {
-        viewModel = SettingsViewModel(preferences, backupManager)
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setThemeMode(DataStorePreferences.THEME_DARK)
@@ -271,7 +283,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `setThemeMode with same mode should not update themeChanged`() = runTest {
-        viewModel = SettingsViewModel(preferences, backupManager)
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setThemeMode(DataStorePreferences.THEME_DARK)
@@ -285,7 +297,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `setThemeMode with same mode should not persist again`() = runTest {
-        viewModel = SettingsViewModel(preferences, backupManager)
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setThemeMode(DataStorePreferences.THEME_DARK)
@@ -298,7 +310,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `setThemeMode should set themeChanged flag`() = runTest {
-        viewModel = SettingsViewModel(preferences, backupManager)
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setThemeMode(DataStorePreferences.THEME_DARK)
@@ -313,7 +325,7 @@ class SettingsViewModelTest {
     fun `consumeLanguageChanged should reset languageChanged flag`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_EN
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_EN
-        viewModel = SettingsViewModel(preferences, backupManager)
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setLanguage("pl")
@@ -326,7 +338,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `consumeThemeChanged should reset themeChanged flag`() = runTest {
-        viewModel = SettingsViewModel(preferences, backupManager)
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setThemeMode(DataStorePreferences.THEME_DARK)
@@ -343,7 +355,7 @@ class SettingsViewModelTest {
     fun `uiState should emit initial state then emit on setLanguage`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_EN
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_EN
-        viewModel = SettingsViewModel(preferences, backupManager)
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -367,7 +379,7 @@ class SettingsViewModelTest {
     fun `repeated setLanguage should keep languageChanged true`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_EN
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_EN
-        viewModel = SettingsViewModel(preferences, backupManager)
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -392,7 +404,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `uiState should emit on setThemeMode`() = runTest {
-        viewModel = SettingsViewModel(preferences, backupManager)
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -417,7 +429,7 @@ class SettingsViewModelTest {
     fun `setLanguage with same en when already en is no-op`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_EN
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_EN
-        viewModel = SettingsViewModel(preferences, backupManager)
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setLanguage("en")
@@ -431,7 +443,7 @@ class SettingsViewModelTest {
     fun `setLanguage with same pl when already pl is no-op`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_PL
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_PL
-        viewModel = SettingsViewModel(preferences, backupManager)
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setLanguage("pl")
@@ -444,7 +456,7 @@ class SettingsViewModelTest {
     fun `switching back to original language after change should re-trigger`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_EN
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_EN
-        viewModel = SettingsViewModel(preferences, backupManager)
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setLanguage("pl")
@@ -478,5 +490,177 @@ class SettingsViewModelTest {
         assertEquals("system", DataStorePreferences.THEME_SYSTEM)
         assertEquals("light", DataStorePreferences.THEME_LIGHT)
         assertEquals("dark", DataStorePreferences.THEME_DARK)
+    }
+
+    // ===== Backup / Restore operation tests =====
+
+    @Test
+    fun `exportBackup emits Exporting then Success state`() = runTest {
+        val uri = mockk<Uri>()
+        coEvery { backupManager.exportBackup(uri) } returns ExportResult(intakeCount = 2, drinkCount = 1)
+
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        advanceUntilIdle()
+
+        viewModel.exportBackup(uri)
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value.backupState is BackupUiState.Success)
+    }
+
+    @Test
+    fun `exportBackup calls backupManager with correct uri`() = runTest {
+        val uri = mockk<Uri>()
+        coEvery { backupManager.exportBackup(uri) } returns ExportResult(intakeCount = 0, drinkCount = 0)
+
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        advanceUntilIdle()
+
+        viewModel.exportBackup(uri)
+        advanceUntilIdle()
+
+        coVerify { backupManager.exportBackup(uri) }
+    }
+
+    @Test
+    fun `exportBackup emits error event on failure`() = runTest {
+        val uri = mockk<Uri>()
+        coEvery { backupManager.exportBackup(uri) } throws RuntimeException("Export failed")
+
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        advanceUntilIdle()
+
+        viewModel.exportBackup(uri)
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value.backupState is BackupUiState.Error)
+    }
+
+    @Test
+    fun `importBackup emits Importing then Success state`() = runTest {
+        val uri = mockk<Uri>()
+        coEvery { backupManager.importBackup(uri, any()) } returns ImportResult(
+            intakesImported = 1, intakesSkipped = 0,
+            drinksImported = 1, drinksSkipped = 0,
+            settingsImported = false
+        )
+
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        advanceUntilIdle()
+
+        viewModel.importBackup(uri)
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value.backupState is BackupUiState.Success)
+    }
+
+    @Test
+    fun `importBackup calls backupManager with importSettings from state`() = runTest {
+        val uri = mockk<Uri>()
+        coEvery { backupManager.importBackup(uri, any()) } returns ImportResult(
+            intakesImported = 0, intakesSkipped = 0,
+            drinksImported = 0, drinksSkipped = 0,
+            settingsImported = true
+        )
+
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        advanceUntilIdle()
+
+        // Enable settings import
+        viewModel.setImportSettingsEnabled(true)
+        viewModel.importBackup(uri)
+        advanceUntilIdle()
+
+        coVerify { backupManager.importBackup(uri, true) }
+    }
+
+    @Test
+    fun `importBackup emits error event on BackupVersionException`() = runTest {
+        val uri = mockk<Uri>()
+        coEvery { backupManager.importBackup(uri, any()) } throws
+            pl.dekrate.kofeino.tracker.data.backup.BackupVersionException("Unsupported version")
+
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        advanceUntilIdle()
+
+        viewModel.importBackup(uri)
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value.backupState is BackupUiState.Error)
+    }
+
+    @Test
+    fun `double exportBackup is ignored while already exporting`() = runTest {
+        val uri = mockk<Uri>()
+        coEvery { backupManager.exportBackup(uri) } coAnswers {
+            // Simulate a slow export — never completes
+            kotlinx.coroutines.delay(10_000)
+            ExportResult(0, 0)
+        }
+
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        advanceUntilIdle()
+
+        viewModel.exportBackup(uri)
+        // Second call while first is still in flight
+        viewModel.exportBackup(uri)
+        advanceUntilIdle()
+
+        // backupManager.exportBackup should only be called once
+        coVerify(exactly = 1) { backupManager.exportBackup(uri) }
+    }
+
+    @Test
+    fun `setImportSettingsEnabled updates state`() = runTest {
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        advanceUntilIdle()
+
+        viewModel.setImportSettingsEnabled(true)
+        assertTrue(viewModel.uiState.value.importSettingsEnabled)
+
+        viewModel.setImportSettingsEnabled(false)
+        assertFalse(viewModel.uiState.value.importSettingsEnabled)
+    }
+
+    @Test
+    fun `exportBackup event emits ShowSnackbar with export success resource`() = runTest {
+        val uri = mockk<Uri>()
+        coEvery { backupManager.exportBackup(uri) } returns ExportResult(intakeCount = 3, drinkCount = 2)
+
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        advanceUntilIdle()
+
+        viewModel.events.test {
+            viewModel.exportBackup(uri)
+            advanceUntilIdle()
+
+            val event = awaitItem()
+            assertTrue(event is SettingsEvent.ShowSnackbar)
+            assertEquals(R.string.backup_export_success, (event as SettingsEvent.ShowSnackbar).messageRes)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `importBackup event emits ShowSnackbar with import success resource`() = runTest {
+        val uri = mockk<Uri>()
+        coEvery { backupManager.importBackup(uri, any()) } returns ImportResult(
+            intakesImported = 5, intakesSkipped = 2,
+            drinksImported = 3, drinksSkipped = 1,
+            settingsImported = false
+        )
+
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        advanceUntilIdle()
+
+        viewModel.events.test {
+            viewModel.importBackup(uri)
+            advanceUntilIdle()
+
+            val event = awaitItem()
+            assertTrue(event is SettingsEvent.ShowSnackbar)
+            assertEquals(R.string.backup_import_success, (event as SettingsEvent.ShowSnackbar).messageRes)
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 }

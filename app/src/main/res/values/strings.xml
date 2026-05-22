@@ -87,6 +87,9 @@
     <string name="backup_export_success">Backup exported: %1$d intakes, %2$d drinks</string>
     <string name="backup_import_success">Backup imported: %1$d intakes, %2$d drinks</string>
     <string name="backup_error">Backup failed: %s</string>
+    <string name="backup_error_unknown">Unknown error</string>
+    <string name="backup_import_settings">Import settings</string>
+    <string name="backup_import_settings_desc">Restore language, theme, and notification preferences</string>
     <string name="backup_file_name">KofeinoTracker_backup_%1$s.json</string>
 
     <!-- About -->

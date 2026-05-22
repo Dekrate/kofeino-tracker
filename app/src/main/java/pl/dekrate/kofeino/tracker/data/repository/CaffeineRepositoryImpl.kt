@@ -1,5 +1,7 @@
 package pl.dekrate.kofeino.tracker.data.repository
 
+import androidx.room.withTransaction
+import pl.dekrate.kofeino.tracker.data.local.CaffeineDatabase
 import pl.dekrate.kofeino.tracker.data.local.CaffeineIntakeDao
 import pl.dekrate.kofeino.tracker.data.local.DrinkDao
 import pl.dekrate.kofeino.tracker.domain.model.CaffeineIntake
@@ -12,7 +14,8 @@ import javax.inject.Singleton
 @Singleton
 class CaffeineRepositoryImpl @Inject constructor(
     private val intakeDao: CaffeineIntakeDao,
-    private val drinkDao: DrinkDao
+    private val drinkDao: DrinkDao,
+    private val database: CaffeineDatabase
 ) : CaffeineRepository {
 
     // --- Intake operations ---
@@ -97,6 +100,13 @@ class CaffeineRepositoryImpl @Inject constructor(
 
     override suspend fun bulkInsertDrinks(drinks: List<DrinkEntity>) {
         drinkDao.insertAll(drinks)
+    }
+
+    override suspend fun importAllAtomic(intakes: List<CaffeineIntake>, drinks: List<DrinkEntity>) {
+        database.withTransaction {
+            intakeDao.insertAll(intakes)
+            drinkDao.insertAll(drinks)
+        }
     }
 
     /**

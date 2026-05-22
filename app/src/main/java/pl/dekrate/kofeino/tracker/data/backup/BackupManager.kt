@@ -8,7 +8,6 @@ import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepository
 import pl.dekrate.kofeino.tracker.domain.model.CaffeineIntake
 import pl.dekrate.kofeino.tracker.domain.model.DrinkEntity
 import timber.log.Timber
-import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
@@ -118,6 +117,9 @@ class BackupManager @Inject constructor(
         // 2. Deserialise
         val backupData = serializer.deserialize(json)
 
+        // 2b. Validate deserialised data before touching the database
+        validateBackupData(backupData)
+
         // 3. Snapshot existing data for conflict resolution
         val existingIntakeIds = repository.getAllIntakeIds().toSet()
         val existingDrinkNames = repository.getAllDrinkNames().toSet()
@@ -130,18 +132,13 @@ class BackupManager @Inject constructor(
             existingDrinkNames = existingDrinkNames
         )
 
-        // 5. Persist
+        // 5. Persist atomically — if either insert fails, both roll back
         var intakesImported = 0
         var drinksImported = 0
 
-        // Insert intakes in batches (avoid large transactions)
-        if (resolution.intakesToInsert.isNotEmpty()) {
-            repository.bulkInsertIntakes(resolution.intakesToInsert)
+        if (resolution.intakesToInsert.isNotEmpty() || resolution.drinksToInsert.isNotEmpty()) {
+            repository.importAllAtomic(resolution.intakesToInsert, resolution.drinksToInsert)
             intakesImported = resolution.intakesToInsert.size
-        }
-
-        if (resolution.drinksToInsert.isNotEmpty()) {
-            repository.bulkInsertDrinks(resolution.drinksToInsert)
             drinksImported = resolution.drinksToInsert.size
         }
 
@@ -167,18 +164,13 @@ class BackupManager @Inject constructor(
     // Internal helpers
     // ------------------------------------------------------------------
 
-    /** Read the full content of a SAF URI as a UTF-8 string. */
+    /** Read the full content of a SAF URI as a UTF-8 string, preserving line breaks. */
     private fun readJsonFromUri(uri: Uri): String {
-        val sb = StringBuilder()
         context.contentResolver.openInputStream(uri)?.use { inputStream ->
-            BufferedReader(InputStreamReader(inputStream, StandardCharsets.UTF_8)).use { reader ->
-                var line: String?
-                while (reader.readLine().also { line = it } != null) {
-                    sb.append(line)
-                }
+            return InputStreamReader(inputStream, StandardCharsets.UTF_8).use { reader ->
+                reader.readText()
             }
         } ?: throw BackupIOException("Failed to open input stream for $uri")
-        return sb.toString()
     }
 
     /** Snapshot current settings into a [BackupSettings] value. */
@@ -191,6 +183,26 @@ class BackupManager @Inject constructor(
             notifRegularEnabled = preferences.isNotificationRegularEnabled(),
             notifEveningEnabled = preferences.isNotificationEveningEnabled()
         )
+    }
+
+    /**
+     * Basic validation of deserialised backup data before persisting.
+     * Catches obviously-corrupted data (negative values, null names)
+     * that Gson would accept silently.
+     */
+    private fun validateBackupData(data: BackupData) {
+        data.intakes.forEach { intake ->
+            require(intake.caffeineMg >= 0) { "Intake has negative caffeineMg: ${intake.caffeineMg}" }
+            require(intake.volumeMl > 0) { "Intake has non-positive volumeMl: ${intake.volumeMl}" }
+            require(intake.drinkName.isNotBlank()) { "Intake has blank drinkName" }
+        }
+        data.drinks.forEach { drink ->
+            require(drink.caffeineMg >= 0) { "Drink has negative caffeineMg: ${drink.caffeineMg}" }
+            require(drink.volumeMl > 0) { "Drink has non-positive volumeMl: ${drink.volumeMl}" }
+            require(drink.name.isNotBlank()) { "Drink has blank name" }
+        }
+        Timber.d("Backup data validation passed: %d intakes, %d drinks",
+            data.intakes.size, data.drinks.size)
     }
 
     /** Apply backed-up settings to local preferences. */

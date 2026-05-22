@@ -54,7 +54,7 @@ class BackupManagerInstrumentedTest {
 
         val intakeDao = database.caffeineIntakeDao()
         val drinkDao = database.drinkDao()
-        repository = CaffeineRepositoryImpl(intakeDao, drinkDao)
+        repository = CaffeineRepositoryImpl(intakeDao, drinkDao, database)
         serializer = BackupSerializer()
         conflictResolver = BackupConflictResolver()
         contentResolver = mockk()
@@ -110,34 +110,46 @@ class BackupManagerInstrumentedTest {
         assertTrue(json.contains("Latte"))
         assertTrue(json.contains("version"))
 
-        // ── Import into a fresh database ──
+        // ── Import into a fresh database and verify round-trip ──
         val freshDatabase = Room.inMemoryDatabaseBuilder(context, CaffeineDatabase::class.java)
             .build()
         try {
             val freshIntakeDao = freshDatabase.caffeineIntakeDao()
             val freshDrinkDao = freshDatabase.drinkDao()
-            val freshRepo = CaffeineRepositoryImpl(freshIntakeDao, freshDrinkDao)
+            val freshRepo = CaffeineRepositoryImpl(freshIntakeDao, freshDrinkDao, freshDatabase)
+
+            // We need a fresh BackupManager that reads from our JSON string via contentResolver
+            val freshContentResolver: ContentResolver = mockk()
+            every { freshContentResolver.openInputStream(uri) } returns ByteArrayInputStream(json.toByteArray())
+
+            // For import, the manager needs to query the FRESH DB for conflict resolution
+            // (which is empty — no conflicts)
+            val freshPreferences: DataStorePreferences = mockk()
+            val freshContext: Context = mockk()
+            every { freshContext.contentResolver } returns freshContentResolver
+            every { freshContext.getString(any()) } returns ""
 
             val freshBackupManager = BackupManager(
                 repository = freshRepo,
                 serializer = serializer,
                 conflictResolver = conflictResolver,
-                preferences = preferences,
-                context = context
+                preferences = freshPreferences,
+                context = freshContext
             )
 
-            every { contentResolver.openInputStream(uri) } returns ByteArrayInputStream(json.toByteArray())
-            coEvery { repository.getAllIntakeIds() } returns emptyList()
-            coEvery { repository.getAllDrinkNames() } returns emptyList()
-            // Override for fresh repo mock
-            every { contentResolver.openInputStream(uri) } returns ByteArrayInputStream(json.toByteArray())
+            // Import the backup JSON
+            freshBackupManager.importBackup(uri, importSettings = false)
 
-            // Actually, we need to set up the mock for the fresh import
-            // Let's directly construct the test by reading the JSON
-            val importJson = json
-            val backupData = serializer.deserialize(importJson)
-            assertEquals(2, backupData.intakes.size)
-            assertEquals(2, backupData.drinks.size)
+            // Verify the data was restored correctly
+            val importedIntakes = freshRepo.getAllIntakesSnapshot()
+            assertEquals(2, importedIntakes.size)
+            assertTrue(importedIntakes.any { it.drinkName == "Espresso" })
+            assertTrue(importedIntakes.any { it.drinkName == "Latte" })
+
+            val importedDrinks = freshRepo.getAllDrinksSnapshot()
+            assertEquals(2, importedDrinks.size)
+            assertTrue(importedDrinks.any { it.name == "Espresso" })
+            assertTrue(importedDrinks.any { it.name == "Latte" })
         } finally {
             freshDatabase.close()
         }

@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
+import pl.dekrate.kofeino.tracker.data.local.CaffeineDatabase
 import pl.dekrate.kofeino.tracker.data.local.CaffeineIntakeDao
 import pl.dekrate.kofeino.tracker.data.local.DrinkDao
 import pl.dekrate.kofeino.tracker.domain.model.CaffeineIntake
@@ -17,6 +18,7 @@ class CaffeineRepositoryImplTest {
 
     private val intakeDao: CaffeineIntakeDao = mockk()
     private val drinkDao: DrinkDao = mockk()
+    private val database: CaffeineDatabase = mockk()
     private lateinit var repository: CaffeineRepositoryImpl
 
     private val sampleIntake = CaffeineIntake(
@@ -37,7 +39,7 @@ class CaffeineRepositoryImplTest {
 
     @Before
     fun setUp() {
-        repository = CaffeineRepositoryImpl(intakeDao, drinkDao)
+        repository = CaffeineRepositoryImpl(intakeDao, drinkDao, database)
     }
 
     // --- Intake tests ---
