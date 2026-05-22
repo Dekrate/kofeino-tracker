@@ -6,8 +6,10 @@ import android.content.ContextWrapper
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import androidx.wear.compose.foundation.lazy.TransformingLazyColumn
 import androidx.wear.compose.foundation.lazy.rememberTransformingLazyColumnState
 import androidx.wear.compose.material3.Button
-
 import androidx.wear.compose.material3.ListHeader
 import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.material3.OutlinedButton
@@ -35,6 +36,7 @@ import pl.dekrate.kofeino.R
 import pl.dekrate.kofeino.data.local.CaffeinePreferences
 import pl.dekrate.kofeino.data.local.LanguagePreferences
 import pl.dekrate.kofeino.domain.model.CaffeineLimitProfile
+
 
 @Composable
 fun SettingsScreen() {
@@ -47,7 +49,6 @@ fun SettingsScreen() {
     var customLimit by remember { mutableIntStateOf(caffeinePrefs.getCustomLimit()) }
 
     val listScrollState = rememberTransformingLazyColumnState()
-    val languageDesc = stringResource(R.string.language)
     val decreaseDesc = stringResource(R.string.custom_limit_decrease)
     val increaseDesc = stringResource(R.string.custom_limit_increase)
 
@@ -70,7 +71,6 @@ fun SettingsScreen() {
             item {
                 LanguageSection(
                     currentLang = currentLang,
-                    languageDesc = languageDesc,
                     onLanguageSelect = { lang ->
                         langPrefs.setLanguage(lang)
                         currentLang = lang
@@ -160,7 +160,6 @@ fun SettingsScreen() {
 @Composable
 private fun LanguageSection(
     currentLang: String,
-    languageDesc: String,
     onLanguageSelect: (String) -> Unit
 ) {
     Column(
@@ -172,54 +171,56 @@ private fun LanguageSection(
             style = MaterialTheme.typography.labelLarge,
             modifier = Modifier.padding(bottom = 8.dp)
         )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+
+        LanguageOptionButton(
+            label = stringResource(R.string.language_system),
+            isSelected = currentLang == LanguagePreferences.LANGUAGE_SYSTEM,
+            onClick = { onLanguageSelect(LanguagePreferences.LANGUAGE_SYSTEM) }
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        LanguageOptionButton(
+            label = stringResource(R.string.english),
+            isSelected = currentLang == LanguagePreferences.LANGUAGE_EN,
+            onClick = { onLanguageSelect(LanguagePreferences.LANGUAGE_EN) }
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        LanguageOptionButton(
+            label = stringResource(R.string.polish),
+            isSelected = currentLang == LanguagePreferences.LANGUAGE_PL,
+            onClick = { onLanguageSelect(LanguagePreferences.LANGUAGE_PL) }
+        )
+    }
+}
+
+@Composable
+private fun LanguageOptionButton(
+    label: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    val languageDesc = stringResource(R.string.language)
+    val buttonModifier = Modifier
+        .fillMaxWidth()
+        .semantics { contentDescription = languageDesc }
+
+    if (isSelected) {
+        Button(
+            onClick = { },
+            enabled = false,
+            modifier = buttonModifier
         ) {
-            val isEnglish = currentLang == LanguagePreferences.LANGUAGE_EN
-            val isPolish = currentLang == LanguagePreferences.LANGUAGE_PL
-
-            if (isEnglish) {
-                Button(
-                    onClick = { },
-                    enabled = false,
-                    modifier = Modifier
-                        .weight(1f)
-                        .semantics { contentDescription = languageDesc }
-                ) {
-                    Text(stringResource(R.string.english))
-                }
-            } else {
-                OutlinedButton(
-                    onClick = { onLanguageSelect(LanguagePreferences.LANGUAGE_EN) },
-                    modifier = Modifier
-                        .weight(1f)
-                        .semantics { contentDescription = languageDesc }
-                ) {
-                    Text(stringResource(R.string.english))
-                }
-            }
-
-            if (isPolish) {
-                Button(
-                    onClick = { },
-                    enabled = false,
-                    modifier = Modifier
-                        .weight(1f)
-                        .semantics { contentDescription = languageDesc }
-                ) {
-                    Text(stringResource(R.string.polish))
-                }
-            } else {
-                OutlinedButton(
-                    onClick = { onLanguageSelect(LanguagePreferences.LANGUAGE_PL) },
-                    modifier = Modifier
-                        .weight(1f)
-                        .semantics { contentDescription = languageDesc }
-                ) {
-                    Text(stringResource(R.string.polish))
-                }
-            }
+            Text(label)
+        }
+    } else {
+        OutlinedButton(
+            onClick = onClick,
+            modifier = buttonModifier
+        ) {
+            Text(label)
         }
     }
 }

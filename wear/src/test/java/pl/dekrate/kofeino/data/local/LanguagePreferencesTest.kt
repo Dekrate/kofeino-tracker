@@ -19,7 +19,6 @@ class LanguagePreferencesTest {
     @Before
     fun setup() {
         editor = mockk(relaxed = true)
-        // putString() returns Editor, so chain it to return the same mock for .apply()
         every { editor.putString(any(), any()) } returns editor
         prefs = mockk(relaxed = true) {
             every { edit() } returns editor
@@ -31,10 +30,10 @@ class LanguagePreferencesTest {
     }
 
     @Test
-    fun `default language should be English`() {
+    fun `default language should be System (empty string)`() {
         every { prefs.getString(any(), any()) } returns null
-        assertEquals("en", LanguagePreferences.DEFAULT_LANGUAGE)
-        assertEquals("en", languagePreferences.getLanguage())
+        assertEquals("", LanguagePreferences.DEFAULT_LANGUAGE)
+        assertEquals("", languagePreferences.getLanguage())
     }
 
     @Test
@@ -44,9 +43,22 @@ class LanguagePreferencesTest {
     }
 
     @Test
+    fun `getLanguage returns empty string for saved System language`() {
+        every { prefs.getString("selected_language", any()) } returns ""
+        assertEquals("", languagePreferences.getLanguage())
+    }
+
+    @Test
     fun `setLanguage saves to preferences`() {
         languagePreferences.setLanguage("pl")
         verify { editor.putString("selected_language", "pl") }
+        verify { editor.apply() }
+    }
+
+    @Test
+    fun `setLanguage with empty string saves system language`() {
+        languagePreferences.setLanguage("")
+        verify { editor.putString("selected_language", "") }
         verify { editor.apply() }
     }
 
@@ -61,20 +73,21 @@ class LanguagePreferencesTest {
 
     @Test
     fun `static getLanguage returns default when no preference saved`() {
-        every { prefs.getString("selected_language", "en") } returns "en"
-        assertEquals("en", LanguagePreferences.getLanguage(context))
+        every { prefs.getString("selected_language", "") } returns ""
+        assertEquals("", LanguagePreferences.getLanguage(context))
     }
 
     @Test
     fun `static getLanguage returns saved preference`() {
-        every { prefs.getString("selected_language", "en") } returns "pl"
+        every { prefs.getString("selected_language", "") } returns "pl"
         assertEquals("pl", LanguagePreferences.getLanguage(context))
     }
 
     @Test
     fun `constants should be correct`() {
+        assertEquals("", LanguagePreferences.LANGUAGE_SYSTEM)
         assertEquals("en", LanguagePreferences.LANGUAGE_EN)
         assertEquals("pl", LanguagePreferences.LANGUAGE_PL)
-        assertEquals("en", LanguagePreferences.DEFAULT_LANGUAGE)
+        assertEquals(LanguagePreferences.LANGUAGE_SYSTEM, LanguagePreferences.DEFAULT_LANGUAGE)
     }
 }
