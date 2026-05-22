@@ -14,7 +14,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -30,6 +29,8 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import pl.dekrate.kofeino.tracker.R
+import pl.dekrate.kofeino.tracker.ui.theme.KofeinoTrackerPhoneTheme
+import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
 fun HealthDisclaimerSection() {
@@ -104,10 +105,7 @@ private fun ExpandableCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        )
+            .padding(horizontal = 16.dp)
     ) {
         Column {
             Row(
@@ -140,5 +138,13 @@ private fun ExpandableCard(
                 body()
             }
         }
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+private fun HealthDisclaimerSectionPreview() {
+    KofeinoTrackerPhoneTheme {
+        HealthDisclaimerSection()
     }
 }

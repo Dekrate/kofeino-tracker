@@ -22,22 +22,14 @@ class HealthDisclaimerSectionTest {
 
     @Test
     fun displaysDisclaimerHeader() {
-        composeTestRule.setContent {
-            KofeinoTrackerPhoneTheme {
-                HealthDisclaimerSection()
-            }
-        }
+        setUpSection()
         composeTestRule.onNodeWithText(context.getString(R.string.health_disclaimer_title))
             .assertIsDisplayed()
     }
 
     @Test
     fun displaysSourcesHeader() {
-        composeTestRule.setContent {
-            KofeinoTrackerPhoneTheme {
-                HealthDisclaimerSection()
-            }
-        }
+        setUpSection()
         composeTestRule.onNodeWithText(context.getString(R.string.health_references_title))
             .assertIsDisplayed()
     }
@@ -46,33 +38,21 @@ class HealthDisclaimerSectionTest {
 
     @Test
     fun disclaimerBody_isHiddenInitially() {
-        composeTestRule.setContent {
-            KofeinoTrackerPhoneTheme {
-                HealthDisclaimerSection()
-            }
-        }
+        setUpSection()
         composeTestRule.onNodeWithText(context.getString(R.string.health_disclaimer_text))
             .assertDoesNotExist()
     }
 
     @Test
     fun sourcesBody_isHiddenInitially() {
-        composeTestRule.setContent {
-            KofeinoTrackerPhoneTheme {
-                HealthDisclaimerSection()
-            }
-        }
+        setUpSection()
         composeTestRule.onNodeWithText(context.getString(R.string.health_references_text))
             .assertDoesNotExist()
     }
 
     @Test
     fun clickingDisclaimer_expandsContent() {
-        composeTestRule.setContent {
-            KofeinoTrackerPhoneTheme {
-                HealthDisclaimerSection()
-            }
-        }
+        setUpSection()
         composeTestRule.onNodeWithContentDescription(context.getString(R.string.health_disclaimer_expand))
             .performClick()
         composeTestRule.onNodeWithText(context.getString(R.string.health_disclaimer_text))
@@ -81,11 +61,7 @@ class HealthDisclaimerSectionTest {
 
     @Test
     fun clickingDisclaimerTwice_collapsesContent() {
-        composeTestRule.setContent {
-            KofeinoTrackerPhoneTheme {
-                HealthDisclaimerSection()
-            }
-        }
+        setUpSection()
         composeTestRule.onNodeWithContentDescription(context.getString(R.string.health_disclaimer_expand))
             .performClick()
         composeTestRule.onNodeWithContentDescription(context.getString(R.string.health_disclaimer_collapse))
@@ -96,11 +72,7 @@ class HealthDisclaimerSectionTest {
 
     @Test
     fun clickingSources_expandsContent() {
-        composeTestRule.setContent {
-            KofeinoTrackerPhoneTheme {
-                HealthDisclaimerSection()
-            }
-        }
+        setUpSection()
         composeTestRule.onNodeWithContentDescription(context.getString(R.string.health_references_expand))
             .performClick()
         composeTestRule.onNodeWithText(context.getString(R.string.health_references_text))
@@ -109,11 +81,7 @@ class HealthDisclaimerSectionTest {
 
     @Test
     fun clickingSourcesTwice_collapsesContent() {
-        composeTestRule.setContent {
-            KofeinoTrackerPhoneTheme {
-                HealthDisclaimerSection()
-            }
-        }
+        setUpSection()
         composeTestRule.onNodeWithContentDescription(context.getString(R.string.health_references_expand))
             .performClick()
         composeTestRule.onNodeWithContentDescription(context.getString(R.string.health_references_collapse))
@@ -126,22 +94,14 @@ class HealthDisclaimerSectionTest {
 
     @Test
     fun disclaimerCard_hasExpandDescription_whenCollapsed() {
-        composeTestRule.setContent {
-            KofeinoTrackerPhoneTheme {
-                HealthDisclaimerSection()
-            }
-        }
+        setUpSection()
         composeTestRule.onNodeWithContentDescription(context.getString(R.string.health_disclaimer_expand))
             .assertIsDisplayed()
     }
 
     @Test
     fun disclaimerCard_hasCollapseDescription_whenExpanded() {
-        composeTestRule.setContent {
-            KofeinoTrackerPhoneTheme {
-                HealthDisclaimerSection()
-            }
-        }
+        setUpSection()
         composeTestRule.onNodeWithContentDescription(context.getString(R.string.health_disclaimer_expand))
             .performClick()
         composeTestRule.onNodeWithContentDescription(context.getString(R.string.health_disclaimer_collapse))
@@ -150,22 +110,14 @@ class HealthDisclaimerSectionTest {
 
     @Test
     fun sourcesCard_hasExpandDescription_whenCollapsed() {
-        composeTestRule.setContent {
-            KofeinoTrackerPhoneTheme {
-                HealthDisclaimerSection()
-            }
-        }
+        setUpSection()
         composeTestRule.onNodeWithContentDescription(context.getString(R.string.health_references_expand))
             .assertIsDisplayed()
     }
 
     @Test
     fun sourcesCard_hasCollapseDescription_whenExpanded() {
-        composeTestRule.setContent {
-            KofeinoTrackerPhoneTheme {
-                HealthDisclaimerSection()
-            }
-        }
+        setUpSection()
         composeTestRule.onNodeWithContentDescription(context.getString(R.string.health_references_expand))
             .performClick()
         composeTestRule.onNodeWithContentDescription(context.getString(R.string.health_references_collapse))
@@ -176,11 +128,7 @@ class HealthDisclaimerSectionTest {
 
     @Test
     fun disclaimerBody_containsFullText() {
-        composeTestRule.setContent {
-            KofeinoTrackerPhoneTheme {
-                HealthDisclaimerSection()
-            }
-        }
+        setUpSection()
         composeTestRule.onNodeWithContentDescription(context.getString(R.string.health_disclaimer_expand))
             .performClick()
         composeTestRule.onNodeWithText(context.getString(R.string.health_disclaimer_text))
@@ -189,14 +137,18 @@ class HealthDisclaimerSectionTest {
 
     @Test
     fun sourcesBody_containsFullText() {
+        setUpSection()
+        composeTestRule.onNodeWithContentDescription(context.getString(R.string.health_references_expand))
+            .performClick()
+        composeTestRule.onNodeWithText(context.getString(R.string.health_references_text))
+            .assertIsDisplayed()
+    }
+
+    private fun setUpSection() {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HealthDisclaimerSection()
             }
         }
-        composeTestRule.onNodeWithContentDescription(context.getString(R.string.health_references_expand))
-            .performClick()
-        composeTestRule.onNodeWithText(context.getString(R.string.health_references_text))
-            .assertIsDisplayed()
     }
 }
