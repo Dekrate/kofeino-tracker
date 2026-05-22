@@ -2,6 +2,7 @@ package pl.dekrate.kofeino.data.sync
 
 import com.google.android.gms.wearable.MessageClient
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
 import timber.log.Timber
 import java.util.Locale
 import javax.inject.Inject
@@ -25,6 +26,8 @@ class PendingSyncQueue @Inject constructor(
         const val SYNC_PATH_PREFIX = "/sync"
         const val SYNC_PATH_FORMAT = "$SYNC_PATH_PREFIX/%s/%s"
         private const val MAX_RETRIES = 5
+        private const val FLUSH_BATCH_SIZE = 100
+        private const val BACKOFF_BASE_MS = 1000L
     }
 
     // ------------------------------------------------------------------
@@ -71,23 +74,33 @@ class PendingSyncQueue @Inject constructor(
     }
 
     /**
-     * Flush all PENDING changes to the paired device.
+     * Flush up to [FLUSH_BATCH_SIZE] PENDING changes to the paired device.
      *
      * Each change is sent via [MessageClient.sendMessage] on a typed path:
      *   `/sync/<entityType>/<operationType>`
      *
      * On success → change is removed from the queue.
-     * On failure → retry count is bumped; if it reaches [MAX_RETRIES] the
+     * On failure → retry count is bumped, **exponential backoff** is applied
+     *              (1s, 2s, 4s, 8s, 16s), and if it reaches [MAX_RETRIES] the
      *              change is marked FAILED.
+     *
+     * @return [FlushResult] summarising sent / failed counts.
      */
     suspend fun flush(): FlushResult {
-        val pending = dao.getPendingChanges()
+        val pending = dao.getPendingChanges(limit = FLUSH_BATCH_SIZE)
         if (pending.isEmpty()) return FlushResult(0, 0)
 
         var sent = 0
         var failed = 0
 
         for (change in pending) {
+            if (change.retryCount > 0) {
+                val backoffMs = backoffDelay(change.retryCount)
+                Timber.d("Backoff %dms for %s/%s (retry #%d)",
+                    backoffMs, change.entityType, change.entityId, change.retryCount)
+                delay(backoffMs)
+            }
+
             dao.update(change.copy(status = PendingChangeEntity.STATUS_SENDING))
             val path = pathFor(change)
             try {
@@ -107,8 +120,44 @@ class PendingSyncQueue @Inject constructor(
         return FlushResult(sent, failed)
     }
 
-    /** Convenience: flush and then re-attempt FAILED items. */
-    suspend fun flushAllPending(): FlushResult = flush()
+    /**
+     * Full sweep: flush PENDING items, then re-attempt FAILED items
+     * whose retry budget is not yet exhausted.
+     */
+    suspend fun flushAllPending(): FlushResult {
+        val pendingResult = flush()
+        val retryable = dao.getRetryableFailed()
+
+        if (retryable.isEmpty()) return pendingResult
+
+        var recovered = 0
+        var stillFailed = 0
+
+        for (change in retryable) {
+            val backoffMs = backoffDelay(change.retryCount)
+            delay(backoffMs)
+
+            dao.update(change.copy(status = PendingChangeEntity.STATUS_SENDING))
+            val path = pathFor(change)
+            try {
+                messageClient.sendMessage(nodeId, path, change.payload.toByteArray()).await()
+                dao.delete(change)
+                recovered++
+                Timber.d("Recovered %s id=%s → %s", change.entityType, change.entityId, path)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Timber.w(e, "Retry FAILED %s id=%s", change.entityType, change.entityId)
+                handleFailure(change)
+                stillFailed++
+            }
+        }
+
+        return FlushResult(
+            sent = pendingResult.sent + recovered,
+            failed = pendingResult.failed + stillFailed
+        )
+    }
 
     // ------------------------------------------------------------------
     // Queries
@@ -126,6 +175,9 @@ class PendingSyncQueue @Inject constructor(
 
     private fun pathFor(change: PendingChangeEntity): String =
         SYNC_PATH_FORMAT.format(Locale.ROOT, change.entityType, change.operationType.lowercase(Locale.ROOT))
+
+    private fun backoffDelay(retryCount: Int): Long =
+        BACKOFF_BASE_MS * (1L shl retryCount)
 
     private suspend fun handleFailure(change: PendingChangeEntity) {
         val nextRetry = change.retryCount + 1

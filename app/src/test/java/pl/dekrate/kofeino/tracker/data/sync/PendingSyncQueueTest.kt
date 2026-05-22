@@ -10,6 +10,8 @@ import io.mockk.mockkStatic
 import io.mockk.slot
 import io.mockk.unmockkStatic
 import io.mockk.verify
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -133,7 +135,7 @@ class PendingSyncQueueTest {
             operationType = "UPDATE", payload = """{"caffeineMg":63}""",
             timestamp = 1000L
         )
-        coEvery { dao.getPendingChanges() } returns listOf(change)
+        coEvery { dao.getPendingChanges(any()) } returns listOf(change)
         coEvery { dao.update(any()) } returns Unit
         coEvery { dao.delete(any()) } returns Unit
 
@@ -157,7 +159,7 @@ class PendingSyncQueueTest {
 
     @Test
     fun `flush with empty queue returns zero counts`() = runTest {
-        coEvery { dao.getPendingChanges() } returns emptyList()
+        coEvery { dao.getPendingChanges(any()) } returns emptyList()
 
         val result = queue.flush()
 
@@ -171,7 +173,7 @@ class PendingSyncQueueTest {
             operationType = "INSERT", payload = """{}""", timestamp = 100L)
         val change2 = PendingChangeEntity(id = 2, entityType = "intake", entityId = "2",
             operationType = "UPDATE", payload = """{}""", timestamp = 200L)
-        coEvery { dao.getPendingChanges() } returns listOf(change1, change2)
+        coEvery { dao.getPendingChanges(any()) } returns listOf(change1, change2)
         coEvery { dao.update(any()) } returns Unit
         coEvery { dao.delete(any()) } returns Unit
 
@@ -188,7 +190,7 @@ class PendingSyncQueueTest {
     fun `flush sends DELETE operation on correct path`() = runTest {
         val change = PendingChangeEntity(id = 1, entityType = "intake", entityId = "99",
             operationType = "DELETE", payload = """{}""", timestamp = 1L)
-        coEvery { dao.getPendingChanges() } returns listOf(change)
+        coEvery { dao.getPendingChanges(any()) } returns listOf(change)
         coEvery { dao.update(any()) } returns Unit
         coEvery { dao.delete(any()) } returns Unit
 
@@ -209,7 +211,7 @@ class PendingSyncQueueTest {
         val change = PendingChangeEntity(id = 1, entityType = "intake", entityId = "42",
             operationType = "UPDATE", payload = """{}""", timestamp = 1L,
             retryCount = 0)
-        coEvery { dao.getPendingChanges() } returns listOf(change)
+        coEvery { dao.getPendingChanges(any()) } returns listOf(change)
         coEvery { dao.update(any()) } returns Unit
 
         every { messageClient.sendMessage(nodeId, any(), any()) } returns mockSendTask(0)
@@ -235,7 +237,7 @@ class PendingSyncQueueTest {
         val change = PendingChangeEntity(id = 1, entityType = "intake", entityId = "42",
             operationType = "UPDATE", payload = """{}""", timestamp = 1L,
             retryCount = 4) // one more failure → hits max 5
-        coEvery { dao.getPendingChanges() } returns listOf(change)
+        coEvery { dao.getPendingChanges(any()) } returns listOf(change)
         coEvery { dao.update(any()) } returns Unit
 
         every { messageClient.sendMessage(nodeId, any(), any()) } returns mockSendTask(0)
@@ -259,7 +261,7 @@ class PendingSyncQueueTest {
             val change = PendingChangeEntity(id = 1, entityType = "intake", entityId = "x",
                 operationType = "INSERT", payload = """{}""", timestamp = 1L,
                 retryCount = initialRetry)
-            coEvery { dao.getPendingChanges() } returns listOf(change)
+            coEvery { dao.getPendingChanges(any()) } returns listOf(change)
             coEvery { dao.update(any()) } returns Unit
 
             every { messageClient.sendMessage(nodeId, any(), any()) } returns mockSendTask(0)
@@ -294,7 +296,7 @@ class PendingSyncQueueTest {
         )
 
         // After "restart", a new PendingSyncQueue instance reads from the same DAO
-        coEvery { dao.getPendingChanges() } returns persisted
+        coEvery { dao.getPendingChanges(any()) } returns persisted
         coEvery { dao.update(any()) } returns Unit
         coEvery { dao.delete(any()) } returns Unit
         every { messageClient.sendMessage(nodeId, any(), any()) } returns mockSendTask(1)
@@ -341,7 +343,7 @@ class PendingSyncQueueTest {
             operationType = "INSERT", payload = """{}""", timestamp = 1L)
         val bad = PendingChangeEntity(id = 2, entityType = "intake", entityId = "2",
             operationType = "UPDATE", payload = """{}""", timestamp = 2L)
-        coEvery { dao.getPendingChanges() } returns listOf(good, bad)
+        coEvery { dao.getPendingChanges(any()) } returns listOf(good, bad)
         coEvery { dao.update(any()) } returns Unit
         coEvery { dao.delete(any()) } returns Unit
 
@@ -371,7 +373,7 @@ class PendingSyncQueueTest {
         val payload = """{"drinkName":"Latte","caffeineMg":63}"""
         val change = PendingChangeEntity(id = 1, entityType = "intake", entityId = "10",
             operationType = "INSERT", payload = payload, timestamp = 1L)
-        coEvery { dao.getPendingChanges() } returns listOf(change)
+        coEvery { dao.getPendingChanges(any()) } returns listOf(change)
         coEvery { dao.update(any()) } returns Unit
         coEvery { dao.delete(any()) } returns Unit
 
@@ -384,6 +386,134 @@ class PendingSyncQueueTest {
         val sentPayload = payloadSlot.captured.toString(Charsets.UTF_8)
         assert(sentPayload == payload) {
             "Expected payload '$payload', got '$sentPayload'"
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // 9. Exponential backoff
+    // ------------------------------------------------------------------
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `flush applies exponential backoff before retry attempt`() = runTest {
+        val change = PendingChangeEntity(id = 1, entityType = "intake", entityId = "42",
+            operationType = "UPDATE", payload = """{}""", timestamp = 1L,
+            retryCount = 1) // already failed once → backoff = 2s
+        coEvery { dao.getPendingChanges(any()) } returns listOf(change)
+        coEvery { dao.update(any()) } returns Unit
+        coEvery { dao.delete(any()) } returns Unit
+        every { messageClient.sendMessage(nodeId, any(), any()) } returns mockSendTask(1)
+        every { Tasks.await(any<Task<Int>>()) } returns 1
+
+        val start = currentTime
+        val result = queue.flush()
+        val elapsed = currentTime - start
+
+        // retryCount=1 → backoff = 1s × 2^1 = 2000ms
+        assert(elapsed >= 2000) { "Expected ≥2000ms backoff, got ${elapsed}ms" }
+        assert(result.sent == 1)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `flush does NOT backoff on first attempt`() = runTest {
+        val change = PendingChangeEntity(id = 1, entityType = "intake", entityId = "42",
+            operationType = "INSERT", payload = """{}""", timestamp = 1L,
+            retryCount = 0)
+        coEvery { dao.getPendingChanges(any()) } returns listOf(change)
+        coEvery { dao.update(any()) } returns Unit
+        coEvery { dao.delete(any()) } returns Unit
+        every { messageClient.sendMessage(nodeId, any(), any()) } returns mockSendTask(1)
+        every { Tasks.await(any<Task<Int>>()) } returns 1
+
+        val start = currentTime
+        queue.flush()
+        val elapsed = currentTime - start
+
+        assert(elapsed < 100) { "Expected no significant backoff, elapsed=${elapsed}ms" }
+    }
+
+    // ------------------------------------------------------------------
+    // 10. flushAllPending — retry FAILED items
+    // ------------------------------------------------------------------
+
+    @Test
+    fun `flushAllPending calls flush then retries failed items with budget`() = runTest {
+        val pending = PendingChangeEntity(id = 1, entityType = "intake", entityId = "1",
+            operationType = "INSERT", payload = """{}""", timestamp = 1L)
+        val retryable = listOf(
+            PendingChangeEntity(id = 2, entityType = "drink", entityId = "2",
+                operationType = "UPDATE", payload = """{}""", timestamp = 2L,
+                retryCount = 3, status = STATUS_FAILED)
+        )
+        coEvery { dao.getPendingChanges(any()) } returns listOf(pending)
+        coEvery { dao.getRetryableFailed() } returns retryable
+        coEvery { dao.update(any()) } returns Unit
+        coEvery { dao.delete(any()) } returns Unit
+        every { messageClient.sendMessage(nodeId, any(), any()) } returns mockSendTask(1)
+        every { Tasks.await(any<Task<Int>>()) } returns 1
+
+        val result = queue.flushAllPending()
+
+        assert(result.sent == 2) { "Expected 2 sent (1 pending + 1 recovered), got ${result.sent}" }
+        coVerify { dao.getRetryableFailed() }
+    }
+
+    @Test
+    fun `flushAllPending does not fail when no retryable items exist`() = runTest {
+        coEvery { dao.getPendingChanges(any()) } returns emptyList()
+        coEvery { dao.getRetryableFailed() } returns emptyList()
+
+        val result = queue.flushAllPending()
+
+        assert(result.sent == 0)
+        assert(result.failed == 0)
+    }
+
+    @Test
+    fun `flushAllPending maintains correct counts when failed item persists`() = runTest {
+        val pending = PendingChangeEntity(id = 1, entityType = "intake", entityId = "1",
+            operationType = "INSERT", payload = """{}""", timestamp = 1L)
+        val retryable = listOf(
+            PendingChangeEntity(id = 2, entityType = "intake", entityId = "2",
+                operationType = "UPDATE", payload = """{}""", timestamp = 2L,
+                retryCount = 2, status = STATUS_FAILED)
+        )
+        coEvery { dao.getPendingChanges(any()) } returns listOf(pending)
+        coEvery { dao.getRetryableFailed() } returns retryable
+        coEvery { dao.update(any()) } returns Unit
+        coEvery { dao.delete(any()) } returns Unit
+        // Pending succeeds, retryable fails again
+        every { messageClient.sendMessage(nodeId, "/sync/intake/insert", any()) } returns mockSendTask(1)
+        every { messageClient.sendMessage(nodeId, "/sync/intake/update", any()) } returns mockSendTask(0)
+        every { Tasks.await(any<Task<Int>>()) } returnsMany listOf(1) andThenThrows RuntimeException("Fail again")
+
+        val result = queue.flushAllPending()
+
+        assert(result.sent == 1)
+        assert(result.failed == 1)
+    }
+
+    // ------------------------------------------------------------------
+    // 11. Dedup also matches SENDING status
+    // ------------------------------------------------------------------
+
+    @Test
+    fun `enqueue dedup replaces existing SENDING change for same entity`() = runTest {
+        val existing = PendingChangeEntity(id = 5, entityType = "intake", entityId = "77",
+            operationType = "INSERT", payload = """{"old":1}""", timestamp = 100L,
+            retryCount = 1, status = STATUS_SENDING) // in-flight
+        coEvery { dao.getPendingByEntity("intake", "77") } returns existing
+        coEvery { dao.update(any()) } returns Unit
+
+        queue.enqueue("intake", "77", "UPDATE", """{"new":2}""")
+
+        coVerify {
+            dao.update(match {
+                it.id == 5L &&
+                    it.operationType == "UPDATE" &&
+                    it.status == STATUS_PENDING
+            })
         }
     }
 

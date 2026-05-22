@@ -166,10 +166,29 @@ class PendingChangeDaoTest {
 
     @Test
     fun getPendingByEntityIgnoresFailedItems() = runTest {
-        val id = dao.insert(sampleChange.copy(retryCount = 5, status = STATUS_FAILED))
+        dao.insert(sampleChange.copy(retryCount = 5, status = STATUS_FAILED))
 
         val result = dao.getPendingByEntity("intake", "42")
         assert(result == null) { "FAILED items should not be returned as pending" }
+    }
+
+    @Test
+    fun getPendingByEntityMatchesSendingItems() = runTest {
+        dao.insert(sampleChange.copy(status = "SENDING"))
+
+        val result = dao.getPendingByEntity("intake", "42")
+        assert(result != null) { "SENDING items should match dedup query" }
+        assert(result!!.entityId == "42")
+    }
+
+    @Test
+    fun getPendingByEntityMatchesPendingAndSending() = runTest {
+        // Only SENDING item for this entity
+        dao.insert(sampleChange.copy(entityId = "99", status = "SENDING"))
+
+        val result = dao.getPendingByEntity("intake", "99")
+        assert(result != null) { "Should find SENDING item" }
+        assert(result!!.status == "SENDING")
     }
 
     // ------------------------------------------------------------------
@@ -220,5 +239,37 @@ class PendingChangeDaoTest {
     @Test
     fun zeroFailedCountOnEmptyQueue() = runTest {
         assert(dao.countFailed() == 0) { "Expected 0 failed on empty queue" }
+    }
+
+    // ------------------------------------------------------------------
+    // Retryable failed — items with budget left
+    // ------------------------------------------------------------------
+
+    @Test
+    fun getRetryableFailedReturnsOnlyItemsWithRemainingBudget() = runTest {
+        dao.insert(sampleChange) // PENDING, not FAILED
+        dao.insert(sampleChange.copy(entityId = "2", retryCount = 5, status = STATUS_FAILED)) // exhausted
+        dao.insert(sampleChange.copy(entityId = "3", retryCount = 2, status = STATUS_FAILED)) // budget left
+
+        val retryable = dao.getRetryableFailed()
+        assert(retryable.size == 1) { "Expected 1 retryable, got ${retryable.size}" }
+        assert(retryable[0].entityId == "3")
+    }
+
+    @Test
+    fun getRetryableFailedReturnsEmptyWhenAllExhausted() = runTest {
+        dao.insert(sampleChange.copy(entityId = "e1", retryCount = 5, status = STATUS_FAILED))
+        dao.insert(sampleChange.copy(entityId = "e2", retryCount = 5, status = STATUS_FAILED))
+
+        val retryable = dao.getRetryableFailed()
+        assert(retryable.isEmpty()) { "Expected empty when all exhausted" }
+    }
+
+    @Test
+    fun getRetryableFailedReturnsEmptyWhenNoFailedItems() = runTest {
+        dao.insert(sampleChange)
+
+        val retryable = dao.getRetryableFailed()
+        assert(retryable.isEmpty()) { "Expected empty when no FAILED items" }
     }
 }

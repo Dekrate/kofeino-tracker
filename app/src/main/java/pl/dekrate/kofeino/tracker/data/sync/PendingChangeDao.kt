@@ -31,15 +31,21 @@ interface PendingChangeDao {
     @Query("DELETE FROM pending_changes WHERE id = :id")
     suspend fun deleteById(id: Long)
 
-    /** Retrieve all changes in PENDING status, oldest first (FIFO). */
-    @Query("SELECT * FROM pending_changes WHERE status = 'PENDING' ORDER BY timestamp ASC")
-    suspend fun getPendingChanges(): List<PendingChangeEntity>
+    /** Retrieve up to [limit] changes in PENDING status, oldest first (FIFO). */
+    @Query("SELECT * FROM pending_changes WHERE status = 'PENDING' ORDER BY timestamp ASC LIMIT :limit")
+    suspend fun getPendingChanges(limit: Int = 100): List<PendingChangeEntity>
 
-    /** Retrieve a single pending change for a specific entity (used for dedup). */
+    /**
+     * Retrieve any in-flight change for a specific entity (used for dedup).
+     *
+     * Matches both PENDING (awaiting send) and SENDING (in-flight) items
+     * to prevent duplicate entries during a concurrent enqueue+flush.
+     */
     @Query(
         """
         SELECT * FROM pending_changes
-        WHERE entityType = :entityType AND entityId = :entityId AND status = 'PENDING'
+        WHERE entityType = :entityType AND entityId = :entityId
+          AND status IN ('PENDING', 'SENDING')
         LIMIT 1
         """
     )
@@ -57,7 +63,15 @@ interface PendingChangeDao {
     @Query("DELETE FROM pending_changes")
     suspend fun deleteAll()
 
-    /** Collect all FAILED rows whose retry budget is exhausted. */
+    /** Collect all permanently-FAILED rows (retry budget exhausted). */
     @Query("SELECT * FROM pending_changes WHERE status = 'FAILED'")
     suspend fun getFailedChanges(): List<PendingChangeEntity>
+
+    /**
+     * Collect FAILED items that still have retry budget left.
+     * These were interrupted mid-flight or failed transiently
+     * and can be re-attempted by [PendingSyncQueue.flushAllPending].
+     */
+    @Query("SELECT * FROM pending_changes WHERE status = 'FAILED' AND retryCount < 5")
+    suspend fun getRetryableFailed(): List<PendingChangeEntity>
 }

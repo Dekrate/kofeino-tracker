@@ -1,6 +1,7 @@
 package pl.dekrate.kofeino.tracker.data.sync
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 /**
@@ -11,7 +12,12 @@ import androidx.room.PrimaryKey
  *
  * The queue is persisted so changes survive an app restart (offline-first).
  */
-@Entity(tableName = "pending_changes")
+@Entity(
+    tableName = "pending_changes",
+    indices = [
+        Index(value = ["entityType", "entityId", "status"], name = "idx_pending_entity_status")
+    ]
+)
 data class PendingChangeEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,

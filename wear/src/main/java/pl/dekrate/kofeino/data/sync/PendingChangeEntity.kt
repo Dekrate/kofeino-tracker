@@ -1,6 +1,7 @@
 package pl.dekrate.kofeino.data.sync
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 /**
@@ -13,7 +14,12 @@ import androidx.room.PrimaryKey
  *
  * ⚠ Mirror of the phone module entity — keep in sync.
  */
-@Entity(tableName = "pending_changes")
+@Entity(
+    tableName = "pending_changes",
+    indices = [
+        Index(value = ["entityType", "entityId", "status"], name = "idx_pending_entity_status")
+    ]
+)
 data class PendingChangeEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
