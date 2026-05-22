@@ -116,6 +116,9 @@
     <string name="language">Język</string>
     <string name="polish">Polski</string>
     <string name="english">Angielski</string>
+    <string name="language_system">Systemowy</string>
+    <string name="language_system_description">Użyj języka systemowego</string>
+    <string name="language_switch_description">Zmień język na %s</string>
 
     <!-- Caffeine limit profiles -->
     <string name="caffeine_limit_title">Dzienny limit kofeiny</string>
