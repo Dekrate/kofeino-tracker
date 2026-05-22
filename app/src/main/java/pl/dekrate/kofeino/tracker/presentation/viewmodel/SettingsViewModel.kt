@@ -174,7 +174,7 @@ class SettingsViewModel @Inject constructor(
             } catch (e: BackupIOException) {
                 _uiState.update { it.copy(backupState = BackupUiState.Error) }
                 _events.emit(SettingsEvent.ShowSnackbar(
-                    context.getString(R.string.backup_error, e.message ?: "")
+                    context.getString(R.string.backup_error, e.message.orEmpty())
                 ))
             }
         }
@@ -198,12 +198,12 @@ class SettingsViewModel @Inject constructor(
             } catch (e: BackupVersionException) {
                 _uiState.update { it.copy(backupState = BackupUiState.Error) }
                 _events.emit(SettingsEvent.ShowSnackbar(
-                    context.getString(R.string.backup_error, e.message ?: "")
+                    context.getString(R.string.backup_error, e.message.orEmpty())
                 ))
             } catch (e: BackupIOException) {
                 _uiState.update { it.copy(backupState = BackupUiState.Error) }
                 _events.emit(SettingsEvent.ShowSnackbar(
-                    context.getString(R.string.backup_error, e.message ?: "")
+                    context.getString(R.string.backup_error, e.message.orEmpty())
                 ))
             }
         }

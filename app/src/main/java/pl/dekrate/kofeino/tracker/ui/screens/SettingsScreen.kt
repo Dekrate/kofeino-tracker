@@ -39,6 +39,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -58,7 +60,8 @@ fun SettingsScreen(
     onNavigateBack: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
+    val resources = LocalResources.current
     val activity = context.findActivity()
     val state by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -179,7 +182,10 @@ fun SettingsScreen(
             HorizontalDivider(Modifier.padding(vertical = 8.dp))
 
             // ── Backup / Restore section ──
-            SectionHeader(stringResource(R.string.backup_section), Modifier.padding(horizontal = 16.dp, vertical = 12.dp))
+            SectionHeader(
+                stringResource(R.string.backup_section),
+                Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+            )
 
             // Export button
             BackupButton(
@@ -189,7 +195,7 @@ fun SettingsScreen(
                 enabled = !isBackupInProgress,
                 onClick = {
                     val today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE)
-                    val filename = context.getString(R.string.backup_file_name, today)
+                    val filename = resources.getString(R.string.backup_file_name, today)
                     exportLauncher.launch(filename)
                 }
             )
