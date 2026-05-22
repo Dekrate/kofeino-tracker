@@ -1,24 +1,42 @@
 package pl.dekrate.kofeino.data.repository
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import pl.dekrate.kofeino.data.local.OfficialDrinkCacheDao
-import pl.dekrate.kofeino.data.local.OfficialDrinkCacheEntity
 import pl.dekrate.kofeino.data.remote.CaffeineApiService
 import pl.dekrate.kofeino.data.remote.ConnectivityObserver
-import pl.dekrate.kofeino.data.remote.dto.OpenFoodFactsProductDto
+import pl.dekrate.kofeino.data.remote.OpenFoodFactsConfig
+import pl.dekrate.kofeino.data.repository.OfficialDrinkMapper.hasValidCaffeineData
+import pl.dekrate.kofeino.data.repository.OfficialDrinkMapper.toCacheEntity
+import pl.dekrate.kofeino.data.repository.OfficialDrinkMapper.toOfficialDrink
 import pl.dekrate.kofeino.domain.model.OfficialDrink
+import retrofit2.HttpException
 import timber.log.Timber
+import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CancellationException
 
 /**
- * Implementacja OfficialDrinkRepository.
+ * Implementation of OfficialDrinkRepository with rate-limit-aware resilience.
  *
- * Strategia:
- * 1. Jeśli online → fetch z API, zapisz do cache, zwróć wyniki
- * 2. Jeśli offline → zwróć z cache (jeśli istnieje)
- * 3. Jeśli offline i brak cache → błąd
+ * ## Strategy
  *
- * Cache jest ważny przez 1 godzinę.
+ * ### Stale-while-revalidate (getOfficialDrinks)
+ * - Fresh cache exists → serve from cache, initiate background refresh
+ * - No fresh cache → fetch from API
+ *
+ * ### Rate limit resilience
+ * - HTTP 429 (Too Many Requests) and 503 (Service Unavailable) are caught
+ * - Immediate fallback to cache (even stale)
+ * - Rate limit events are tracked for circuit-breaker pattern
+ *
+ * ### Offline-first (searchOfficialDrinks)
+ * - Always attempts API first
+ * - On HTTP 429/503 → searches local cache immediately
  */
 @Singleton
 class OfficialDrinkRepositoryImpl @Inject constructor(
@@ -28,14 +46,30 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
 ) : OfficialDrinkRepository {
 
     companion object {
-        /** Czas ważności cache: 1 godzina */
-        private const val CACHE_TTL_MILLIS = 60 * 60 * 1000L
-        /** Maksymalna liczba wyników z API */
         private const val MAX_RESULTS = 50
+
+        /** Consecutive rate-limit counter (circuit breaker state). */
+        private val consecutiveRateLimits = AtomicInteger(0)
+    }
+
+    /** Dedicated scope for background refresh tasks. */
+    private val backgroundScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
+    /**
+     * Releases the background scope when this repository is no longer needed.
+     * Called by the DI container on component destroy.
+     */
+    fun onDestroy() {
+        backgroundScope.cancel()
     }
 
     override suspend fun getOfficialDrinks(): Result<List<OfficialDrink>> {
-        return if (connectivityObserver.isOnline) {
+        return if (connectivityObserver.isOnline && !isCircuitBroken()) {
+            if (hasFreshCache()) {
+                Timber.d("Serving fresh cache, initiating background refresh")
+                launchBackgroundRefresh()
+                return loadFromCache()
+            }
             fetchFromApi()
         } else {
             loadFromCache()
@@ -43,21 +77,147 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
     }
 
     override suspend fun searchOfficialDrinks(query: String): Result<List<OfficialDrink>> {
-        return if (connectivityObserver.isOnline) {
+        return if (connectivityObserver.isOnline && !isCircuitBroken()) {
             searchFromApi(query)
         } else {
-            // Offline — przeszukaj cache po nazwie
             searchCacheLocally(query)
         }
     }
 
-    /**
-     * Wyszukuje w API przez v1 search (full-text).
-     */
+    override suspend fun hasFreshCache(): Boolean {
+        val cached = cacheDao.getAllCached()
+        if (cached.isEmpty()) return false
+        val now = System.currentTimeMillis()
+        return cached.any { now - it.fetchedAtMillis < OpenFoodFactsConfig.CACHE_TTL_MILLIS }
+    }
+
+    override suspend fun clearCache() {
+        cacheDao.clearAll()
+        consecutiveRateLimits.set(0)
+        Timber.d("Official drink cache cleared")
+    }
+
+    // ── Circuit Breaker ─────────────────────────────────────
+
+    private fun isCircuitBroken(): Boolean {
+        if (consecutiveRateLimits.get() >= OpenFoodFactsConfig.RATE_LIMIT_CIRCUIT_BREAKER_THRESHOLD) {
+            Timber.w("Circuit breaker open (%d consecutive rate limits)", consecutiveRateLimits.get())
+            consecutiveRateLimits.set(0)
+            return true
+        }
+        return false
+    }
+
+    private fun registerRateLimit(httpCode: Int) {
+        val count = consecutiveRateLimits.incrementAndGet()
+        Timber.w(
+            "Rate limit hit (HTTP %d) — consecutive: %d/%d",
+            httpCode,
+            count,
+            OpenFoodFactsConfig.RATE_LIMIT_CIRCUIT_BREAKER_THRESHOLD
+        )
+    }
+
+    private fun resetRateLimitCounter() {
+        val previous = consecutiveRateLimits.getAndSet(0)
+        if (previous > 0) {
+            Timber.d("Rate limit counter reset (successful API call)")
+        }
+    }
+
+    // ── Background Refresh ──────────────────────────────────
+
+    private fun launchBackgroundRefresh() {
+        backgroundScope.launch {
+            try {
+                Timber.d("Background refresh starting")
+                val response = apiService.searchBeveragesWithCaffeine(
+                    pageSize = OpenFoodFactsConfig.DEFAULT_PAGE_SIZE
+                )
+                if (response.products.isNotEmpty()) {
+                    val drinks = response.products
+                        .filter { it.hasValidCaffeineData() }
+                        .map { it.toOfficialDrink() }
+                        .distinctBy { it.barcode }
+                        .take(MAX_RESULTS)
+
+                    val cacheEntities = drinks.map { it.toCacheEntity() }
+                    cacheDao.clearAll()
+                    cacheDao.insertAll(cacheEntities)
+                    resetRateLimitCounter()
+                    Timber.d("Background refresh completed: ${drinks.size} drinks")
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: HttpException) {
+                if (isRateLimitHttpError(e.code())) {
+                    registerRateLimit(e.code())
+                } else {
+                    Timber.e(e, "Background refresh failed (HTTP %d)", e.code())
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Background refresh failed")
+            }
+        }
+    }
+
+    // ── API Fetch ───────────────────────────────────────────
+
+    private suspend fun fetchFromApi(): Result<List<OfficialDrink>> {
+        return try {
+            Timber.d("Fetching official drinks from Open Food Facts API")
+            val response = apiService.searchBeveragesWithCaffeine(
+                pageSize = OpenFoodFactsConfig.DEFAULT_PAGE_SIZE
+            )
+
+            resetRateLimitCounter()
+
+            if (response.products.isEmpty()) {
+                Timber.w("API returned no products, falling back to cache")
+                return loadFromCache().map { cached ->
+                    if (cached.isNotEmpty()) cached else emptyList()
+                }
+            }
+
+            val drinks = response.products
+                .filter { it.hasValidCaffeineData() }
+                .map { it.toOfficialDrink() }
+                .distinctBy { it.barcode }
+                .take(MAX_RESULTS)
+
+            val cacheEntities = drinks.map { it.toCacheEntity() }
+            cacheDao.clearAll()
+            cacheDao.insertAll(cacheEntities)
+
+            Timber.d("Fetched ${drinks.size} official drinks from API")
+            Result.success(drinks)
+
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: HttpException) {
+            when {
+                isRateLimitHttpError(e.code()) -> {
+                    registerRateLimit(e.code())
+                    Timber.w("API rate limited (HTTP %d) → cache fallback", e.code())
+                    loadFromCache()
+                }
+                else -> {
+                    Timber.e(e, "API HTTP error %d", e.code())
+                    loadFromCache()
+                }
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to fetch official drinks from API")
+            loadFromCache()
+        }
+    }
+
     private suspend fun searchFromApi(query: String): Result<List<OfficialDrink>> {
         return try {
             Timber.d("Searching API for: $query")
             val response = apiService.searchProducts(query = query)
+
+            resetRateLimitCounter()
 
             val drinks = response.products
                 .filter { it.hasValidCaffeineData() }
@@ -67,15 +227,29 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
 
             Timber.d("Search returned ${drinks.size} drinks for: $query")
             Result.success(drinks)
+
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: HttpException) {
+            when {
+                isRateLimitHttpError(e.code()) -> {
+                    registerRateLimit(e.code())
+                    Timber.w("Search rate limited (HTTP %d) → cache search", e.code())
+                    searchCacheLocally(query)
+                }
+                else -> {
+                    Timber.e(e, "Search HTTP error %d for: $query", e.code())
+                    searchCacheLocally(query)
+                }
+            }
         } catch (e: Exception) {
             Timber.e(e, "Search failed for: $query")
             searchCacheLocally(query)
         }
     }
 
-    /**
-     * Filtruje cache lokalny po nazwie (fallback offline).
-     */
+    // ── Cache Operations ────────────────────────────────────
+
     private suspend fun searchCacheLocally(query: String): Result<List<OfficialDrink>> {
         val all = cacheDao.getAllCached()
         val lower = query.lowercase()
@@ -89,63 +263,6 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
         return Result.success(filtered.map { it.toOfficialDrink() })
     }
 
-    override suspend fun hasFreshCache(): Boolean {
-        val cached = cacheDao.getAllCached()
-        if (cached.isEmpty()) return false
-        val now = System.currentTimeMillis()
-        return cached.any { now - it.fetchedAtMillis < CACHE_TTL_MILLIS }
-    }
-
-    override suspend fun clearCache() {
-        cacheDao.clearAll()
-        Timber.d("Official drink cache cleared")
-    }
-
-    /**
-     * Pobiera dane z Open Food Facts API.
-     * Łączy wyniki z różnych kategorii (beverages, coffees, teas, energy drinks).
-     */
-    private suspend fun fetchFromApi(): Result<List<OfficialDrink>> {
-        return try {
-            Timber.d("Fetching official drinks from Open Food Facts API")
-
-            // Pobierz z głównej kategorii beverages
-            val response = apiService.searchBeveragesWithCaffeine(pageSize = 30)
-
-            if (response.products.isEmpty()) {
-                Timber.w("API returned no products, falling back to cache")
-                return loadFromCache().map { cached ->
-                    if (cached.isNotEmpty()) cached
-                    else emptyList()
-                }
-            }
-
-            val drinks = response.products
-                .filter { it.hasValidCaffeineData() }
-                .map { it.toOfficialDrink() }
-                .distinctBy { it.barcode }
-                .take(MAX_RESULTS)
-
-            // Zapisz do cache
-            val cacheEntities = drinks.map { it.toCacheEntity() }
-            cacheDao.clearAll()
-            cacheDao.insertAll(cacheEntities)
-
-            Timber.d("Fetched ${drinks.size} official drinks from API")
-            Result.success(drinks)
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to fetch official drinks from API")
-            // Fallback do cache
-            val cached = cacheDao.getAllCached()
-            if (cached.isNotEmpty()) {
-                Timber.d("Falling back to ${cached.size} cached drinks")
-                Result.success(cached.map { it.toOfficialDrink() })
-            } else {
-                Result.failure(e)
-            }
-        }
-    }
-
     private suspend fun loadFromCache(): Result<List<OfficialDrink>> {
         val cached = cacheDao.getAllCached()
         if (cached.isEmpty()) {
@@ -155,50 +272,10 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
         return Result.success(cached.map { it.toOfficialDrink() })
     }
 
-    private fun OpenFoodFactsProductDto.hasValidCaffeineData(): Boolean {
-        val caffeine100g = nutriments?.caffeine100g ?: return false
-        return caffeine100g > 0.0
-    }
+    // ── HTTP Helpers ────────────────────────────────────────
 
-    private fun OpenFoodFactsProductDto.toOfficialDrink(): OfficialDrink {
-        val caffeineGrams = nutriments?.caffeine100g ?: 0.0
-        // Użyj nazwy produktu, marki lub kodu kreskowego jako wyświetlanej nazwy
-        val displayName = when {
-            !productName.isNullOrBlank() -> productName
-            !brands.isNullOrBlank() -> brands
-            else -> "Drink #${code?.takeLast(6) ?: "???"}"
-        }
-        return OfficialDrink(
-            barcode = code ?: "unknown",
-            name = displayName,
-            brand = brands,
-            caffeineMgPer100ml = caffeineGrams * 1000.0, // g → mg
-            energyKcalPer100ml = nutriments?.energyKcal100g,
-            quantity = quantity,
-            source = "Open Food Facts"
-        )
-    }
-
-    private fun OfficialDrink.toCacheEntity(): OfficialDrinkCacheEntity {
-        return OfficialDrinkCacheEntity(
-            barcode = barcode,
-            name = name,
-            brand = brand,
-            caffeineMgPer100ml = caffeineMgPer100ml,
-            energyKcalPer100ml = energyKcalPer100ml,
-            quantity = quantity
-        )
-    }
-
-    private fun OfficialDrinkCacheEntity.toOfficialDrink(): OfficialDrink {
-        return OfficialDrink(
-            barcode = barcode,
-            name = name,
-            brand = brand,
-            caffeineMgPer100ml = caffeineMgPer100ml,
-            energyKcalPer100ml = energyKcalPer100ml,
-            quantity = quantity,
-            source = "Open Food Facts"
-        )
+    private fun isRateLimitHttpError(code: Int): Boolean {
+        return code == OpenFoodFactsConfig.HTTP_TOO_MANY_REQUESTS ||
+            code == OpenFoodFactsConfig.HTTP_SERVICE_UNAVAILABLE
     }
 }

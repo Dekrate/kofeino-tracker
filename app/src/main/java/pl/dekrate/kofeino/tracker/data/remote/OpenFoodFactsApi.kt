@@ -8,9 +8,10 @@ import retrofit2.http.Query
 /**
  * Open Food Facts API interface.
  *
- * Base URL: https://world.openfoodfacts.org
+ * Base URL is configured in [OpenFoodFactsConfig.ROOT_BASE_URL].
+ * All endpoint paths resolve against that canonical base URL.
  *
- * Search returns products with caffeine data. We filter by `nutriments.caffeine_value_100g`
+ * Search returns products with caffeine data. We filter by [nutriments.caffeine_100g]
  * because not all products have caffeine listed.
  */
 interface OpenFoodFactsApi {
@@ -22,19 +23,19 @@ interface OpenFoodFactsApi {
      * @param pageSize Results per page (max 50)
      * @param fields Comma-separated field names to include in response
      */
-    @GET("cgi/search.pl")
+    @GET(OpenFoodFactsConfig.PATH_SEARCH_V1)
     suspend fun searchProducts(
         @Query("search_terms") query: String,
         @Query("page_size") pageSize: Int = 25,
         @Query("action") action: String = "process",
         @Query("json") json: Int = 1,
-        @Query("fields") fields: String = "code,product_name,brands,product_quantity,nutriments"
+        @Query("fields") fields: String = OpenFoodFactsConfig.CGI_FIELDS
     ): OpenFoodFactsSearchResponse
 
     /**
      * Get product details by barcode.
      */
-    @GET("api/v0/product/{barcode}.json")
+    @GET(OpenFoodFactsConfig.PATH_PRODUCT_V0)
     suspend fun getProduct(
         @Path("barcode") barcode: String
     ): OpenFoodFactsProductResponse

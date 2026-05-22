@@ -2,45 +2,47 @@ package pl.dekrate.kofeino.data.remote
 
 import pl.dekrate.kofeino.data.remote.dto.OpenFoodFactsSearchResponse
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 /**
- * Retrofit service dla Open Food Facts API.
+ * Retrofit service for Open Food Facts API.
  *
- * Dokumentacja: https://openfoodfacts.github.io/openfoodfacts-server/api/
- * API jest w pełni otwarte, nie wymaga klucza.
- * Limit: 10 zapytań/min dla search, 15/min dla product read.
+ * Base URL is configured in [OpenFoodFactsConfig.V2_BASE_URL].
+ * All endpoint paths resolve against that canonical base URL.
  *
- * Bazowy URL: https://world-fr.openfoodfacts.org/api/v2/
+ * Documentation: https://openfoodfacts.github.io/openfoodfacts-server/api/
+ * API is fully open, no API key required.
+ * Rate limits: 10 req/min for search, 15 req/min for product read.
  */
 interface CaffeineApiService {
 
     /**
-     * Szuka napojów z danymi o kofeinie (v2 search).
+     * Searches beverages with caffeine data (v2 search).
      */
-    @GET("search")
+    @GET(OpenFoodFactsConfig.PATH_SEARCH_V2)
     suspend fun searchBeveragesWithCaffeine(
         @Query("categories_tags_en") categories: String = "en:beverages",
         @Query("caffeine_100g") caffeineFilter: String = ">0",
-        @Query("page_size") pageSize: Int = 30,
+        @Query("page_size") pageSize: Int = OpenFoodFactsConfig.DEFAULT_PAGE_SIZE,
         @Query("page") page: Int = 1,
-        @Query("fields") fields: String = "code,product_name,brands,nutriments,quantity"
+        @Query("fields") fields: String = OpenFoodFactsConfig.V2_FIELDS
     ): OpenFoodFactsSearchResponse
 
     /**
-     * Szuka w konkretnej podkategorii (np. kawy, herbaty, energetyki).
+     * Searches in a specific subcategory (coffees, teas, energy drinks).
      */
-    @GET("search")
+    @GET(OpenFoodFactsConfig.PATH_CATEGORY_SEARCH)
     suspend fun searchByCategory(
         @Query("categories_tags_en") category: String,
         @Query("caffeine_100g") caffeineFilter: String = ">0",
         @Query("page_size") pageSize: Int = 20,
         @Query("page") page: Int = 1,
-        @Query("fields") fields: String = "code,product_name,brands,nutriments,quantity"
+        @Query("fields") fields: String = OpenFoodFactsConfig.V2_FIELDS
     ): OpenFoodFactsSearchResponse
 
     /**
-     * Full-text search via v1 search endpoint (the only one supporting search_terms).
+     * Full-text search via v1 CGI search endpoint.
      *
      * @param query Search phrase (e.g. "red bull", "coca cola")
      * @param pageSize Number of results
@@ -48,7 +50,7 @@ interface CaffeineApiService {
      * @param locale Language (pl, en, fr, de...)
      * @param country Country (PL, US, FR, DE...)
      */
-    @GET("../../cgi/search.pl")
+    @GET(OpenFoodFactsConfig.PATH_SEARCH_V1)
     suspend fun searchProducts(
         @Query("search_terms") query: String,
         @Query("json") json: Int = 1,
@@ -59,11 +61,11 @@ interface CaffeineApiService {
     ): OpenFoodFactsSearchResponse
 
     /**
-     * Pobiera szczegóły produktu po kodzie kreskowym.
+     * Fetches product details by barcode.
      */
-    @GET("product/{barcode}")
+    @GET(OpenFoodFactsConfig.PATH_PRODUCT_V2)
     suspend fun getProductByBarcode(
-        @retrofit2.http.Path("barcode") barcode: String,
+        @Path("barcode") barcode: String,
         @Query("fields") fields: String = "code,product_name,brands,nutriments,quantity"
     ): retrofit2.Response<OpenFoodFactsSearchResponse>
 }
