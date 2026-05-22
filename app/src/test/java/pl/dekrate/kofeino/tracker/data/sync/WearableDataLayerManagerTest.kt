@@ -17,6 +17,8 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.verify
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.test.StandardTestDispatcher
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -49,6 +51,8 @@ class WearableDataLayerManagerTest {
 
     private lateinit var manager: WearableDataLayerManager
 
+    private val testDispatcher: CoroutineDispatcher = StandardTestDispatcher()
+
     @Before
     fun setUp() {
         MockKAnnotations.init(this, relaxed = true)
@@ -59,7 +63,7 @@ class WearableDataLayerManagerTest {
         every { capabilityClient.addListener(any<CapabilityClient.OnCapabilityChangedListener>(), any<String>()) } returns mockk()
         every { capabilityClient.removeListener(any<CapabilityClient.OnCapabilityChangedListener>()) } returns mockk()
 
-        manager = WearableDataLayerManager(dataClient, messageClient, capabilityClient, incomingSyncProcessor)
+        manager = WearableDataLayerManager(dataClient, messageClient, capabilityClient, incomingSyncProcessor, testDispatcher)
     }
 
     @After

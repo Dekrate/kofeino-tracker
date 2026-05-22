@@ -5,6 +5,7 @@ import pl.dekrate.kofeino.tracker.data.local.CaffeineIntakeDao
 import pl.dekrate.kofeino.tracker.data.local.DrinkDao
 import pl.dekrate.kofeino.tracker.domain.model.CaffeineIntake
 import pl.dekrate.kofeino.tracker.domain.model.DrinkEntity
+import kotlinx.coroutines.CancellationException
 import timber.log.Timber
 import java.util.Locale
 import javax.inject.Inject
@@ -58,6 +59,7 @@ class IncomingSyncProcessor @Inject constructor(
      * @param event The raw Wearable MessageEvent.
      * @return [ProcessResult] describing what action was taken.
      */
+    @Suppress("TooGenericExceptionCaught")
     suspend fun processIncoming(event: MessageEvent): ProcessResult {
         val path = event.path
         if (!path.startsWith(SYNC_PATH_PREFIX)) return ProcessResult.IGNORED
@@ -85,7 +87,9 @@ class IncomingSyncProcessor @Inject constructor(
                     ProcessResult.IGNORED
                 }
             }
-        } catch (e: Exception) {
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: RuntimeException) {
             Timber.e(e, "Failed to process incoming sync: %s/%s", entityType, operationType)
             ProcessResult.IGNORED
         }
@@ -101,7 +105,7 @@ class IncomingSyncProcessor @Inject constructor(
     ): ProcessResult {
         val incoming = try {
             SyncPayloadSerializer.deserializeIntake(payload)
-        } catch (e: Exception) {
+        } catch (e: com.google.gson.JsonSyntaxException) {
             Timber.w(e, "Failed to deserialize intake payload")
             return ProcessResult.IGNORED
         }
@@ -170,7 +174,7 @@ class IncomingSyncProcessor @Inject constructor(
     ): ProcessResult {
         val incoming = try {
             SyncPayloadSerializer.deserializeDrink(payload)
-        } catch (e: Exception) {
+        } catch (e: com.google.gson.JsonSyntaxException) {
             Timber.w(e, "Failed to deserialize drink payload")
             return ProcessResult.IGNORED
         }

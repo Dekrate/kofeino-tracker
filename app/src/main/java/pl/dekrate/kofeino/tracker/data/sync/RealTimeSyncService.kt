@@ -70,7 +70,7 @@ class RealTimeSyncService @Inject constructor(
             Timber.d("Real-time sync sent: %s id=%s via node=%s", path, entityId, nodeId)
         } catch (e: CancellationException) {
             throw e
-        } catch (e: Exception) {
+        } catch (e: java.util.concurrent.ExecutionException) {
             Timber.w(e, "Real-time send failed (queued for retry): %s/%s id=%s",
                 entityType, operationType, entityId)
         }
@@ -89,7 +89,7 @@ class RealTimeSyncService @Inject constructor(
             capabilityInfo.nodes.firstOrNull()?.id
         } catch (e: CancellationException) {
             throw e
-        } catch (e: Exception) {
+        } catch (e: java.util.concurrent.ExecutionException) {
             Timber.w(e, "Failed to resolve sync node via capability '%s'",
                 SYNC_CAPABILITY_NAME)
             null

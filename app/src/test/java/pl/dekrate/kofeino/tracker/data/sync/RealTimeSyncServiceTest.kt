@@ -20,6 +20,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import java.util.concurrent.ExecutionException
 
 /**
  * Unit tests for [RealTimeSyncService].
@@ -107,9 +108,11 @@ class RealTimeSyncServiceTest {
 
     /**
      * Configure [Tasks.await] to throw on the first call.
+     *
+     * Wraps the exception in [ExecutionException] to match real [Tasks.await] behavior.
      */
     private fun queueTaskThrow(exception: Exception) {
-        every { Tasks.await<Any>(any()) } throws exception
+        every { Tasks.await<Any>(any()) } throws ExecutionException(exception)
     }
 
     // ------------------------------------------------------------------
@@ -131,8 +134,12 @@ class RealTimeSyncServiceTest {
     fun `propagateChange enqueues even when send fails`() = runTest {
         coEvery { pendingSyncQueue.enqueue(any(), any(), any(), any()) } just Runs
         every { capabilityClient.getCapability(any(), any()) } returns completedTask(capabilityInfoWithNodes("node-1"))
-        queueTaskResults(capabilityInfoWithNodes("node-1"))
-        every { messageClient.sendMessage(any(), any(), any()) } throws RuntimeException("Send failed")
+        every { messageClient.sendMessage(any(), any(), any()) } returns completedTask(1)
+        val iterator = mutableListOf<Any>(capabilityInfoWithNodes("node-1")).iterator()
+        every { Tasks.await<Any>(any()) } answers {
+            if (iterator.hasNext()) iterator.next()
+            else throw ExecutionException(RuntimeException("Send failed"))
+        }
 
         service.propagateChange("intake", "42", "UPDATE", """{}""")
 

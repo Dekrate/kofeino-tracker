@@ -7,11 +7,12 @@ import com.google.android.gms.wearable.DataEvent
 import com.google.android.gms.wearable.DataEventBuffer
 import com.google.android.gms.wearable.MessageClient
 import com.google.android.gms.wearable.MessageEvent
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import pl.dekrate.kofeino.tracker.di.IoDispatcher
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -31,7 +32,8 @@ class WearableDataLayerManager @Inject constructor(
     private val dataClient: DataClient,
     private val messageClient: MessageClient,
     private val capabilityClient: CapabilityClient,
-    private val incomingSyncProcessor: IncomingSyncProcessor
+    private val incomingSyncProcessor: IncomingSyncProcessor,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) {
     companion object {
         const val SYNC_CAPABILITY_NAME = "caffeine_sync"
@@ -43,7 +45,7 @@ class WearableDataLayerManager @Inject constructor(
     private var capabilityListener: CapabilityClient.OnCapabilityChangedListener? = null
 
     /** Background scope for processing incoming sync messages on binder threads. */
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val scope = CoroutineScope(SupervisorJob() + ioDispatcher)
 
     /** Tracks whether listeners are currently registered (idempotency guard). */
     private var isRegistered: Boolean = false
