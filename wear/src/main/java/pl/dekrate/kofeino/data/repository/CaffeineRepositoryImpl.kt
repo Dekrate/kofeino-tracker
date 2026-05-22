@@ -122,6 +122,7 @@ class CaffeineRepositoryImpl @Inject constructor(
      * and never propagated to the caller, so a sync failure never rolls
      * back the database operation.
      */
+    @Suppress("TooGenericExceptionCaught")
     private suspend fun propagateSync(
         entityType: String,
         entityId: String,
@@ -132,7 +133,7 @@ class CaffeineRepositoryImpl @Inject constructor(
             realTimeSyncService.propagateChange(entityType, entityId, operationType, payload)
         } catch (e: CancellationException) {
             throw e
-        } catch (e: Exception) {
+        } catch (e: RuntimeException) {
             Timber.w(e, "Sync propagation failed for %s/%s id=%s", entityType, operationType, entityId)
         }
     }

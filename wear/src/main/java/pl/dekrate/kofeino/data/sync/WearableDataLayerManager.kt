@@ -44,6 +44,7 @@ class WearableDataLayerManager @Inject constructor(
     private var capabilityListener: CapabilityClient.OnCapabilityChangedListener? = null
 
     /** Background scope for processing incoming sync messages on binder threads. */
+    @Suppress("InjectDispatcher")
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     /** Tracks whether listeners are currently registered (idempotency guard). */

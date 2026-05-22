@@ -3,10 +3,9 @@
 package pl.dekrate.kofeino.data.sync
 
 import com.google.android.gms.wearable.MessageEvent
+import kotlinx.coroutines.CancellationException
 import pl.dekrate.kofeino.data.local.CaffeineIntakeDao
 import pl.dekrate.kofeino.data.local.DrinkDao
-import pl.dekrate.kofeino.domain.model.CaffeineIntake
-import pl.dekrate.kofeino.domain.model.DrinkEntity
 import timber.log.Timber
 import java.util.Locale
 import javax.inject.Inject
@@ -84,6 +83,8 @@ class IncomingSyncProcessor @Inject constructor(
                     ProcessResult.IGNORED
                 }
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Timber.e(e, "Failed to process incoming sync: %s/%s", entityType, operationType)
             ProcessResult.IGNORED
@@ -123,6 +124,8 @@ class IncomingSyncProcessor @Inject constructor(
                 }
             }
             ProcessResult.APPLIED
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Timber.e(e, "Failed to apply incoming intake id=%s", incoming.id)
             ProcessResult.IGNORED
@@ -162,6 +165,8 @@ class IncomingSyncProcessor @Inject constructor(
                 }
             }
             ProcessResult.APPLIED
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Timber.e(e, "Failed to apply incoming drink id=%s", incoming.id)
             ProcessResult.IGNORED
