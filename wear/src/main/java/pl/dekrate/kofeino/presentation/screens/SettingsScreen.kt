@@ -12,13 +12,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -33,20 +31,16 @@ import androidx.wear.compose.material3.OutlinedButton
 import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.Text
 import pl.dekrate.kofeino.R
-import pl.dekrate.kofeino.data.local.CaffeinePreferences
 import pl.dekrate.kofeino.data.local.LanguagePreferences
 import pl.dekrate.kofeino.domain.model.CaffeineLimitProfile
+import pl.dekrate.kofeino.presentation.viewmodel.SettingsViewModel
 
 
 @Composable
-fun SettingsScreen() {
-    val context = androidx.compose.ui.platform.LocalContext.current
+fun SettingsScreen(viewModel: SettingsViewModel) {
+    val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
     val activity = context.findActivity()
-    val langPrefs = remember { LanguagePreferences(context) }
-    val caffeinePrefs = remember { CaffeinePreferences(context.applicationContext) }
-    var currentLang by remember { mutableStateOf(langPrefs.getLanguage()) }
-    var currentProfile by remember { mutableStateOf(caffeinePrefs.getProfile()) }
-    var customLimit by remember { mutableIntStateOf(caffeinePrefs.getCustomLimit()) }
 
     val listScrollState = rememberTransformingLazyColumnState()
     val decreaseDesc = stringResource(R.string.custom_limit_decrease)
@@ -70,10 +64,9 @@ fun SettingsScreen() {
             }
             item {
                 LanguageSection(
-                    currentLang = currentLang,
+                    currentLang = uiState.currentLanguage,
                     onLanguageSelect = { lang ->
-                        langPrefs.setLanguage(lang)
-                        currentLang = lang
+                        viewModel.setLanguage(lang)
                         activity?.recreate()
                     }
                 )
@@ -100,31 +93,24 @@ fun SettingsScreen() {
                 item {
                     ProfileSection(
                         profile = profile,
-                        isActive = currentProfile == profile,
+                        isActive = uiState.currentProfile == profile,
                         onSelect = {
-                            caffeinePrefs.setProfile(profile)
-                            currentProfile = profile
+                            viewModel.setProfile(profile)
                         }
                     )
                 }
             }
-            if (currentProfile == CaffeineLimitProfile.CUSTOM) {
+            if (uiState.currentProfile == CaffeineLimitProfile.CUSTOM) {
                 item {
                     CustomLimitControls(
-                        customLimit = customLimit,
+                        customLimit = uiState.customLimit,
                         decreaseDesc = decreaseDesc,
                         increaseDesc = increaseDesc,
                         onDecrease = {
-                            val newValue = (customLimit - 25)
-                                .coerceAtLeast(CaffeinePreferences.MIN_CUSTOM_LIMIT)
-                            customLimit = newValue
-                            caffeinePrefs.setCustomLimit(newValue)
+                            viewModel.setCustomLimit(uiState.customLimit - 25)
                         },
                         onIncrease = {
-                            val newValue = (customLimit + 25)
-                                .coerceAtMost(CaffeinePreferences.MAX_CUSTOM_LIMIT)
-                            customLimit = newValue
-                            caffeinePrefs.setCustomLimit(newValue)
+                            viewModel.setCustomLimit(uiState.customLimit + 25)
                         }
                     )
                 }

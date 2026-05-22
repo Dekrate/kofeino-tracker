@@ -14,6 +14,7 @@ import pl.dekrate.kofeino.presentation.screens.ManageDrinksScreen
 import pl.dekrate.kofeino.presentation.screens.OfficialDrinksScreen
 import pl.dekrate.kofeino.presentation.screens.SettingsScreen
 import pl.dekrate.kofeino.presentation.viewmodel.DrinkViewModel
+import pl.dekrate.kofeino.presentation.viewmodel.SettingsViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
 import timber.log.Timber
 
@@ -80,9 +81,7 @@ fun WearNavHost(navController: NavHostController) {
             )
         }
         composable(Screen.Settings.route) {
-            SettingsScreen(
-
-            )
+            SettingsScreen(viewModel = hiltViewModel())
         }
     }
 }

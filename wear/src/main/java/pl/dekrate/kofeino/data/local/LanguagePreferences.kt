@@ -3,6 +3,9 @@ package pl.dekrate.kofeino.data.local
 import android.content.Context
 import android.content.SharedPreferences
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -22,6 +25,21 @@ class LanguagePreferences @Inject constructor(
 
     fun setLanguage(lang: String) {
         prefs.edit().putString(KEY_LANGUAGE, lang).apply()
+    }
+
+    /**
+     * Emits the current language whenever it changes.
+     * Uses SharedPreferences change listener under the hood.
+     */
+    val languageFlow: Flow<String> = callbackFlow {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == KEY_LANGUAGE) {
+                trySend(getLanguage())
+            }
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        trySend(getLanguage())
+        awaitClose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }
 
     companion object {
