@@ -8,6 +8,8 @@ config:
   checkExhaustiveness: false
   excludes: []
 
+
+
 processors:
   active: true
 
@@ -27,6 +29,7 @@ comments:
 # ── COMPLEXITY ────────────────────────────────
 complexity:
   active: true
+  excludes: ['**/build/generated/**']
   CognitiveComplexMethod:
     active: true
     allowedComplexity: 15
@@ -73,6 +76,7 @@ complexity:
 # ── COROUTINES ────────────────────────────────
 coroutines:
   active: true
+  excludes: ['**/build/generated/**']
   GlobalCoroutineUsage:
     active: true
   InjectDispatcher:
@@ -91,10 +95,12 @@ coroutines:
 # ── EMPTY BLOCKS ──────────────────────────────
 empty-blocks:
   active: true
+  excludes: ['**/build/generated/**']
 
 # ── EXCEPTIONS ────────────────────────────────
 exceptions:
   active: true
+  excludes: ['**/build/generated/**']
   ExceptionRaisedInUnexpectedLocation:
     active: true
     methodNames:
@@ -128,6 +134,7 @@ exceptions:
 # ── NAMING ────────────────────────────────────
 naming:
   active: true
+  excludes: ['**/build/generated/**']
   ClassNaming:
     active: true
     classPattern: '[A-Z][a-zA-Z0-9]*'
@@ -167,6 +174,7 @@ naming:
 # ── PERFORMANCE ───────────────────────────────
 performance:
   active: true
+  excludes: ['**/build/generated/**']
   ArrayPrimitive:
     active: true
   CouldBeSequence:
@@ -182,6 +190,7 @@ performance:
 # ── POTENTIAL BUGS ────────────────────────────
 potential-bugs:
   active: true
+  excludes: ['**/build/generated/**']
   AvoidReferentialEquality:
     active: true
     forbiddenTypePatterns:
@@ -242,6 +251,7 @@ potential-bugs:
 # ── STYLE ─────────────────────────────────────
 style:
   active: true
+  excludes: ['**/build/generated/**']
   AlsoCouldBeApply:
     active: true
   CanBeNonNullable:
