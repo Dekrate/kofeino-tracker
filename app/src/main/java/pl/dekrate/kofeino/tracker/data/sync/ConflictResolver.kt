@@ -130,16 +130,16 @@ enum class DeviceSource {
 /**
  * Immutable result of a conflict resolution.
  *
- * The caller is expected to pattern-match on this sealed class and perform
+ * The caller is expected to pattern-match on this sealed interface and perform
  * the corresponding database / sync action.
  */
-sealed class ConflictResolution {
+sealed interface ConflictResolution {
     /** The local version should be kept; the incoming change is discarded. */
-    data class KeepLocal(val change: SyncChange) : ConflictResolution()
+    data class KeepLocal(val change: SyncChange) : ConflictResolution
 
     /** The incoming change should be applied over the local state. */
-    data class AcceptIncoming(val change: SyncChange) : ConflictResolution()
+    data class AcceptIncoming(val change: SyncChange) : ConflictResolution
 
     /** No action required — both sides carry identical data. */
-    data class NoOp(val local: SyncChange) : ConflictResolution()
+    data class NoOp(val local: SyncChange) : ConflictResolution
 }
