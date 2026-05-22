@@ -27,4 +27,24 @@ interface CaffeineRepository {
 
     /** Phone-specific: search drinks by name. */
     fun searchDrinks(query: String): Flow<List<DrinkEntity>>
+
+    // --- Backup / Snapshot operations ---
+
+    /** Snapshot all intakes (non-observable, for backup export). */
+    suspend fun getAllIntakesSnapshot(): List<CaffeineIntake>
+
+    /** Snapshot all drinks (non-observable, for backup export). */
+    suspend fun getAllDrinksSnapshot(): List<DrinkEntity>
+
+    /** Snapshot all intake IDs (for backup import conflict resolution). */
+    suspend fun getAllIntakeIds(): List<Long>
+
+    /** Snapshot all drink names (for backup import conflict resolution). */
+    suspend fun getAllDrinkNames(): List<String>
+
+    /** Bulk insert intakes (for backup import). */
+    suspend fun bulkInsertIntakes(intakes: List<CaffeineIntake>)
+
+    /** Bulk insert drinks (for backup import). */
+    suspend fun bulkInsertDrinks(drinks: List<DrinkEntity>)
 }

@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import pl.dekrate.kofeino.tracker.domain.model.CaffeineIntake
 import kotlinx.coroutines.flow.Flow
@@ -39,4 +40,16 @@ interface CaffeineIntakeDao {
     /** Phone-specific: delete intakes older than a given timestamp. */
     @Query("DELETE FROM caffeine_intakes WHERE timestamp < :beforeTimestamp")
     suspend fun deleteOlderThan(beforeTimestamp: Long)
+
+    /** Snapshot: all intakes ordered by timestamp descending (used for backup export). */
+    @Query("SELECT * FROM caffeine_intakes ORDER BY timestamp DESC")
+    suspend fun getAllIntakesSnapshot(): List<CaffeineIntake>
+
+    /** Snapshot: all intake IDs (used for backup import conflict resolution). */
+    @Query("SELECT id FROM caffeine_intakes")
+    suspend fun getAllIntakeIds(): List<Long>
+
+    /** Bulk insert intakes for backup import. */
+    @Insert
+    suspend fun insertAll(intakes: List<CaffeineIntake>)
 }

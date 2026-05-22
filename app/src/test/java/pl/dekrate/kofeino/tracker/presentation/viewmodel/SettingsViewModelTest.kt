@@ -23,6 +23,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
+import pl.dekrate.kofeino.tracker.data.backup.BackupManager
 import pl.dekrate.kofeino.tracker.data.local.DataStorePreferences
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -41,6 +42,7 @@ class SettingsViewModelTest {
     }
 
     private lateinit var preferences: DataStorePreferences
+    private lateinit var backupManager: BackupManager
     private lateinit var viewModel: SettingsViewModel
 
     /** Simulates the DataStore-backed reactive streams. */
@@ -54,6 +56,7 @@ class SettingsViewModelTest {
     @Before
     fun setup() {
         preferences = mockk(relaxed = true)
+        backupManager = mockk()
         every { preferences.observeLanguage() } returns languageFlow
         every { preferences.observeThemeMode() } returns themeFlow
         every { preferences.observeNotificationLiveEnabled() } returns notifLiveFlow
@@ -68,7 +71,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `initial state should use default language`() = runTest {
-        viewModel = SettingsViewModel(preferences)
+        viewModel = SettingsViewModel(preferences, backupManager)
         advanceUntilIdle() // let init coroutines complete
 
         val state = viewModel.uiState.value
@@ -81,7 +84,7 @@ class SettingsViewModelTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_PL
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_PL
 
-        viewModel = SettingsViewModel(preferences)
+        viewModel = SettingsViewModel(preferences, backupManager)
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
@@ -91,7 +94,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `initial state should use default theme mode`() = runTest {
-        viewModel = SettingsViewModel(preferences)
+        viewModel = SettingsViewModel(preferences, backupManager)
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
@@ -104,7 +107,7 @@ class SettingsViewModelTest {
         themeFlow.value = DataStorePreferences.THEME_DARK
         every { preferences.getThemeMode() } returns DataStorePreferences.THEME_DARK
 
-        viewModel = SettingsViewModel(preferences)
+        viewModel = SettingsViewModel(preferences, backupManager)
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
@@ -118,7 +121,7 @@ class SettingsViewModelTest {
     fun `setLanguage to pl should update currentLanguage`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_EN
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_EN
-        viewModel = SettingsViewModel(preferences)
+        viewModel = SettingsViewModel(preferences, backupManager)
         advanceUntilIdle()
 
         viewModel.setLanguage("pl")
@@ -132,7 +135,7 @@ class SettingsViewModelTest {
     fun `setLanguage to pl should persist preference`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_EN
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_EN
-        viewModel = SettingsViewModel(preferences)
+        viewModel = SettingsViewModel(preferences, backupManager)
         advanceUntilIdle()
 
         viewModel.setLanguage("pl")
@@ -145,7 +148,7 @@ class SettingsViewModelTest {
     fun `setLanguage to en should update currentLanguage`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_PL
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_PL
-        viewModel = SettingsViewModel(preferences)
+        viewModel = SettingsViewModel(preferences, backupManager)
         advanceUntilIdle()
 
         viewModel.setLanguage("en")
@@ -159,7 +162,7 @@ class SettingsViewModelTest {
     fun `setLanguage to en should persist preference`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_PL
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_PL
-        viewModel = SettingsViewModel(preferences)
+        viewModel = SettingsViewModel(preferences, backupManager)
         advanceUntilIdle()
 
         viewModel.setLanguage("en")
@@ -172,7 +175,7 @@ class SettingsViewModelTest {
     fun `setLanguage should set languageChanged flag`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_EN
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_EN
-        viewModel = SettingsViewModel(preferences)
+        viewModel = SettingsViewModel(preferences, backupManager)
         advanceUntilIdle()
 
         viewModel.setLanguage("pl")
@@ -185,7 +188,7 @@ class SettingsViewModelTest {
     fun `setLanguage with same language should not update languageChanged`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_EN
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_EN
-        viewModel = SettingsViewModel(preferences)
+        viewModel = SettingsViewModel(preferences, backupManager)
         advanceUntilIdle()
 
         // First change
@@ -203,7 +206,7 @@ class SettingsViewModelTest {
     fun `setLanguage with same language should not persist again`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_EN
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_EN
-        viewModel = SettingsViewModel(preferences)
+        viewModel = SettingsViewModel(preferences, backupManager)
         advanceUntilIdle()
 
         viewModel.setLanguage("pl")
@@ -220,7 +223,7 @@ class SettingsViewModelTest {
     fun `setLanguage to system empty should persist empty string`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_EN
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_EN
-        viewModel = SettingsViewModel(preferences)
+        viewModel = SettingsViewModel(preferences, backupManager)
         advanceUntilIdle()
 
         viewModel.setLanguage(DataStorePreferences.LANGUAGE_SYSTEM)
@@ -232,7 +235,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `setLanguage to system when already system is no-op`() = runTest {
-        viewModel = SettingsViewModel(preferences)
+        viewModel = SettingsViewModel(preferences, backupManager)
         advanceUntilIdle()
 
         viewModel.setLanguage(DataStorePreferences.LANGUAGE_SYSTEM)
@@ -246,7 +249,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `setThemeMode to dark should update currentThemeMode`() = runTest {
-        viewModel = SettingsViewModel(preferences)
+        viewModel = SettingsViewModel(preferences, backupManager)
         advanceUntilIdle()
 
         viewModel.setThemeMode(DataStorePreferences.THEME_DARK)
@@ -257,7 +260,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `setThemeMode to dark should persist preference`() = runTest {
-        viewModel = SettingsViewModel(preferences)
+        viewModel = SettingsViewModel(preferences, backupManager)
         advanceUntilIdle()
 
         viewModel.setThemeMode(DataStorePreferences.THEME_DARK)
@@ -268,7 +271,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `setThemeMode with same mode should not update themeChanged`() = runTest {
-        viewModel = SettingsViewModel(preferences)
+        viewModel = SettingsViewModel(preferences, backupManager)
         advanceUntilIdle()
 
         viewModel.setThemeMode(DataStorePreferences.THEME_DARK)
@@ -282,7 +285,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `setThemeMode with same mode should not persist again`() = runTest {
-        viewModel = SettingsViewModel(preferences)
+        viewModel = SettingsViewModel(preferences, backupManager)
         advanceUntilIdle()
 
         viewModel.setThemeMode(DataStorePreferences.THEME_DARK)
@@ -295,7 +298,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `setThemeMode should set themeChanged flag`() = runTest {
-        viewModel = SettingsViewModel(preferences)
+        viewModel = SettingsViewModel(preferences, backupManager)
         advanceUntilIdle()
 
         viewModel.setThemeMode(DataStorePreferences.THEME_DARK)
@@ -310,7 +313,7 @@ class SettingsViewModelTest {
     fun `consumeLanguageChanged should reset languageChanged flag`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_EN
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_EN
-        viewModel = SettingsViewModel(preferences)
+        viewModel = SettingsViewModel(preferences, backupManager)
         advanceUntilIdle()
 
         viewModel.setLanguage("pl")
@@ -323,7 +326,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `consumeThemeChanged should reset themeChanged flag`() = runTest {
-        viewModel = SettingsViewModel(preferences)
+        viewModel = SettingsViewModel(preferences, backupManager)
         advanceUntilIdle()
 
         viewModel.setThemeMode(DataStorePreferences.THEME_DARK)
@@ -340,7 +343,7 @@ class SettingsViewModelTest {
     fun `uiState should emit initial state then emit on setLanguage`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_EN
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_EN
-        viewModel = SettingsViewModel(preferences)
+        viewModel = SettingsViewModel(preferences, backupManager)
         advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -364,7 +367,7 @@ class SettingsViewModelTest {
     fun `repeated setLanguage should keep languageChanged true`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_EN
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_EN
-        viewModel = SettingsViewModel(preferences)
+        viewModel = SettingsViewModel(preferences, backupManager)
         advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -389,7 +392,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `uiState should emit on setThemeMode`() = runTest {
-        viewModel = SettingsViewModel(preferences)
+        viewModel = SettingsViewModel(preferences, backupManager)
         advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -414,7 +417,7 @@ class SettingsViewModelTest {
     fun `setLanguage with same en when already en is no-op`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_EN
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_EN
-        viewModel = SettingsViewModel(preferences)
+        viewModel = SettingsViewModel(preferences, backupManager)
         advanceUntilIdle()
 
         viewModel.setLanguage("en")
@@ -428,7 +431,7 @@ class SettingsViewModelTest {
     fun `setLanguage with same pl when already pl is no-op`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_PL
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_PL
-        viewModel = SettingsViewModel(preferences)
+        viewModel = SettingsViewModel(preferences, backupManager)
         advanceUntilIdle()
 
         viewModel.setLanguage("pl")
@@ -441,7 +444,7 @@ class SettingsViewModelTest {
     fun `switching back to original language after change should re-trigger`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_EN
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_EN
-        viewModel = SettingsViewModel(preferences)
+        viewModel = SettingsViewModel(preferences, backupManager)
         advanceUntilIdle()
 
         viewModel.setLanguage("pl")

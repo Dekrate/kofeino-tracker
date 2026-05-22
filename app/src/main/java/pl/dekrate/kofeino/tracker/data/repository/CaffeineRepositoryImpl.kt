@@ -77,6 +77,28 @@ class CaffeineRepositoryImpl @Inject constructor(
         return drinkDao.searchDrinks(query)
     }
 
+    // --- Backup / Snapshot operations ---
+
+    override suspend fun getAllIntakesSnapshot(): List<CaffeineIntake> =
+        intakeDao.getAllIntakesSnapshot()
+
+    override suspend fun getAllDrinksSnapshot(): List<DrinkEntity> =
+        drinkDao.getAllDrinksSnapshot()
+
+    override suspend fun getAllIntakeIds(): List<Long> =
+        intakeDao.getAllIntakeIds()
+
+    override suspend fun getAllDrinkNames(): List<String> =
+        drinkDao.getAllDrinkNames()
+
+    override suspend fun bulkInsertIntakes(intakes: List<CaffeineIntake>) {
+        intakeDao.insertAll(intakes)
+    }
+
+    override suspend fun bulkInsertDrinks(drinks: List<DrinkEntity>) {
+        drinkDao.insertAll(drinks)
+    }
+
     /**
      * Returns a (startOfDay, endOfDay) pair for the given timestamp.
      *
