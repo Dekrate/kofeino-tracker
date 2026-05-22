@@ -37,16 +37,32 @@ class WearableDataLayerManager @Inject constructor(
     private var messageListener: MessageClient.OnMessageReceivedListener? = null
     private var capabilityListener: CapabilityClient.OnCapabilityChangedListener? = null
 
+    /** Tracks whether listeners are currently registered (idempotency guard). */
+    private var isRegistered: Boolean = false
+
+    /**
+     * Handles data item changes from the paired device.
+     *
+     * **Thread safety:** This callback may fire on a binder thread. Do not add
+     * blocking operations or long-running work without switching to a
+     * background dispatcher.
+     *
+     * **Note:** Data item URIs are logged for observability. In production,
+     * consider logging only the path segment if URIs may contain user identifiers.
+     */
     private fun handleDataChanged(dataEventBuffer: DataEventBuffer) {
-        for (event in dataEventBuffer) {
-            val uri = event.dataItem.uri
-            when (event.type) {
-                DataEvent.TYPE_CHANGED -> Timber.d("DataItem changed: $uri")
-                DataEvent.TYPE_DELETED -> Timber.d("DataItem deleted: $uri")
-                else -> Timber.d("DataItem unknown event type=${event.type}: $uri")
+        try {
+            for (event in dataEventBuffer) {
+                val uri = event.dataItem.uri
+                when (event.type) {
+                    DataEvent.TYPE_CHANGED -> Timber.d("DataItem changed: $uri")
+                    DataEvent.TYPE_DELETED -> Timber.d("DataItem deleted: $uri")
+                    else -> Timber.d("DataItem unknown event type=${event.type}: $uri")
+                }
             }
+        } finally {
+            dataEventBuffer.release()
         }
-        dataEventBuffer.release()
     }
 
     private fun handleMessageReceived(messageEvent: MessageEvent) {
@@ -67,6 +83,8 @@ class WearableDataLayerManager @Inject constructor(
     }
 
     fun register() {
+        if (isRegistered) return
+
         var successCount = 0
         var failureCount = 0
 
@@ -109,10 +127,13 @@ class WearableDataLayerManager @Inject constructor(
             capabilityListener = null
         }
 
+        isRegistered = successCount > 0
         Timber.i("Wearable DataLayer registration complete: $successCount registered, $failureCount failed")
     }
 
     fun unregister() {
+        if (!isRegistered) return
+
         var successCount = 0
         var failureCount = 0
 
@@ -143,6 +164,10 @@ class WearableDataLayerManager @Inject constructor(
             failureCount++
         }
 
+        isRegistered = false
+        dataListener = null
+        messageListener = null
+        capabilityListener = null
         Timber.i("Wearable DataLayer unregistration complete: $successCount unregistered, $failureCount failed")
     }
 }

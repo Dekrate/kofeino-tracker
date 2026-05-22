@@ -16,6 +16,8 @@ import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
 import io.mockk.verify
 import org.junit.After
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertSame
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -120,13 +122,13 @@ class WearableDataLayerManagerInstrumentedTest {
         val dClient = Wearable.getDataClient(context)
         val capClient = Wearable.getCapabilityClient(context)
 
-        assert(msgClient != null) { "MessageClient must not be null" }
-        assert(dClient != null) { "DataClient must not be null" }
-        assert(capClient != null) { "CapabilityClient must not be null" }
+        assertNotNull(msgClient, "MessageClient must not be null")
+        assertNotNull(dClient, "DataClient must not be null")
+        assertNotNull(capClient, "CapabilityClient must not be null")
 
         // Verify our mocks are returned
-        assert(msgClient === messageClient) { "Must be the mock" }
-        assert(dClient === dataClient) { "Must be the mock" }
-        assert(capClient === capabilityClient) { "Must be the mock" }
+        assertSame(messageClient, msgClient)
+        assertSame(dataClient, dClient)
+        assertSame(capabilityClient, capClient)
     }
 }

@@ -59,7 +59,7 @@ class WearableDataLayerManagerTest {
 
     @After
     fun tearDown() {
-        // No teardown needed — each test creates a fresh manager
+        manager.unregister()
     }
 
     // ------------------------------------------------------------------
@@ -90,11 +90,13 @@ class WearableDataLayerManagerTest {
     }
 
     @Test
-    fun `register can be called multiple times without error`() {
+    fun `register is idempotent when called multiple times`() {
         manager.register()
         manager.register()
         manager.register()
-        verify(exactly = 3) { dataClient.addListener(any()) }
+        verify(exactly = 1) { dataClient.addListener(any()) }
+        verify(exactly = 1) { messageClient.addListener(any()) }
+        verify(exactly = 1) { capabilityClient.addListener(any(), any()) }
     }
 
     // ------------------------------------------------------------------
