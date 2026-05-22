@@ -11,6 +11,7 @@ import org.junit.Test
 import pl.dekrate.kofeino.tracker.data.local.CaffeineDatabase
 import pl.dekrate.kofeino.tracker.data.local.CaffeineIntakeDao
 import pl.dekrate.kofeino.tracker.data.local.DrinkDao
+import pl.dekrate.kofeino.tracker.data.sync.RealTimeSyncService
 import pl.dekrate.kofeino.tracker.domain.model.CaffeineIntake
 import pl.dekrate.kofeino.tracker.domain.model.DrinkEntity
 
@@ -19,6 +20,7 @@ class CaffeineRepositoryImplTest {
     private val intakeDao: CaffeineIntakeDao = mockk()
     private val drinkDao: DrinkDao = mockk()
     private val database: CaffeineDatabase = mockk()
+    private val realTimeSyncService: RealTimeSyncService = mockk()
     private lateinit var repository: CaffeineRepositoryImpl
 
     private val sampleIntake = CaffeineIntake(
@@ -39,7 +41,7 @@ class CaffeineRepositoryImplTest {
 
     @Before
     fun setUp() {
-        repository = CaffeineRepositoryImpl(intakeDao, drinkDao, database)
+        repository = CaffeineRepositoryImpl(intakeDao, drinkDao, database, realTimeSyncService)
     }
 
     // --- Intake tests ---

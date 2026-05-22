@@ -7,6 +7,11 @@ import com.google.android.gms.wearable.DataEvent
 import com.google.android.gms.wearable.DataEventBuffer
 import com.google.android.gms.wearable.MessageClient
 import com.google.android.gms.wearable.MessageEvent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -25,7 +30,8 @@ import javax.inject.Singleton
 class WearableDataLayerManager @Inject constructor(
     private val dataClient: DataClient,
     private val messageClient: MessageClient,
-    private val capabilityClient: CapabilityClient
+    private val capabilityClient: CapabilityClient,
+    private val incomingSyncProcessor: IncomingSyncProcessor
 ) {
     companion object {
         const val SYNC_CAPABILITY_NAME = "caffeine_sync"
@@ -35,6 +41,9 @@ class WearableDataLayerManager @Inject constructor(
     private var dataListener: DataClient.OnDataChangedListener? = null
     private var messageListener: MessageClient.OnMessageReceivedListener? = null
     private var capabilityListener: CapabilityClient.OnCapabilityChangedListener? = null
+
+    /** Background scope for processing incoming sync messages on binder threads. */
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     /** Tracks whether listeners are currently registered (idempotency guard). */
     private var isRegistered: Boolean = false
@@ -73,6 +82,10 @@ class WearableDataLayerManager @Inject constructor(
         val payloadSize = messageEvent.data.size
         if (path.startsWith(SYNC_PATH_PREFIX)) {
             Timber.d("Sync message from=$sourceNodeId path=$path payload=${payloadSize}B")
+            scope.launch {
+                val result = incomingSyncProcessor.processIncoming(messageEvent)
+                Timber.d("Incoming sync processed: %s", result)
+            }
         } else {
             Timber.d("Non-sync message from=$sourceNodeId path=$path payload=${payloadSize}B")
         }
@@ -195,6 +208,7 @@ class WearableDataLayerManager @Inject constructor(
         dataListener = null
         messageListener = null
         capabilityListener = null
+        scope.cancel()
         Timber.i("Wearable DataLayer unregistration complete: $successCount unregistered, $failureCount failed")
     }
 }

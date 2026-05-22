@@ -4,9 +4,14 @@ import androidx.room.withTransaction
 import pl.dekrate.kofeino.tracker.data.local.CaffeineDatabase
 import pl.dekrate.kofeino.tracker.data.local.CaffeineIntakeDao
 import pl.dekrate.kofeino.tracker.data.local.DrinkDao
+import pl.dekrate.kofeino.tracker.data.sync.PendingChangeEntity
+import pl.dekrate.kofeino.tracker.data.sync.RealTimeSyncService
+import pl.dekrate.kofeino.tracker.data.sync.SyncPayloadSerializer
 import pl.dekrate.kofeino.tracker.domain.model.CaffeineIntake
 import pl.dekrate.kofeino.tracker.domain.model.DrinkEntity
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
+import timber.log.Timber
 import java.util.Calendar
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -16,21 +21,42 @@ import javax.inject.Singleton
 class CaffeineRepositoryImpl @Inject constructor(
     private val intakeDao: CaffeineIntakeDao,
     private val drinkDao: DrinkDao,
-    private val database: CaffeineDatabase
+    private val database: CaffeineDatabase,
+    private val realTimeSyncService: RealTimeSyncService
 ) : CaffeineRepository {
 
     // --- Intake operations ---
 
     override suspend fun addIntake(intake: CaffeineIntake): Long {
-        return intakeDao.insert(intake)
+        val id = intakeDao.insert(intake)
+        val synced = intake.copy(id = id)
+        propagateSync(
+            entityType = "intake",
+            entityId = id.toString(),
+            operationType = PendingChangeEntity.OPERATION_INSERT,
+            payload = SyncPayloadSerializer.serializeIntake(synced)
+        )
+        return id
     }
 
     override suspend fun updateIntake(intake: CaffeineIntake) {
         intakeDao.update(intake)
+        propagateSync(
+            entityType = "intake",
+            entityId = intake.id.toString(),
+            operationType = PendingChangeEntity.OPERATION_UPDATE,
+            payload = SyncPayloadSerializer.serializeIntake(intake)
+        )
     }
 
     override suspend fun deleteIntake(intake: CaffeineIntake) {
         intakeDao.delete(intake)
+        propagateSync(
+            entityType = "intake",
+            entityId = intake.id.toString(),
+            operationType = PendingChangeEntity.OPERATION_DELETE,
+            payload = SyncPayloadSerializer.serializeIntake(intake)
+        )
     }
 
     override fun getIntakesForDate(dateMillis: Long): Flow<List<CaffeineIntake>> {
@@ -49,6 +75,7 @@ class CaffeineRepositoryImpl @Inject constructor(
 
     override suspend fun clearAll() {
         intakeDao.deleteAll()
+        // No sync propagation for mass clear — it's a local-only operation
     }
 
     override fun getRecentIntakes(limit: Int): Flow<List<CaffeineIntake>> {
@@ -66,15 +93,34 @@ class CaffeineRepositoryImpl @Inject constructor(
     }
 
     override suspend fun addDrink(drink: DrinkEntity): Long {
-        return drinkDao.insert(drink)
+        val id = drinkDao.insert(drink)
+        propagateSync(
+            entityType = "drink",
+            entityId = id.toString(),
+            operationType = PendingChangeEntity.OPERATION_INSERT,
+            payload = SyncPayloadSerializer.serializeDrink(drink.copy(id = id))
+        )
+        return id
     }
 
     override suspend fun updateDrink(drink: DrinkEntity) {
         drinkDao.update(drink)
+        propagateSync(
+            entityType = "drink",
+            entityId = drink.id.toString(),
+            operationType = PendingChangeEntity.OPERATION_UPDATE,
+            payload = SyncPayloadSerializer.serializeDrink(drink)
+        )
     }
 
     override suspend fun deleteDrink(drink: DrinkEntity) {
         drinkDao.delete(drink)
+        propagateSync(
+            entityType = "drink",
+            entityId = drink.id.toString(),
+            operationType = PendingChangeEntity.OPERATION_DELETE,
+            payload = SyncPayloadSerializer.serializeDrink(drink)
+        )
     }
 
     override fun searchDrinks(query: String): Flow<List<DrinkEntity>> {
@@ -107,6 +153,28 @@ class CaffeineRepositoryImpl @Inject constructor(
         database.withTransaction {
             intakeDao.insertAll(intakes)
             drinkDao.insertAll(drinks)
+        }
+    }
+
+    /**
+     * Propagate a mutation to the paired device via real-time sync.
+     *
+     * Fire-and-forget: errors are logged internally by [RealTimeSyncService]
+     * and never propagated to the caller, so a sync failure never rolls
+     * back the database operation.
+     */
+    private suspend fun propagateSync(
+        entityType: String,
+        entityId: String,
+        operationType: String,
+        payload: String
+    ) {
+        try {
+            realTimeSyncService.propagateChange(entityType, entityId, operationType, payload)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Timber.w(e, "Sync propagation failed for %s/%s id=%s", entityType, operationType, entityId)
         }
     }
 

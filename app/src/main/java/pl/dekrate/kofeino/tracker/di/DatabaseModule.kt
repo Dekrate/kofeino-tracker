@@ -10,8 +10,10 @@ import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepository
 import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepositoryImpl
 import pl.dekrate.kofeino.tracker.data.repository.OfficialDrinkRepository
 import pl.dekrate.kofeino.tracker.data.repository.OfficialDrinkRepositoryImpl
+import pl.dekrate.kofeino.tracker.data.sync.ConflictLogDao
 import pl.dekrate.kofeino.tracker.data.sync.PendingChangeDao
 import pl.dekrate.kofeino.tracker.data.sync.PendingSyncQueue
+import pl.dekrate.kofeino.tracker.data.sync.RealTimeSyncService
 import pl.dekrate.kofeino.tracker.domain.model.DrinkEntity
 import com.google.android.gms.wearable.MessageClient
 import dagger.Module
@@ -68,6 +70,11 @@ object DatabaseModule {
     }
 
     @Provides
+    fun provideConflictLogDao(database: CaffeineDatabase): ConflictLogDao {
+        return database.conflictLogDao()
+    }
+
+    @Provides
     @Singleton
     fun providePendingSyncQueue(
         dao: PendingChangeDao,
@@ -91,9 +98,10 @@ object DatabaseModule {
     fun provideCaffeineRepositoryImpl(
         intakeDao: CaffeineIntakeDao,
         drinkDao: DrinkDao,
-        database: CaffeineDatabase
+        database: CaffeineDatabase,
+        realTimeSyncService: RealTimeSyncService
     ): CaffeineRepositoryImpl {
-        return CaffeineRepositoryImpl(intakeDao, drinkDao, database)
+        return CaffeineRepositoryImpl(intakeDao, drinkDao, database, realTimeSyncService)
     }
 
     @Provides

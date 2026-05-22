@@ -10,6 +10,7 @@ import pl.dekrate.kofeino.data.repository.CaffeineRepository
 import pl.dekrate.kofeino.data.repository.CaffeineRepositoryImpl
 import pl.dekrate.kofeino.data.sync.PendingChangeDao
 import pl.dekrate.kofeino.data.sync.PendingSyncQueue
+import pl.dekrate.kofeino.data.sync.RealTimeSyncService
 import pl.dekrate.kofeino.domain.model.DrinkEntity
 import com.google.android.gms.wearable.MessageClient
 import dagger.Module
@@ -64,6 +65,16 @@ object DatabaseModule {
         messageClient: MessageClient
     ): PendingSyncQueue {
         return PendingSyncQueue(dao, messageClient, nodeId = "")
+    }
+
+    @Provides
+    @Singleton
+    fun provideCaffeineRepositoryImpl(
+        intakeDao: CaffeineIntakeDao,
+        drinkDao: DrinkDao,
+        realTimeSyncService: RealTimeSyncService
+    ): CaffeineRepositoryImpl {
+        return CaffeineRepositoryImpl(intakeDao, drinkDao, realTimeSyncService)
     }
 
     @Provides
