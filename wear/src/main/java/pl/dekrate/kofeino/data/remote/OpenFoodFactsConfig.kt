@@ -63,4 +63,18 @@ object OpenFoodFactsConfig {
 
     /** Fields returned by v2 API responses (alias for watch module). */
     const val V2_FIELDS: String = "code,product_name,brands,nutriments,quantity"
+
+    // ── Rate Limit Protection ───────────────────────────────
+
+    /** HTTP status code for Too Many Requests. */
+    const val HTTP_TOO_MANY_REQUESTS: Int = 429
+
+    /** HTTP status code for Service Unavailable. */
+    const val HTTP_SERVICE_UNAVAILABLE: Int = 503
+
+    /** Minimum delay (ms) before retrying after a rate limit hit. */
+    const val RATE_LIMIT_RETRY_DELAY_MS: Long = 60_000L // 1 minute
+
+    /** Maximum rate limit events before circuit-breaker engages. */
+    const val RATE_LIMIT_CIRCUIT_BREAKER_THRESHOLD: Int = 3
 }

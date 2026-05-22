@@ -20,6 +20,7 @@
     <ID>CouldBeSequence:OfficialDrinkRepositoryImpl.kt:OfficialDrinkRepositoryImpl$filter { it.hasValidCaffeineData() }</ID>
     <ID>EmptyFunctionBlock:CaffeineDatabase_Impl.kt:CaffeineDatabase_Impl.&lt;no name provided&gt;${ }</ID>
     <ID>ImplicitDefaultLocale:OfficialDrinksScreen.kt:"%.0f".format(drink.caffeineMgPer100ml)</ID>
+    <ID>InjectDispatcher:OfficialDrinkRepositoryImpl.kt:OfficialDrinkRepositoryImpl$backgroundScope</ID>
     <ID>InjectDispatcher:SyncTaskExtensions.kt:IO</ID>
     <ID>LongMethod:AddDrinkConfirmationContent.kt:@Composable fun AddDrinkConfirmationContent</ID>
     <ID>LongMethod:AddDrinkScreen.kt:@Composable fun AddDrinkScreen</ID>

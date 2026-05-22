@@ -22,6 +22,9 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import io.mockk.coVerify
+import io.mockk.just
+import io.mockk.runs
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE, sdk = [34])
@@ -347,5 +350,108 @@ class OfficialDrinkRepositoryImplTest {
         // and our cache is 61 minutes old, which is greater than the 60 minute TTL.
         val fresh = repository.hasFreshCache()
         assertEquals(false, fresh)
+    }
+
+    // ===== Rate limit resilience tests =======================
+
+    @Test
+    fun `when API returns 429 should fallback to cache`() = runTest {
+        cacheDao.insertAll(
+            listOf(
+                OfficialDrinkCacheEntity(
+                    barcode = "001", name = "Cached Drink", brand = "Brand",
+                    caffeineMgPer100ml = 32.0, energyKcalPer100ml = null, quantity = "250ml"
+                )
+            )
+        )
+
+        // Mock HttpException with status code 429
+        val httpException = mockk<retrofit2.HttpException>(relaxed = true)
+        every { httpException.code() } returns 429
+        coEvery { apiService.searchBeveragesWithCaffeine(pageSize = 30) } throws httpException
+
+        val result = repository.getOfficialDrinks()
+
+        assertTrue("Expected success from cache fallback on 429", result.isSuccess)
+        val drinks = result.getOrThrow()
+        assertEquals(1, drinks.size)
+        assertEquals("Cached Drink", drinks[0].name)
+    }
+
+    @Test
+    fun `when API returns 503 should fallback to cache`() = runTest {
+        cacheDao.insertAll(
+            listOf(
+                OfficialDrinkCacheEntity(
+                    barcode = "002", name = "Backup Drink", brand = "Backup",
+                    caffeineMgPer100ml = 10.0, energyKcalPer100ml = null, quantity = "330ml"
+                )
+            )
+        )
+
+        val httpException = mockk<retrofit2.HttpException>(relaxed = true)
+        every { httpException.code() } returns 503
+        coEvery { apiService.searchBeveragesWithCaffeine(pageSize = 30) } throws httpException
+
+        val result = repository.getOfficialDrinks()
+
+        assertTrue("Expected success from cache fallback on 503", result.isSuccess)
+        val drinks = result.getOrThrow()
+        assertEquals(1, drinks.size)
+        assertEquals("Backup Drink", drinks[0].name)
+    }
+
+    @Test
+    fun `when API 429 and cache is empty should return failure`() = runTest {
+        val httpException = mockk<retrofit2.HttpException>(relaxed = true)
+        every { httpException.code() } returns 429
+        coEvery { apiService.searchBeveragesWithCaffeine(pageSize = 30) } throws httpException
+
+        val result = repository.getOfficialDrinks()
+
+        assertTrue("Expected failure when rate limited and no cache", result.isFailure)
+    }
+
+    @Test
+    fun `when search API returns 429 should search cache locally`() = runTest {
+        cacheDao.insertAll(
+            listOf(
+                OfficialDrinkCacheEntity("001", "Red Bull Classic", "Red Bull", 32.0, null, "250ml"),
+                OfficialDrinkCacheEntity("002", "Monster Energy", "Monster", 30.0, null, "500ml")
+            )
+        )
+
+        val httpException = mockk<retrofit2.HttpException>(relaxed = true)
+        every { httpException.code() } returns 429
+        coEvery {
+            apiService.searchProducts(query = any(), json = any(), pageSize = any(), fields = any(), locale = any(), country = any())
+        } throws httpException
+
+        val result = repository.searchOfficialDrinks("monster")
+
+        assertTrue(result.isSuccess)
+        val drinks = result.getOrThrow()
+        assertEquals(1, drinks.size)
+        assertEquals("Monster Energy", drinks[0].name)
+    }
+
+    @Test
+    fun `when fresh cache exists should serve from cache`() = runTest {
+        cacheDao.insertAll(
+            listOf(
+                OfficialDrinkCacheEntity(
+                    barcode = "001", name = "Fresh Cola", brand = "Coca-Cola",
+                    caffeineMgPer100ml = 10.0, energyKcalPer100ml = 42.0, quantity = "330ml",
+                    fetchedAtMillis = System.currentTimeMillis()
+                )
+            )
+        )
+
+        val result = repository.getOfficialDrinks()
+
+        assertTrue("Expected success from fresh cache", result.isSuccess)
+        val drinks = result.getOrThrow()
+        assertEquals(1, drinks.size)
+        assertEquals("Fresh Cola", drinks[0].name)
     }
 }

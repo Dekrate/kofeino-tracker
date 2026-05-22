@@ -1,0 +1,106 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CognitiveComplexMethod:AddDrinkConfirmationContent.kt:@Composable fun AddDrinkConfirmationContent</ID>
+    <ID>CognitiveComplexMethod:AddEditDrinkForm.kt:@Composable fun AddEditDrinkForm</ID>
+    <ID>CognitiveComplexMethod:EditIntakeScreen.kt:@Composable fun EditIntakeScreen</ID>
+    <ID>CognitiveComplexMethod:ManageDrinksScreen.kt:@Composable fun ManageDrinksScreen</ID>
+    <ID>CognitiveComplexMethod:OfficialDrinksScreen.kt:@Composable fun OfficialDrinksScreen</ID>
+    <ID>ComposableParamOrder:HomeScreen.kt:@Composable fun HomeScreen</ID>
+    <ID>CouldBeSequence:OfficialDrinkRepositoryImpl.kt:OfficialDrinkRepositoryImpl$filter { it.hasValidCaffeineData() }</ID>
+    <ID>ImplicitDefaultLocale:OfficialDrinksScreen.kt:"%.0f".format(drink.caffeineMgPer100ml)</ID>
+    <ID>InjectDispatcher:OfficialDrinkRepositoryImpl.kt:OfficialDrinkRepositoryImpl$IO</ID>
+    <ID>InjectDispatcher:SyncTaskExtensions.kt:IO</ID>
+    <ID>LongMethod:AddDrinkConfirmationContent.kt:@Composable fun AddDrinkConfirmationContent</ID>
+    <ID>LongMethod:AddDrinkScreen.kt:@Composable fun AddDrinkScreen</ID>
+    <ID>LongMethod:AddEditDrinkForm.kt:@Composable fun AddEditDrinkForm</ID>
+    <ID>LongMethod:CoffeeCupIndicator.kt:@Composable fun CoffeeCupIndicator</ID>
+    <ID>LongMethod:CoffeeCupIndicator.kt:private fun DrawScope.drawCoffeeCup</ID>
+    <ID>LongMethod:EditIntakeScreen.kt:@Composable fun EditIntakeScreen</ID>
+    <ID>LongMethod:HistoryScreen.kt:@Composable fun HistoryScreen</ID>
+    <ID>LongMethod:HomeScreen.kt:@Composable fun HomeScreen</ID>
+    <ID>LongMethod:ManageDrinksScreen.kt:@Composable fun ManageDrinksScreen</ID>
+    <ID>LongMethod:OfficialDrinksScreen.kt:@Composable fun OfficialDrinksScreen</ID>
+    <ID>LongMethod:SettingsScreen.kt:@Composable fun SettingsScreen</ID>
+    <ID>LongMethod:WearNavHost.kt:@Composable fun WearNavHost</ID>
+    <ID>LongParameterList:AddEditDrinkForm.kt:@Composable fun AddEditDrinkForm</ID>
+    <ID>MagicNumber:CoffeeCupIndicator.kt:0.04f</ID>
+    <ID>MagicNumber:CoffeeCupIndicator.kt:0.05f</ID>
+    <ID>MagicNumber:CoffeeCupIndicator.kt:0.08f</ID>
+    <ID>MagicNumber:CoffeeCupIndicator.kt:0.14f</ID>
+    <ID>MagicNumber:CoffeeCupIndicator.kt:0.64f</ID>
+    <ID>MagicNumber:CoffeeCupIndicator.kt:1.1f</ID>
+    <ID>MagicNumber:CoffeeCupIndicator.kt:2.2f</ID>
+    <ID>MagicNumber:CoffeeCupIndicator.kt:3</ID>
+    <ID>MagicNumber:CustomDns.kt:CustomDns$0xC0</ID>
+    <ID>MagicNumber:CustomDns.kt:CustomDns$10</ID>
+    <ID>MagicNumber:CustomDns.kt:CustomDns$12</ID>
+    <ID>MagicNumber:CustomDns.kt:CustomDns$3</ID>
+    <ID>MagicNumber:CustomDns.kt:CustomDns$4</ID>
+    <ID>MagicNumber:CustomDns.kt:CustomDns$5</ID>
+    <ID>MagicNumber:CustomDns.kt:CustomDns$63</ID>
+    <ID>MagicNumber:CustomDns.kt:CustomDns$8</ID>
+    <ID>MagicNumber:DatabaseModule.kt:DatabaseModule$3</ID>
+    <ID>MagicNumber:HistoryScreen.kt:4</ID>
+    <ID>MagicNumber:HomeScreen.kt:4</ID>
+    <ID>MagicNumber:ManageDrinksScreen.kt:4</ID>
+    <ID>MagicNumber:NetworkModule.kt:NetworkModule$15</ID>
+    <ID>MagicNumber:OfficialDrinkViewModel.kt:OfficialDrinkViewModel$10_000L</ID>
+    <ID>MagicNumber:OfficialDrinkViewModel.kt:OfficialDrinkViewModel$500</ID>
+    <ID>MatchingDeclarationName:Theme.kt:CoffeeColors</ID>
+    <ID>MaxLineLength:CaffeineIntakeDao.kt:CaffeineIntakeDao$@Query("SELECT * FROM caffeine_intakes WHERE timestamp &gt;= :startOfDay AND timestamp &lt; :endOfDay ORDER BY timestamp DESC")</ID>
+    <ID>MaxLineLength:CaffeineIntakeDao.kt:CaffeineIntakeDao$@Query("SELECT COALESCE(SUM(caffeineMg), 0) FROM caffeine_intakes WHERE timestamp &gt;= :startOfDay AND timestamp &lt; :endOfDay")</ID>
+    <ID>MaxLineLength:OfficialDrinksScreen.kt:contentDescription = "${drink.name} ${drink.brand ?: ""} $caffeineStr $per100mlUnit"</ID>
+    <ID>ModifierMissing:AddDrinkScreen.kt:@Composable fun AddDrinkScreen</ID>
+    <ID>ModifierMissing:AddEditDrinkForm.kt:@Composable fun AddEditDrinkForm</ID>
+    <ID>ModifierMissing:EditIntakeScreen.kt:@Composable fun EditIntakeScreen</ID>
+    <ID>ModifierMissing:HistoryScreen.kt:@Composable fun HistoryScreen</ID>
+    <ID>ModifierMissing:HomeScreen.kt:@Composable fun HomeScreen</ID>
+    <ID>ModifierMissing:ManageDrinksScreen.kt:@Composable fun ManageDrinksScreen</ID>
+    <ID>ModifierMissing:OfficialDrinksScreen.kt:@Composable fun OfficialDrinksScreen</ID>
+    <ID>ModifierMissing:SettingsScreen.kt:@Composable fun SettingsScreen</ID>
+    <ID>ParameterNaming:AddDrinkScreen.kt:onDrinkAdded: () -&gt; Unit</ID>
+    <ID>ParameterNaming:EditIntakeScreen.kt:onDeleted: () -&gt; Unit</ID>
+    <ID>ParameterNaming:EditIntakeScreen.kt:onSaved: () -&gt; Unit</ID>
+    <ID>ParameterNaming:OfficialDrinksScreen.kt:onDrinkSelected: (OfficialDrink) -&gt; Unit = {}</ID>
+    <ID>ReturnCount:CustomDns.kt:CustomDns$private fun parseDnsResponse: List&lt;InetAddress&gt;</ID>
+    <ID>SuspendFunSwallowedCancellation:CaffeineViewModel.kt:CaffeineViewModel$catch (e: Exception) { Timber.e(e, "Failed to add intake") _uiState.update { it.copy(error = context.getString(R.string.error_add_failed)) } onError() }</ID>
+    <ID>SuspendFunSwallowedCancellation:CaffeineViewModel.kt:CaffeineViewModel$catch (e: Exception) { Timber.e(e, "Failed to delete intake") _uiState.update { it.copy(error = context.getString(R.string.error_delete_failed)) } onError() }</ID>
+    <ID>SuspendFunSwallowedCancellation:CaffeineViewModel.kt:CaffeineViewModel$catch (e: Exception) { Timber.e(e, "Failed to update intake") _uiState.update { it.copy(error = context.getString(R.string.error_save_failed)) } onError() }</ID>
+    <ID>SuspendFunSwallowedCancellation:OfficialDrinkViewModel.kt:OfficialDrinkViewModel$catch (e: Exception) { Timber.e(e, "Unexpected error loading official drinks") _uiState.value = _uiState.value.copy( isLoading = false, error = context.getString(R.string.error_load_failed) ) }</ID>
+    <ID>SuspendFunSwallowedCancellation:OfficialDrinkViewModel.kt:OfficialDrinkViewModel$catch (e: Exception) { Timber.e(e, "Unexpected error searching official drinks") _uiState.value = _uiState.value.copy( isLoading = false, error = context.getString(R.string.error_search_failed) ) }</ID>
+    <ID>TooGenericExceptionCaught:CaffeineViewModel.kt:CaffeineViewModel$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:CustomDns.kt:CustomDns$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:DatabaseModule.kt:DatabaseModule$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:OfficialDrinkRepositoryImpl.kt:OfficialDrinkRepositoryImpl$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:OfficialDrinkViewModel.kt:OfficialDrinkViewModel$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:PendingSyncQueue.kt:PendingSyncQueue$e: Exception</ID>
+    <ID>TooManyFunctions:CaffeineRepository.kt:CaffeineRepository</ID>
+    <ID>UnnecessaryParentheses:CustomDns.kt:CustomDns$((data[2].toInt() shl 8) or (data[3].toInt() and 0xFF))</ID>
+    <ID>UnnecessaryParentheses:CustomDns.kt:CustomDns$((data[4].toInt() shl 8) or (data[5].toInt() and 0xFF))</ID>
+    <ID>UnnecessaryParentheses:CustomDns.kt:CustomDns$((data[6].toInt() shl 8) or (data[7].toInt() and 0xFF))</ID>
+    <ID>UnnecessaryParentheses:CustomDns.kt:CustomDns$((data[offset + 8].toInt() shl 8) or (data[offset + 9].toInt() and 0xFF))</ID>
+    <ID>UnnecessaryParentheses:CustomDns.kt:CustomDns$((data[offset].toInt() shl 8) or (data[offset + 1].toInt() and 0xFF))</ID>
+    <ID>UnnecessaryParentheses:CustomDns.kt:CustomDns$(data[2].toInt() shl 8)</ID>
+    <ID>UnnecessaryParentheses:CustomDns.kt:CustomDns$(data[4].toInt() shl 8)</ID>
+    <ID>UnnecessaryParentheses:CustomDns.kt:CustomDns$(data[6].toInt() shl 8)</ID>
+    <ID>UnnecessaryParentheses:CustomDns.kt:CustomDns$(data[offset + 8].toInt() shl 8)</ID>
+    <ID>UnnecessaryParentheses:CustomDns.kt:CustomDns$(data[offset].toInt() shl 8)</ID>
+    <ID>UnnecessaryParentheses:CustomDns.kt:CustomDns$(len and 0xC0)</ID>
+    <ID>UnnecessaryParentheses:OfficialDrinkRepositoryImpl.kt:OfficialDrinkRepositoryImpl$(it.brand?.lowercase()?.contains(lower) == true)</ID>
+    <ID>UnsafeCallOnNullableType:AddDrinkScreen.kt:selectedDrink!!</ID>
+    <ID>UnsafeCallOnNullableType:EditIntakeScreen.kt:intake!!</ID>
+    <ID>UnusedImport:DatabaseModule.kt:import pl.dekrate.kofeino.domain.model.DrinkEntity</ID>
+    <ID>UnusedImport:NetworkModule.kt:import pl.dekrate.kofeino.data.local.OfficialDrinkCacheDao</ID>
+    <ID>UnusedImport:OfficialDrinkCacheDao.kt:import pl.dekrate.kofeino.data.local.OfficialDrinkCacheEntity</ID>
+    <ID>UnusedImport:OfficialDrinksScreen.kt:import androidx.compose.ui.graphics.Color</ID>
+    <ID>UnusedParameter:DatabaseModule.kt:DatabaseModule$context: Context</ID>
+    <ID>UnusedVariable:CustomDns.kt:CustomDns$i</ID>
+    <ID>UseIfEmptyOrIfBlank:OfficialDrinkRepositoryImpl.kt:OfficialDrinkRepositoryImpl$isNotEmpty</ID>
+    <ID>UseOrEmpty:ManageDrinksScreen.kt:editingDrink?.name ?: ""</ID>
+    <ID>UseOrEmpty:OfficialDrinksScreen.kt:drink.brand ?: ""</ID>
+    <ID>UseRequire:CustomDns.kt:CustomDns$throw IllegalArgumentException("Label too long: $label")</ID>
+    <ID>ViewModelInjection:WearNavHost.kt:val drinkViewModel: DrinkViewModel = hiltViewModel()</ID>
+  </CurrentIssues>
+</SmellBaseline>
