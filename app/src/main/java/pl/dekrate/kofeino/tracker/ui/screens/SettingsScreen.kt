@@ -221,6 +221,11 @@ fun SettingsScreen(
 
             HorizontalDivider(Modifier.padding(vertical = 8.dp))
 
+            // ── Health disclaimer section ──
+            HealthDisclaimerSection()
+
+            HorizontalDivider(Modifier.padding(vertical = 8.dp))
+
             // ── About section ──
             SectionHeader(stringResource(R.string.about), Modifier.padding(horizontal = 16.dp, vertical = 12.dp))
 
@@ -231,7 +236,7 @@ fun SettingsScreen(
 }
 
 @Composable
-private fun SectionHeader(text: String, modifier: Modifier = Modifier) {
+internal fun SectionHeader(text: String, modifier: Modifier = Modifier) {
     Text(text, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, modifier = modifier)
 }
 

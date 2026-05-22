@@ -96,6 +96,16 @@
     <string name="about">About</string>
     <string name="version_format">Version %s</string>
 
+    <!-- Health disclaimer -->
+    <string name="health_disclaimer_title">Disclaimer</string>
+    <string name="health_disclaimer_text">This app provides informational tracking only and does not constitute medical advice. Caffeine tolerance varies by individual. Consult a healthcare professional before making significant changes to your caffeine intake. The creator of this app assumes no responsibility for any health consequences arising from its use. Sources: EFSA (2015), FDA (2024), WHO (2023).</string>
+    <string name="health_disclaimer_expand">Expand disclaimer</string>
+    <string name="health_disclaimer_collapse">Collapse disclaimer</string>
+    <string name="health_references_title">Sources</string>
+    <string name="health_references_text">• EFSA (2015): efsa.europa.eu/en/efsajournal/pub/4102\n• FDA (2024): fda.gov/consumers/consumer-updates/spilling-beans-how-much-caffeine-too-much\n• WHO (2023): who.int/tools/elena/interventions/caffeine-pregnancy</string>
+    <string name="health_references_expand">Expand sources</string>
+    <string name="health_references_collapse">Collapse sources</string>
+
     <!-- ManageDrinksScreen -->
     <string name="add_drink_form_title">Add Drink</string>
     <string name="edit_drink_form_title">Edit Drink</string>

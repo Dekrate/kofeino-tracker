@@ -82,6 +82,16 @@
     <string name="about">O aplikacji</string>
     <string name="version_format">Wersja %s</string>
 
+    <!-- Health disclaimer -->
+    <string name="health_disclaimer_title">Zastrzeżenie</string>
+    <string name="health_disclaimer_text">Ta aplikacja służy wyłącznie do celów informacyjnych i nie stanowi porady medycznej. Tolerancja kofeiny różni się w zależności od osoby. Skonsultuj się z lekarzem przed znaczącą zmianą spożycia kofeiny. Twórca aplikacji nie ponosi odpowiedzialności za jakiekolwiek konsekwencje zdrowotne wynikające z jej używania. Źródła: EFSA (2015), FDA (2024), WHO (2023).</string>
+    <string name="health_disclaimer_expand">Rozwiń zastrzeżenie</string>
+    <string name="health_disclaimer_collapse">Zwiń zastrzeżenie</string>
+    <string name="health_references_title">Źródła</string>
+    <string name="health_references_text">• EFSA (2015): efsa.europa.eu/en/efsajournal/pub/4102\n• FDA (2024): fda.gov/consumers/consumer-updates/spilling-beans-how-much-caffeine-too-much\n• WHO (2023): who.int/tools/elena/interventions/caffeine-pregnancy</string>
+    <string name="health_references_expand">Rozwiń źródła</string>
+    <string name="health_references_collapse">Zwiń źródła</string>
+
     <!-- ManageDrinksScreen -->
     <string name="add_drink_form_title">Dodaj napój</string>
     <string name="edit_drink_form_title">Edytuj napój</string>

@@ -452,6 +452,80 @@ class SettingsScreenTest {
             .assertIsDisplayed()
     }
 
+    // ===== Health disclaimer section tests =====
+
+    @Test
+    fun settingsScreen_displaysHealthDisclaimerHeader() {
+        val fakeVm = createFakeViewModel(SettingsUiState())
+        composeTestRule.setContent {
+            KofeinoTrackerPhoneTheme {
+                SettingsScreen(
+                    onNavigateBack = {},
+                    viewModel = fakeVm
+                )
+            }
+        }
+        composeTestRule.onNodeWithText(context.getString(R.string.health_disclaimer_title))
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun settingsScreen_displaysHealthSourcesHeader() {
+        val fakeVm = createFakeViewModel(SettingsUiState())
+        composeTestRule.setContent {
+            KofeinoTrackerPhoneTheme {
+                SettingsScreen(
+                    onNavigateBack = {},
+                    viewModel = fakeVm
+                )
+            }
+        }
+        composeTestRule.onNodeWithText(context.getString(R.string.health_references_title))
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun settingsScreen_healthDisclaimer_expandsAndCollapses() {
+        val fakeVm = createFakeViewModel(SettingsUiState())
+        composeTestRule.setContent {
+            KofeinoTrackerPhoneTheme {
+                SettingsScreen(
+                    onNavigateBack = {},
+                    viewModel = fakeVm
+                )
+            }
+        }
+        composeTestRule.onNodeWithContentDescription(context.getString(R.string.health_disclaimer_expand))
+            .performClick()
+        composeTestRule.onNodeWithText(context.getString(R.string.health_disclaimer_text))
+            .assertIsDisplayed()
+        composeTestRule.onNodeWithContentDescription(context.getString(R.string.health_disclaimer_collapse))
+            .performClick()
+        composeTestRule.onNodeWithText(context.getString(R.string.health_disclaimer_text))
+            .assertDoesNotExist()
+    }
+
+    @Test
+    fun settingsScreen_healthSources_expandsAndCollapses() {
+        val fakeVm = createFakeViewModel(SettingsUiState())
+        composeTestRule.setContent {
+            KofeinoTrackerPhoneTheme {
+                SettingsScreen(
+                    onNavigateBack = {},
+                    viewModel = fakeVm
+                )
+            }
+        }
+        composeTestRule.onNodeWithContentDescription(context.getString(R.string.health_references_expand))
+            .performClick()
+        composeTestRule.onNodeWithText(context.getString(R.string.health_references_text))
+            .assertIsDisplayed()
+        composeTestRule.onNodeWithContentDescription(context.getString(R.string.health_references_collapse))
+            .performClick()
+        composeTestRule.onNodeWithText(context.getString(R.string.health_references_text))
+            .assertDoesNotExist()
+    }
+
     // ===== Utility =====
 
     private fun createFakeViewModel(

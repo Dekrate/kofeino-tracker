@@ -5,6 +5,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.platform.app.InstrumentationRegistry
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -237,5 +238,67 @@ class CaffeineTrackerE2ETest {
 
         // Back on today — espresso should be visible
         composeRule.onNodeWithText("Espresso", substring = true).assertIsDisplayed()
+    }
+
+    @Test
+    fun fullFlow_settingsScreen_healthDisclaimer_expandsAndCollapses() {
+        // Arrange: Home screen is loaded
+        composeRule.onNodeWithContentDescription(
+            context.getString(R.string.add_drink)
+        ).assertIsDisplayed()
+
+        // Act: Navigate to Settings via TopAppBar icon
+        composeRule.onNodeWithContentDescription(
+            context.getString(R.string.settings_title)
+        ).performClick()
+        composeRule.waitForIdle()
+
+        // Act: Scroll to health disclaimer section
+        composeRule.onNodeWithText(
+            context.getString(R.string.health_disclaimer_title)
+        ).performScrollTo()
+
+        // Assert: disclaimer header is displayed
+        composeRule.onNodeWithText(
+            context.getString(R.string.health_disclaimer_title)
+        ).assertIsDisplayed()
+
+        // Assert: sources header is displayed
+        composeRule.onNodeWithText(
+            context.getString(R.string.health_references_title)
+        ).assertIsDisplayed()
+
+        // Assert: disclaimer body is initially hidden
+        composeRule.onNodeWithText(
+            context.getString(R.string.health_disclaimer_text)
+        ).assertDoesNotExist()
+
+        // Act: Expand disclaimer
+        composeRule.onNodeWithContentDescription(
+            context.getString(R.string.health_disclaimer_expand)
+        ).performScrollTo()
+        composeRule.onNodeWithContentDescription(
+            context.getString(R.string.health_disclaimer_expand)
+        ).performClick()
+        composeRule.waitForIdle()
+
+        // Assert: disclaimer text is now visible
+        composeRule.onNodeWithText(
+            context.getString(R.string.health_disclaimer_text)
+        ).assertIsDisplayed()
+
+        // Act: Collapse disclaimer
+        composeRule.onNodeWithContentDescription(
+            context.getString(R.string.health_disclaimer_collapse)
+        ).performScrollTo()
+        composeRule.onNodeWithContentDescription(
+            context.getString(R.string.health_disclaimer_collapse)
+        ).performClick()
+        composeRule.waitForIdle()
+
+        // Assert: disclaimer text is hidden again
+        composeRule.onNodeWithText(
+            context.getString(R.string.health_disclaimer_text)
+        ).assertDoesNotExist()
     }
 }
