@@ -5,6 +5,7 @@ import android.content.Context
 import dagger.hilt.android.HiltAndroidApp
 import pl.dekrate.kofeino.tracker.data.local.DataStorePreferences
 import pl.dekrate.kofeino.tracker.data.local.LanguagePreferences
+import pl.dekrate.kofeino.tracker.data.sync.WearableDataLayerManager
 import pl.dekrate.kofeino.tracker.notification.CaffeineLiveNotificationObserver
 import pl.dekrate.kofeino.tracker.util.LocaleHelper
 import timber.log.Timber
@@ -29,12 +30,16 @@ class KofeinoTrackerApplication : Application() {
     @Inject
     lateinit var caffeineNotificationObserver: CaffeineLiveNotificationObserver
 
+    @Inject
+    lateinit var wearableDataLayerManager: WearableDataLayerManager
+
     override fun onCreate() {
         super.onCreate()
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
         }
         caffeineNotificationObserver.start()
+        wearableDataLayerManager.register()
     }
 
     override fun attachBaseContext(base: Context) {
