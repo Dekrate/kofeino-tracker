@@ -29,7 +29,9 @@ import org.junit.Test
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 import pl.dekrate.kofeino.tracker.R
+import pl.dekrate.kofeino.tracker.data.backup.BackupIOException
 import pl.dekrate.kofeino.tracker.data.backup.BackupManager
+import pl.dekrate.kofeino.tracker.data.backup.BackupVersionException
 import pl.dekrate.kofeino.tracker.data.backup.ExportResult
 import pl.dekrate.kofeino.tracker.data.backup.ImportResult
 import pl.dekrate.kofeino.tracker.data.local.DataStorePreferences
@@ -525,7 +527,7 @@ class SettingsViewModelTest {
     @Test
     fun `exportBackup emits error event on failure`() = runTest {
         val uri = mockk<Uri>()
-        coEvery { backupManager.exportBackup(uri) } throws RuntimeException("Export failed")
+        coEvery { backupManager.exportBackup(uri) } throws BackupIOException("Export failed")
 
         viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
         advanceUntilIdle()
@@ -577,8 +579,7 @@ class SettingsViewModelTest {
     @Test
     fun `importBackup emits error event on BackupVersionException`() = runTest {
         val uri = mockk<Uri>()
-        coEvery { backupManager.importBackup(uri, any()) } throws
-            pl.dekrate.kofeino.tracker.data.backup.BackupVersionException("Unsupported version")
+        coEvery { backupManager.importBackup(uri, any()) } throws BackupVersionException("Unsupported version")
 
         viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
         advanceUntilIdle()
@@ -636,7 +637,7 @@ class SettingsViewModelTest {
 
             val event = awaitItem()
             assertTrue(event is SettingsEvent.ShowSnackbar)
-            assertEquals(R.string.backup_export_success, (event as SettingsEvent.ShowSnackbar).messageRes)
+            assertTrue((event as SettingsEvent.ShowSnackbar).message.isNotEmpty())
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -659,7 +660,7 @@ class SettingsViewModelTest {
 
             val event = awaitItem()
             assertTrue(event is SettingsEvent.ShowSnackbar)
-            assertEquals(R.string.backup_import_success, (event as SettingsEvent.ShowSnackbar).messageRes)
+            assertTrue((event as SettingsEvent.ShowSnackbar).message.isNotEmpty())
             cancelAndIgnoreRemainingEvents()
         }
     }

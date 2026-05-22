@@ -8,7 +8,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableSharedFlow
-import pl.dekrate.kofeino.tracker.di.IoDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,9 +18,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import pl.dekrate.kofeino.tracker.R
+import pl.dekrate.kofeino.tracker.data.backup.BackupIOException
 import pl.dekrate.kofeino.tracker.data.backup.BackupManager
 import pl.dekrate.kofeino.tracker.data.backup.BackupVersionException
 import pl.dekrate.kofeino.tracker.data.local.DataStorePreferences
+import pl.dekrate.kofeino.tracker.di.IoDispatcher
 import javax.inject.Inject
 
 data class SettingsUiState(
@@ -51,10 +52,11 @@ sealed interface BackupUiState {
 
 /**
  * One-shot navigation / snackbar events for the Settings screen.
- * Carries string resource IDs with format args so the UI layer handles localization.
+ * Messages are pre-resolved in the ViewModel via [context.getString] so the
+ * UI layer does not need to resolve resource IDs inside a LaunchedEffect.
  */
 sealed interface SettingsEvent {
-    data class ShowSnackbar(val messageRes: Int, val formatArgs: Array<out Any> = emptyArray()) : SettingsEvent
+    data class ShowSnackbar(val message: String) : SettingsEvent
 }
 
 /**
@@ -167,15 +169,12 @@ class SettingsViewModel @Inject constructor(
                 }
                 _uiState.update { it.copy(backupState = BackupUiState.Success) }
                 _events.emit(SettingsEvent.ShowSnackbar(
-                    messageRes = R.string.backup_export_success,
-                    formatArgs = arrayOf(result.intakeCount, result.drinkCount)
+                    context.getString(R.string.backup_export_success, result.intakeCount, result.drinkCount)
                 ))
-            } catch (e: Exception) {
-                val message = e.message ?: context.getString(R.string.backup_error_unknown)
+            } catch (e: BackupIOException) {
                 _uiState.update { it.copy(backupState = BackupUiState.Error) }
                 _events.emit(SettingsEvent.ShowSnackbar(
-                    messageRes = R.string.backup_error,
-                    formatArgs = arrayOf(message)
+                    context.getString(R.string.backup_error, e.message ?: "")
                 ))
             }
         }
@@ -194,21 +193,17 @@ class SettingsViewModel @Inject constructor(
                 }
                 _uiState.update { it.copy(backupState = BackupUiState.Success) }
                 _events.emit(SettingsEvent.ShowSnackbar(
-                    messageRes = R.string.backup_import_success,
-                    formatArgs = arrayOf(result.intakesImported, result.drinksImported)
+                    context.getString(R.string.backup_import_success, result.intakesImported, result.drinksImported)
                 ))
             } catch (e: BackupVersionException) {
                 _uiState.update { it.copy(backupState = BackupUiState.Error) }
                 _events.emit(SettingsEvent.ShowSnackbar(
-                    messageRes = R.string.backup_error,
-                    formatArgs = arrayOf(e.message ?: "Unsupported backup version")
+                    context.getString(R.string.backup_error, e.message ?: "")
                 ))
-            } catch (e: Exception) {
-                val message = e.message ?: context.getString(R.string.backup_error_unknown)
+            } catch (e: BackupIOException) {
                 _uiState.update { it.copy(backupState = BackupUiState.Error) }
                 _events.emit(SettingsEvent.ShowSnackbar(
-                    messageRes = R.string.backup_error,
-                    formatArgs = arrayOf(message)
+                    context.getString(R.string.backup_error, e.message ?: "")
                 ))
             }
         }

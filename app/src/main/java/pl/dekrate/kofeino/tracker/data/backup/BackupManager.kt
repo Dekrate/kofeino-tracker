@@ -166,11 +166,11 @@ class BackupManager @Inject constructor(
 
     /** Read the full content of a SAF URI as a UTF-8 string, preserving line breaks. */
     private fun readJsonFromUri(uri: Uri): String {
-        context.contentResolver.openInputStream(uri)?.use { inputStream ->
-            return InputStreamReader(inputStream, StandardCharsets.UTF_8).use { reader ->
-                reader.readText()
-            }
-        } ?: throw BackupIOException("Failed to open input stream for $uri")
+        val inputStream = context.contentResolver.openInputStream(uri)
+            ?: throw BackupIOException("Failed to open input stream for $uri")
+        return InputStreamReader(inputStream, StandardCharsets.UTF_8).use { reader ->
+            reader.readText()
+        }
     }
 
     /** Snapshot current settings into a [BackupSettings] value. */

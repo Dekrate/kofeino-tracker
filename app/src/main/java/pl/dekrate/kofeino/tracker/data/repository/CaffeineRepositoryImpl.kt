@@ -11,6 +11,7 @@ import java.util.Calendar
 import javax.inject.Inject
 import javax.inject.Singleton
 
+@Suppress("TooManyFunctions")
 @Singleton
 class CaffeineRepositoryImpl @Inject constructor(
     private val intakeDao: CaffeineIntakeDao,

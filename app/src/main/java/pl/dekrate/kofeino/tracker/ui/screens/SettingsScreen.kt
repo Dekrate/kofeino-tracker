@@ -89,14 +89,11 @@ fun SettingsScreen(
         }
     }
 
-    // Collect one-shot events (snackbar messages) — resolve resource IDs in UI layer
+    // Collect one-shot events (snackbar messages) — messages are pre-resolved in ViewModel
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
-            when (event) {
-                is SettingsEvent.ShowSnackbar -> {
-                    val message = context.getString(event.messageRes, *event.formatArgs)
-                    snackbarHostState.showSnackbar(message)
-                }
+            if (event is SettingsEvent.ShowSnackbar) {
+                snackbarHostState.showSnackbar(event.message)
             }
         }
     }

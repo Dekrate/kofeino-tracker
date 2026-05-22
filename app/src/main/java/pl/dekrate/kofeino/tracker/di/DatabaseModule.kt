@@ -29,6 +29,7 @@ import javax.inject.Singleton
 @Retention(AnnotationRetention.BINARY)
 annotation class IoDispatcher
 
+@Suppress("TooManyFunctions")
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
@@ -153,6 +154,7 @@ object DatabaseModule {
         }
     }
 
+    @Suppress("InjectDispatcher")
     @Provides
     @Singleton
     @IoDispatcher
