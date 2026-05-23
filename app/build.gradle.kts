@@ -110,6 +110,7 @@ dependencies {
     implementation(libs.datastore.preferences)
     implementation(libs.play.services.wearable)
     implementation(libs.profileinstaller)
+    implementation(project(":common"))
 
     detektPlugins(libs.detekt.compose.rules)
 
