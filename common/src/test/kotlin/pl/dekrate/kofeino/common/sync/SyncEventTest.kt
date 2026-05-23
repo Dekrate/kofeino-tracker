@@ -1,7 +1,6 @@
 package pl.dekrate.kofeino.common.sync
 
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -285,7 +284,8 @@ class SyncEventTest {
             SyncEvent.FullSyncResponse(SyncEntityType.INTAKE, emptyList(), testTimestamp, testDeviceId),
             SyncEvent.SyncAck("h", emptyList(), testTimestamp, testDeviceId),
         ).forEach { event ->
-            assertEquals("${event::class.simpleName} should preserve timestamp",
+            val eventType = event::class.simpleName ?: "Unknown"
+            assertEquals("$eventType should preserve timestamp",
                 testTimestamp, event.timestamp)
         }
     }
@@ -304,7 +304,8 @@ class SyncEventTest {
             SyncEvent.FullSyncResponse(SyncEntityType.INTAKE, emptyList(), testTimestamp, testDeviceId),
             SyncEvent.SyncAck("h", emptyList(), testTimestamp, testDeviceId),
         ).forEach { event ->
-            assertEquals("${event::class.simpleName} should preserve sourceDeviceId",
+            val eventType = event::class.simpleName ?: "Unknown"
+            assertEquals("$eventType should preserve sourceDeviceId",
                 testDeviceId, event.sourceDeviceId)
         }
     }

@@ -7,6 +7,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.toLocalDateTime
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -28,6 +29,7 @@ import pl.dekrate.kofeino.common.domain.model.DrinkEntity
 class CaffeineRepositoryContractTest {
 
     private lateinit var repository: InMemoryCaffeineRepository
+    private val testDate = LocalDate(2026, 5, 23)
 
     @Before
     fun setUp() {
@@ -136,7 +138,7 @@ class CaffeineRepositoryContractTest {
         repository.addIntake(aCaffeineIntake())
         repository.addIntake(aCaffeineIntake())
         repository.clearAll()
-        val intakes = repository.getIntakesForDate(LocalDate(2026, 5, 23)).first()
+        val intakes = repository.getIntakesForDate(testDate).first()
         assertTrue("All intakes should be removed", intakes.isEmpty())
     }
 
@@ -277,12 +279,11 @@ class CaffeineRepositoryContractTest {
     )
 
     companion object {
-        /** Convert a date to epoch milliseconds (UTC) for a consistent test timestamp. */
+        /** Convert a date to epoch milliseconds (UTC) using kotlinx-datetime. */
         fun epochMillisForDate(year: Int, month: Int, dayOfMonth: Int): Long {
-            val monthStr = month.toString().padStart(2, '0')
-            val dayStr = dayOfMonth.toString().padStart(2, '0')
-            val dateStr = "$year-$monthStr-${dayStr}T12:00:00Z"
-            return Instant.parse(dateStr).toEpochMilliseconds()
+            return LocalDate(year, month, dayOfMonth)
+                .atStartOfDayIn(TimeZone.UTC)
+                .toEpochMilliseconds()
         }
     }
 }

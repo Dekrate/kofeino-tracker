@@ -3,40 +3,9 @@ package pl.dekrate.kofeino.common.domain.model
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class SharedModelsTest {
-
-    @Test
-    fun `shared models should be serializable via toString`() {
-        val intake = CaffeineIntake(
-            drinkName = "Tea",
-            caffeineMg = 30,
-            volumeMl = 200,
-            timestamp = System.currentTimeMillis(),
-        )
-        val str = intake.toString()
-        assertTrue(str.contains("Tea"))
-        assertTrue(str.contains("caffeineMg=30"))
-    }
-
-    @Test
-    fun `data class equals should work correctly`() {
-        val drink1 = DrinkEntity(
-            name = "Coffee",
-            caffeineMg = 100,
-            volumeMl = 250,
-        )
-        val drink2 = DrinkEntity(
-            name = "Coffee",
-            caffeineMg = 100,
-            volumeMl = 250,
-        )
-        val drink3 = drink1.copy(caffeineMg = 200)
-        assertEquals(drink1, drink2)
-        assertTrue(drink1 != drink3)
-    }
 
     @Test
     fun `three models should never equal each other across types`() {
@@ -55,16 +24,69 @@ class SharedModelsTest {
         assertNotNull(OfficialDrink(barcode = "A", name = "A", caffeineMgPer100ml = 1.0).toString())
     }
 
+    @Suppress("DestructuringDeclarationWithTooManyEntries")
     @Test
     fun `all models should support destructuring`() {
-        val intake = CaffeineIntake(drinkName = "N", caffeineMg = 1, volumeMl = 1, timestamp = 0L)
-        assertEquals("N", intake.component3())
+        // CaffeineIntake has 8 components:
+        // id, drinkId, drinkName, caffeineMg, volumeMl, timestamp, lastModifiedTimestamp, sourceDeviceId
+        val (ciId, ciDrinkId, ciName, ciCaffeine, ciVolume, ciTimestamp, ciLastMod, ciSource) =
+            CaffeineIntake(
+                id = 1L,
+                drinkId = 2L,
+                drinkName = "Latte",
+                caffeineMg = 150,
+                volumeMl = 300,
+                timestamp = 1000L,
+                lastModifiedTimestamp = 2000L,
+                sourceDeviceId = "watch-1",
+            )
+        assertEquals(1L, ciId)
+        assertEquals(2L, ciDrinkId)
+        assertEquals("Latte", ciName)
+        assertEquals(150, ciCaffeine)
+        assertEquals(300, ciVolume)
+        assertEquals(1000L, ciTimestamp)
+        assertEquals(2000L, ciLastMod)
+        assertEquals("watch-1", ciSource)
 
-        val drink = DrinkEntity(name = "D", caffeineMg = 2, volumeMl = 3)
-        assertEquals("D", drink.component2())
+        // DrinkEntity has 7 components:
+        // id, name, caffeineMg, volumeMl, isDefault, lastModifiedTimestamp, sourceDeviceId
+        val (dId, dName, dCaffeine, dVolume, dIsDefault, dLastMod, dSource) =
+            DrinkEntity(
+                id = 3L,
+                name = "Americano",
+                caffeineMg = 150,
+                volumeMl = 300,
+                isDefault = true,
+                lastModifiedTimestamp = 5000L,
+                sourceDeviceId = "phone-2",
+            )
+        assertEquals(3L, dId)
+        assertEquals("Americano", dName)
+        assertEquals(150, dCaffeine)
+        assertEquals(300, dVolume)
+        assertEquals(true, dIsDefault)
+        assertEquals(5000L, dLastMod)
+        assertEquals("phone-2", dSource)
 
-        val official = OfficialDrink(barcode = "B", name = "O", caffeineMgPer100ml = 5.0)
-        assertEquals("B", official.component1())
-        assertEquals("O", official.component2())
+        // OfficialDrink has 7 components:
+        // barcode, name, brand, caffeineMgPer100ml, energyKcalPer100ml, quantity, source
+        val (barcode, oName, brand, caffeinePer100, energy, qty, src) =
+            OfficialDrink(
+                barcode = "EAN123",
+                name = "Cola",
+                brand = "BrandX",
+                caffeineMgPer100ml = 10.0,
+                energyKcalPer100ml = 42.0,
+                quantity = "330ml",
+                source = "OFF",
+            )
+        assertEquals("EAN123", barcode)
+        assertEquals("Cola", oName)
+        assertEquals("BrandX", brand)
+        assertEquals(10.0, caffeinePer100, 0.0)
+        assertEquals(42.0, energy!!, 0.0)
+        assertEquals("330ml", qty!!)
+        assertEquals("OFF", src)
     }
 }

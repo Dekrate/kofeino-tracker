@@ -173,6 +173,29 @@ class OfficialDrinkRepositoryContractTest {
         assertTrue("No match should return empty list", drinks.isEmpty())
     }
 
+    @Test
+    fun `searchOfficialDrinks with null brand should not crash`() = runTest {
+        repository.seedDrinks(
+            listOf(
+                anOfficialDrink(barcode = "1", name = "Cola", brand = "Coca-Cola"),
+                anOfficialDrink(barcode = "2", name = "Generic Cola", brand = null),
+            )
+        )
+        // Searching by a brand name that doesn't exist should still work
+        val result = repository.searchOfficialDrinks("NonExistentBrand")
+        val drinks = result.getOrThrow()
+        assertTrue("No match should return empty list", drinks.isEmpty())
+
+        // Searching for the null-brand drink by name should work
+        val byName = repository.searchOfficialDrinks("Generic Cola")
+        assertEquals(1, byName.getOrThrow().size)
+
+        // Searching for the brand drink should return exactly that drink
+        val byBrand = repository.searchOfficialDrinks("Coca-Cola")
+        assertEquals(1, byBrand.getOrThrow().size)
+        assertEquals("Cola", byBrand.getOrThrow()[0].name)
+    }
+
     // ── Cache operations ────────────────────────────────────────────────────
 
     @Test
