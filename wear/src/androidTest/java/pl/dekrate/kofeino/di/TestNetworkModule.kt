@@ -15,7 +15,7 @@ import pl.dekrate.kofeino.data.remote.CustomDns
 import pl.dekrate.kofeino.data.remote.dto.OpenFoodFactsNutrimentsDto
 import pl.dekrate.kofeino.data.remote.dto.OpenFoodFactsProductDto
 import pl.dekrate.kofeino.data.remote.dto.OpenFoodFactsSearchResponse
-import pl.dekrate.kofeino.data.repository.OfficialDrinkRepository
+import pl.dekrate.kofeino.common.domain.repository.OfficialDrinkRepository
 import pl.dekrate.kofeino.data.repository.OfficialDrinkRepositoryImpl
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory

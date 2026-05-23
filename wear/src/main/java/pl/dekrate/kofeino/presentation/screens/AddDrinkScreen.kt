@@ -29,7 +29,7 @@ import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.Text
 import pl.dekrate.kofeino.R
-import pl.dekrate.kofeino.domain.model.DrinkEntity
+import pl.dekrate.kofeino.common.domain.model.DrinkEntity
 import pl.dekrate.kofeino.presentation.viewmodel.CaffeineViewModel
 
 @Composable

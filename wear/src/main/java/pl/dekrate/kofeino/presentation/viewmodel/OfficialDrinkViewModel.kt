@@ -13,8 +13,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import pl.dekrate.kofeino.R
-import pl.dekrate.kofeino.data.repository.OfficialDrinkRepository
-import pl.dekrate.kofeino.domain.model.OfficialDrink
+import pl.dekrate.kofeino.common.domain.repository.OfficialDrinkRepository
+import pl.dekrate.kofeino.common.domain.model.OfficialDrink
 import timber.log.Timber
 import javax.inject.Inject
 

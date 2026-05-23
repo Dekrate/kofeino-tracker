@@ -13,6 +13,10 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -25,7 +29,7 @@ import org.junit.Test
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepository
-import pl.dekrate.kofeino.tracker.domain.model.CaffeineIntake
+import pl.dekrate.kofeino.common.domain.model.CaffeineIntake
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HistoryViewModelTest {
@@ -53,6 +57,9 @@ class HistoryViewModelTest {
     }
 
     // ===== Initial state tests =====
+
+    private fun getTodayDate(): LocalDate =
+        Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
 
     @Test
     fun `initial state should be loading then emit empty data`() = runTest {
@@ -98,13 +105,13 @@ class HistoryViewModelTest {
         viewModel = HistoryViewModel(repository, SavedStateHandle())
         testDispatcher.scheduler.advanceUntilIdle()
 
-        val initialDate = viewModel.uiState.value.selectedDateMillis
+        val initialDate = viewModel.uiState.value.selectedDate
         viewModel.previousDay()
         testDispatcher.scheduler.advanceUntilIdle()
 
         assertTrue(
-            "selectedDateMillis should be before initial date",
-            viewModel.uiState.value.selectedDateMillis < initialDate
+            "selectedDate should be before initial date",
+            viewModel.uiState.value.selectedDate < initialDate
         )
     }
 
@@ -113,13 +120,13 @@ class HistoryViewModelTest {
         viewModel = HistoryViewModel(repository, SavedStateHandle())
         testDispatcher.scheduler.advanceUntilIdle()
 
-        val initialDate = viewModel.uiState.value.selectedDateMillis
+        val initialDate = viewModel.uiState.value.selectedDate
         viewModel.nextDay()
         testDispatcher.scheduler.advanceUntilIdle()
 
         assertTrue(
-            "selectedDateMillis should be after initial date",
-            viewModel.uiState.value.selectedDateMillis > initialDate
+            "selectedDate should be after initial date",
+            viewModel.uiState.value.selectedDate > initialDate
         )
     }
 
@@ -128,7 +135,7 @@ class HistoryViewModelTest {
         viewModel = HistoryViewModel(repository, SavedStateHandle())
         testDispatcher.scheduler.advanceUntilIdle()
 
-        val initialDate = viewModel.uiState.value.selectedDateMillis
+        val initialDate = viewModel.uiState.value.selectedDate
         viewModel.previousDay()
         testDispatcher.scheduler.advanceUntilIdle()
         viewModel.goToToday()
@@ -137,7 +144,7 @@ class HistoryViewModelTest {
         assertEquals(
             "Should reset to initial (today) date",
             initialDate,
-            viewModel.uiState.value.selectedDateMillis
+            viewModel.uiState.value.selectedDate
         )
     }
 
@@ -170,7 +177,7 @@ class HistoryViewModelTest {
         viewModel = HistoryViewModel(repository, SavedStateHandle())
         testDispatcher.scheduler.advanceUntilIdle()
 
-        val initialDate = viewModel.uiState.value.selectedDateMillis
+        val initialDate = viewModel.uiState.value.selectedDate
         viewModel.nextDay()
         testDispatcher.scheduler.advanceUntilIdle()
         viewModel.previousDay()
@@ -179,7 +186,7 @@ class HistoryViewModelTest {
         assertEquals(
             "Should return to initial date after next+previous",
             initialDate,
-            viewModel.uiState.value.selectedDateMillis
+            viewModel.uiState.value.selectedDate
         )
     }
 
@@ -295,14 +302,14 @@ class HistoryViewModelTest {
         viewModel = HistoryViewModel(repository, SavedStateHandle())
         testDispatcher.scheduler.advanceUntilIdle()
 
-        val initialDate = viewModel.uiState.value.selectedDateMillis
+        val initialDate = viewModel.uiState.value.selectedDate
         viewModel.previousDay()
         testDispatcher.scheduler.advanceUntilIdle()
-        val afterOneBack = viewModel.uiState.value.selectedDateMillis
+        val afterOneBack = viewModel.uiState.value.selectedDate
 
         viewModel.previousDay()
         testDispatcher.scheduler.advanceUntilIdle()
-        val afterTwoBack = viewModel.uiState.value.selectedDateMillis
+        val afterTwoBack = viewModel.uiState.value.selectedDate
 
         assertTrue(
             "Two steps back should be less than one step back",
@@ -319,14 +326,14 @@ class HistoryViewModelTest {
         viewModel = HistoryViewModel(repository, SavedStateHandle())
         testDispatcher.scheduler.advanceUntilIdle()
 
-        val initialDate = viewModel.uiState.value.selectedDateMillis
+        val initialDate = viewModel.uiState.value.selectedDate
         viewModel.nextDay()
         testDispatcher.scheduler.advanceUntilIdle()
-        val afterOneForward = viewModel.uiState.value.selectedDateMillis
+        val afterOneForward = viewModel.uiState.value.selectedDate
 
         viewModel.nextDay()
         testDispatcher.scheduler.advanceUntilIdle()
-        val afterTwoForward = viewModel.uiState.value.selectedDateMillis
+        val afterTwoForward = viewModel.uiState.value.selectedDate
 
         assertTrue(
             "Two steps forward should be greater than one step forward",
@@ -338,19 +345,16 @@ class HistoryViewModelTest {
 
     @Test
     fun `should use SavedStateHandle value when pre-populated`() = runTest {
-        val tempVm = HistoryViewModel(repository, SavedStateHandle())
-        testDispatcher.scheduler.advanceUntilIdle()
-        val specificDate = tempVm.getStartOfToday()
-
-        val savedHandle = SavedStateHandle(mapOf("selectedDateMillis" to specificDate))
+        val today = getTodayDate()
+        val savedHandle = SavedStateHandle(mapOf("selectedDate" to today.toString()))
 
         viewModel = HistoryViewModel(repository, savedHandle)
         testDispatcher.scheduler.advanceUntilIdle()
 
         assertEquals(
             "Should use the date from SavedStateHandle",
-            specificDate,
-            viewModel.uiState.value.selectedDateMillis
+            today,
+            viewModel.uiState.value.selectedDate
         )
     }
 
@@ -360,16 +364,16 @@ class HistoryViewModelTest {
         viewModel = HistoryViewModel(repository, savedHandle)
         testDispatcher.scheduler.advanceUntilIdle()
 
-        val initialDate = viewModel.uiState.value.selectedDateMillis
+        val initialDate = viewModel.uiState.value.selectedDate
 
         viewModel.previousDay()
         testDispatcher.scheduler.advanceUntilIdle()
 
-        val persistedDate = savedHandle.get<Long>("selectedDateMillis")
-        assertNotNull("SavedStateHandle should contain selectedDateMillis after navigation", persistedDate)
+        val persistedDate = savedHandle.get<String>("selectedDate")
+        assertNotNull("SavedStateHandle should contain selectedDate after navigation", persistedDate)
         assertEquals(
             "Persisted date should match ViewModel's current selection",
-            viewModel.uiState.value.selectedDateMillis,
+            viewModel.uiState.value.selectedDate.toString(),
             persistedDate
         )
 
@@ -377,11 +381,11 @@ class HistoryViewModelTest {
         viewModel.nextDay()
         testDispatcher.scheduler.advanceUntilIdle()
 
-        val updatedDate = savedHandle.get<Long>("selectedDateMillis")
+        val updatedDate = savedHandle.get<String>("selectedDate")
         assertNotNull("SavedStateHandle should be updated after second navigation", updatedDate)
         assertEquals(
             "Persisted date should match ViewModel after navigating back",
-            initialDate,
+            initialDate.toString(),
             updatedDate
         )
     }
@@ -391,11 +395,11 @@ class HistoryViewModelTest {
         viewModel = HistoryViewModel(repository, SavedStateHandle())
         testDispatcher.scheduler.advanceUntilIdle()
 
-        val todayStart = viewModel.getStartOfToday()
+        val todayDate = getTodayDate()
         assertEquals(
-            "Should fall back to today's start when SavedStateHandle is empty",
-            todayStart,
-            viewModel.uiState.value.selectedDateMillis
+            "Should fall back to today's date when SavedStateHandle is empty",
+            todayDate,
+            viewModel.uiState.value.selectedDate
         )
     }
 }

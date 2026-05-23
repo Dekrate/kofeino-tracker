@@ -41,7 +41,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import pl.dekrate.kofeino.tracker.R
-import pl.dekrate.kofeino.tracker.domain.model.CaffeineIntake
+import pl.dekrate.kofeino.common.domain.model.CaffeineIntake
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.HistoryUiState
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.HistoryViewModel
 import java.text.SimpleDateFormat

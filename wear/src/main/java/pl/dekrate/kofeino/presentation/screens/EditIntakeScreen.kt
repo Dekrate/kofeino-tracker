@@ -31,7 +31,7 @@ import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.Text
 import pl.dekrate.kofeino.R
 import pl.dekrate.kofeino.presentation.viewmodel.CaffeineViewModel
-import pl.dekrate.kofeino.domain.model.CaffeineIntake
+import pl.dekrate.kofeino.common.domain.model.CaffeineIntake
 
 @Composable
 fun EditIntakeScreen(

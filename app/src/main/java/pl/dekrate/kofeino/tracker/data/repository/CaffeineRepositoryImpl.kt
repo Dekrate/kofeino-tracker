@@ -7,10 +7,14 @@ import pl.dekrate.kofeino.tracker.data.local.DrinkDao
 import pl.dekrate.kofeino.tracker.data.sync.PendingChangeEntity
 import pl.dekrate.kofeino.tracker.data.sync.RealTimeSyncService
 import pl.dekrate.kofeino.tracker.data.sync.SyncPayloadSerializer
-import pl.dekrate.kofeino.tracker.domain.model.CaffeineIntake
-import pl.dekrate.kofeino.tracker.domain.model.DrinkEntity
+import pl.dekrate.kofeino.common.domain.model.CaffeineIntake as CommonCaffeineIntake
+import pl.dekrate.kofeino.common.domain.model.DrinkEntity as CommonDrinkEntity
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
 import timber.log.Timber
 import java.util.Calendar
 import javax.inject.Inject
@@ -26,10 +30,11 @@ class CaffeineRepositoryImpl @Inject constructor(
     private val sourceDeviceId: String
 ) : CaffeineRepository {
 
-    // --- Intake operations ---
+    // --- Intake operations (from CommonCaffeineRepository) ---
 
-    override suspend fun addIntake(intake: CaffeineIntake): Long {
-        val stamped = intake.copy(
+    override suspend fun addIntake(intake: CommonCaffeineIntake): Long {
+        val entity = intake.toEntity()
+        val stamped = entity.copy(
             lastModifiedTimestamp = System.currentTimeMillis(),
             sourceDeviceId = sourceDeviceId
         )
@@ -44,8 +49,9 @@ class CaffeineRepositoryImpl @Inject constructor(
         return id
     }
 
-    override suspend fun updateIntake(intake: CaffeineIntake) {
-        val stamped = intake.copy(
+    override suspend fun updateIntake(intake: CommonCaffeineIntake) {
+        val entity = intake.toEntity()
+        val stamped = entity.copy(
             lastModifiedTimestamp = System.currentTimeMillis(),
             sourceDeviceId = sourceDeviceId
         )
@@ -58,8 +64,9 @@ class CaffeineRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun deleteIntake(intake: CaffeineIntake) {
-        val stamped = intake.copy(
+    override suspend fun deleteIntake(intake: CommonCaffeineIntake) {
+        val entity = intake.toEntity()
+        val stamped = entity.copy(
             lastModifiedTimestamp = System.currentTimeMillis(),
             sourceDeviceId = sourceDeviceId
         )
@@ -72,41 +79,49 @@ class CaffeineRepositoryImpl @Inject constructor(
         )
     }
 
-    override fun getIntakesForDate(dateMillis: Long): Flow<List<CaffeineIntake>> {
-        val (start, end) = dayBounds(dateMillis)
-        return intakeDao.getIntakesByDate(start, end)
+    override suspend fun getIntakeById(id: Long): CommonCaffeineIntake? {
+        return intakeDao.getIntakeById(id)?.toCommon()
     }
 
-    override fun getTotalCaffeineForDate(dateMillis: Long): Flow<Int> {
-        val (start, end) = dayBounds(dateMillis)
+    override fun getIntakesForDate(date: LocalDate): Flow<List<CommonCaffeineIntake>> {
+        val (start, end) = dayBounds(date.toEpochMillis())
+        return intakeDao.getIntakesByDate(start, end).map { list ->
+            list.map { it.toCommon() }
+        }
+    }
+
+    override fun getTotalCaffeineForDate(date: LocalDate): Flow<Int> {
+        val (start, end) = dayBounds(date.toEpochMillis())
         return intakeDao.getTotalCaffeineByDate(start, end)
-    }
-
-    override suspend fun getIntakeById(id: Long): CaffeineIntake? {
-        return intakeDao.getIntakeById(id)
     }
 
     override suspend fun clearAll() {
         intakeDao.deleteAll()
-        // No sync propagation for mass clear — it's a local-only operation
     }
 
-    override fun getRecentIntakes(limit: Int): Flow<List<CaffeineIntake>> {
-        return intakeDao.getRecentIntakes(limit)
+    // --- App-specific: Recent intakes ---
+
+    override fun getRecentIntakes(limit: Int): Flow<List<CommonCaffeineIntake>> {
+        return intakeDao.getRecentIntakes(limit).map { list ->
+            list.map { it.toCommon() }
+        }
     }
 
-    // --- Drink operations ---
+    // --- Drink operations (from CommonCaffeineRepository) ---
 
-    override fun getAllDrinks(): Flow<List<DrinkEntity>> {
-        return drinkDao.getAllDrinks()
+    override fun getAllDrinks(): Flow<List<CommonDrinkEntity>> {
+        return drinkDao.getAllDrinks().map { list ->
+            list.map { it.toCommon() }
+        }
     }
 
-    override suspend fun getDrinkById(id: Long): DrinkEntity? {
-        return drinkDao.getDrinkById(id)
+    override suspend fun getDrinkById(id: Long): CommonDrinkEntity? {
+        return drinkDao.getDrinkById(id)?.toCommon()
     }
 
-    override suspend fun addDrink(drink: DrinkEntity): Long {
-        val stamped = drink.copy(
+    override suspend fun addDrink(drink: CommonDrinkEntity): Long {
+        val entity = drink.toEntity()
+        val stamped = entity.copy(
             lastModifiedTimestamp = System.currentTimeMillis(),
             sourceDeviceId = sourceDeviceId
         )
@@ -121,8 +136,9 @@ class CaffeineRepositoryImpl @Inject constructor(
         return id
     }
 
-    override suspend fun updateDrink(drink: DrinkEntity) {
-        val stamped = drink.copy(
+    override suspend fun updateDrink(drink: CommonDrinkEntity) {
+        val entity = drink.toEntity()
+        val stamped = entity.copy(
             lastModifiedTimestamp = System.currentTimeMillis(),
             sourceDeviceId = sourceDeviceId
         )
@@ -135,8 +151,9 @@ class CaffeineRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun deleteDrink(drink: DrinkEntity) {
-        val stamped = drink.copy(
+    override suspend fun deleteDrink(drink: CommonDrinkEntity) {
+        val entity = drink.toEntity()
+        val stamped = entity.copy(
             lastModifiedTimestamp = System.currentTimeMillis(),
             sourceDeviceId = sourceDeviceId
         )
@@ -149,17 +166,21 @@ class CaffeineRepositoryImpl @Inject constructor(
         )
     }
 
-    override fun searchDrinks(query: String): Flow<List<DrinkEntity>> {
-        return drinkDao.searchDrinks(query)
+    // --- App-specific: Search drinks ---
+
+    override fun searchDrinks(query: String): Flow<List<CommonDrinkEntity>> {
+        return drinkDao.searchDrinks(query).map { list ->
+            list.map { it.toCommon() }
+        }
     }
 
     // --- Backup / Snapshot operations ---
 
-    override suspend fun getAllIntakesSnapshot(): List<CaffeineIntake> =
-        intakeDao.getAllIntakesSnapshot()
+    override suspend fun getAllIntakesSnapshot(): List<CommonCaffeineIntake> =
+        intakeDao.getAllIntakesSnapshot().map { it.toCommon() }
 
-    override suspend fun getAllDrinksSnapshot(): List<DrinkEntity> =
-        drinkDao.getAllDrinksSnapshot()
+    override suspend fun getAllDrinksSnapshot(): List<CommonDrinkEntity> =
+        drinkDao.getAllDrinksSnapshot().map { it.toCommon() }
 
     override suspend fun getAllIntakeIds(): List<Long> =
         intakeDao.getAllIntakeIds()
@@ -167,28 +188,23 @@ class CaffeineRepositoryImpl @Inject constructor(
     override suspend fun getAllDrinkNames(): List<String> =
         drinkDao.getAllDrinkNames()
 
-    override suspend fun bulkInsertIntakes(intakes: List<CaffeineIntake>) {
-        intakeDao.insertAll(intakes)
+    override suspend fun bulkInsertIntakes(intakes: List<CommonCaffeineIntake>) {
+        intakeDao.insertAll(intakes.map { it.toEntity() })
     }
 
-    override suspend fun bulkInsertDrinks(drinks: List<DrinkEntity>) {
-        drinkDao.insertAll(drinks)
+    override suspend fun bulkInsertDrinks(drinks: List<CommonDrinkEntity>) {
+        drinkDao.insertAll(drinks.map { it.toEntity() })
     }
 
-    override suspend fun importAllAtomic(intakes: List<CaffeineIntake>, drinks: List<DrinkEntity>) {
+    override suspend fun importAllAtomic(intakes: List<CommonCaffeineIntake>, drinks: List<CommonDrinkEntity>) {
         database.withTransaction {
-            intakeDao.insertAll(intakes)
-            drinkDao.insertAll(drinks)
+            intakeDao.insertAll(intakes.map { it.toEntity() })
+            drinkDao.insertAll(drinks.map { it.toEntity() })
         }
     }
 
-    /**
-     * Propagate a mutation to the paired device via real-time sync.
-     *
-     * Fire-and-forget: errors are logged internally by [RealTimeSyncService]
-     * and never propagated to the caller, so a sync failure never rolls
-     * back the database operation.
-     */
+    // --- Sync propagation ---
+
     @Suppress("TooGenericExceptionCaught")
     private suspend fun propagateSync(
         entityType: String,
@@ -205,14 +221,8 @@ class CaffeineRepositoryImpl @Inject constructor(
         }
     }
 
-    /**
-     * Returns a (startOfDay, endOfDay) pair for the given timestamp.
-     *
-     * Uses Calendar.add(DAY_OF_YEAR, 1) instead of +86400000
-     * to correctly handle DST transitions.
-     * On "fall back" days (25h) it covers all 25 hours;
-     * on "spring forward" days (23h) it doesn't exceed the day.
-     */
+    // --- DST-safe day bounds ---
+
     private fun dayBounds(millis: Long): Pair<Long, Long> {
         val calendar = Calendar.getInstance().apply {
             timeInMillis = millis
@@ -226,4 +236,13 @@ class CaffeineRepositoryImpl @Inject constructor(
         val end = calendar.timeInMillis
         return start to end
     }
+}
+
+/**
+ * Converts a [kotlinx.datetime.LocalDate] to epoch millis at start of day
+ * in the system-default time zone.
+ */
+internal fun LocalDate.toEpochMillis(): Long {
+    return this.atStartOfDayIn(TimeZone.currentSystemDefault())
+        .toEpochMilliseconds()
 }

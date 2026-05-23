@@ -10,6 +10,10 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -20,7 +24,7 @@ import org.junit.Test
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepository
-import pl.dekrate.kofeino.tracker.domain.model.CaffeineIntake
+import pl.dekrate.kofeino.common.domain.model.CaffeineIntake
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -225,15 +229,17 @@ class HomeViewModelTest {
 
     // ===== Repository interaction tests =====
 
+    private fun getStartOfTodayMillis(): Long {
+        val cal = Calendar.getInstance()
+        cal.set(Calendar.HOUR_OF_DAY, 0)
+        cal.set(Calendar.MINUTE, 0)
+        cal.set(Calendar.SECOND, 0)
+        cal.set(Calendar.MILLISECOND, 0)
+        return cal.timeInMillis
+    }
+
     @Test
     fun `should query repository for today date`() = runTest {
-        val todayStart = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }.timeInMillis
-
         viewModel = HomeViewModel(repository)
 
         viewModel.uiState.test {
@@ -297,22 +303,9 @@ class HomeViewModelTest {
     // ===== Midnight crossover tests =====
 
     @Test
-    fun `getStartOfToday returns millis at start of current day`() {
-        viewModel = HomeViewModel(repository)
-        val startOfToday = viewModel.getStartOfToday()
-        val cal = Calendar.getInstance().apply {
-            timeInMillis = startOfToday
-        }
-        assertEquals(0, cal.get(Calendar.HOUR_OF_DAY))
-        assertEquals(0, cal.get(Calendar.MINUTE))
-        assertEquals(0, cal.get(Calendar.SECOND))
-        assertEquals(0, cal.get(Calendar.MILLISECOND))
-    }
-
-    @Test
     fun `getNextMidnight returns start of tomorrow`() {
         viewModel = HomeViewModel(repository)
-        val startOfToday = viewModel.getStartOfToday()
+        val startOfToday = getStartOfTodayMillis()
         val nextMidnight = viewModel.getNextMidnight()
 
         val cal = Calendar.getInstance().apply {
@@ -337,8 +330,9 @@ class HomeViewModelTest {
             val state = awaitItem()
 
             // Date label should match today
+            val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
             val todayFormatted = SimpleDateFormat("EEEE, dd.MM.yyyy", Locale.getDefault())
-                .format(Date(viewModel.getStartOfToday()))
+                .format(Date(getStartOfTodayMillis()))
             assertEquals(todayFormatted, state.dateLabel)
             cancelAndIgnoreRemainingEvents()
         }

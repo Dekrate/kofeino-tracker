@@ -12,11 +12,14 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import pl.dekrate.kofeino.common.domain.model.CaffeineIntake
 import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepository
-import pl.dekrate.kofeino.tracker.domain.model.CaffeineIntake
-import java.text.SimpleDateFormat
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
-import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 
@@ -35,17 +38,17 @@ class HomeViewModel @Inject constructor(
     private val repository: CaffeineRepository
 ) : ViewModel() {
 
-    /** Emits start-of-today millis, re-emitting at midnight when the date rolls over. */
-    private val todayStartMillis: Flow<Long> = todayStartOfDayFlow()
+    /** Emits today's date, re-emitting at midnight when the date rolls over. */
+    private val todayStart: Flow<LocalDate> = todayStartFlow()
 
-    val uiState: StateFlow<HomeUiState> = todayStartMillis
-        .flatMapLatest { startMillis ->
+    val uiState: StateFlow<HomeUiState> = todayStart
+        .flatMapLatest { today ->
             combine(
-                repository.getIntakesForDate(startMillis),
-                repository.getTotalCaffeineForDate(startMillis)
+                repository.getIntakesForDate(today),
+                repository.getTotalCaffeineForDate(today)
             ) { intakes, total ->
                 HomeUiState(
-                    dateLabel = formatDateLabel(startMillis),
+                    dateLabel = formatDateLabel(today),
                     totalCaffeineMg = total,
                     progress = (total / SAFE_LIMIT_MG.toFloat()).coerceIn(0f, 1f),
                     isLimitExceeded = total > SAFE_LIMIT_MG,
@@ -60,27 +63,15 @@ class HomeViewModel @Inject constructor(
             initialValue = HomeUiState(isLoading = true)
         )
 
-    /** Returns a flow that emits the start-of-today timestamp, re-emitting at midnight. */
-    private fun todayStartOfDayFlow(): Flow<Long> = flow {
+    /** Returns a flow that emits today's date, re-emitting at midnight. */
+    private fun todayStartFlow(): Flow<LocalDate> = flow {
         while (true) {
-            val startOfToday = getStartOfToday()
-            emit(startOfToday)
-            // DST-safe: compute next midnight via Calendar, add 1s buffer
+            val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+            emit(today)
             val nextMidnight = getNextMidnight()
             val delayMs = nextMidnight - System.currentTimeMillis() + MIDNIGHT_BUFFER_MS
             delay(delayMs.coerceAtLeast(MIN_DELAY_MS))
         }
-    }
-
-    // Package-private for testing
-    fun getStartOfToday(): Long {
-        val cal = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
-        return cal.timeInMillis
     }
 
     /** Returns the start of the next calendar day (DST-safe via Calendar). */
@@ -96,13 +87,14 @@ class HomeViewModel @Inject constructor(
         return cal.timeInMillis
     }
 
-    private fun formatDateLabel(millis: Long): String {
-        val today = getStartOfToday()
-        return if (millis == today) {
-            // Return ISO-like date; UI layer handles localization
-            SimpleDateFormat("EEEE, dd.MM.yyyy", Locale.getDefault()).format(Date(millis))
+    private fun formatDateLabel(date: LocalDate): String {
+        val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+        return if (date == today) {
+            val formatter = DateTimeFormatter.ofPattern("EEEE, dd.MM.yyyy", Locale.getDefault())
+            java.time.LocalDate.of(date.year, date.monthNumber, date.dayOfMonth).format(formatter)
         } else {
-            SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(Date(millis))
+            val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy", Locale.getDefault())
+            java.time.LocalDate.of(date.year, date.monthNumber, date.dayOfMonth).format(formatter)
         }
     }
 

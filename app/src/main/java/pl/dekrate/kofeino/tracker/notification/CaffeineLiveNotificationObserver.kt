@@ -18,6 +18,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import pl.dekrate.kofeino.tracker.data.local.DataStorePreferences
 import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepository
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.HomeViewModel
@@ -102,7 +105,7 @@ class CaffeineLiveNotificationObserver @Inject constructor(
     private fun startObservingRepository() {
         repositoryJob?.cancel()
         repositoryJob = scope.launch {
-            repository.getTotalCaffeineForDate(todayStartMillis())
+            repository.getTotalCaffeineForDate(todayDate())
                 .map { total -> total to isOverLimit(total) }
                 .distinctUntilChanged()
                 .catch { e -> Timber.tag(TAG).e(e, "Error observing caffeine total") }
@@ -165,11 +168,9 @@ class CaffeineLiveNotificationObserver @Inject constructor(
         }.timeInMillis
     }
 
-    private fun todayStartMillis(): Long {
-        return Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
-        }.timeInMillis
+    private fun todayDate(): kotlinx.datetime.LocalDate {
+        return Clock.System.now()
+            .toLocalDateTime(TimeZone.currentSystemDefault()).date
     }
 
     private fun isOverLimit(total: Int): Boolean = total > HomeViewModel.SAFE_LIMIT_MG

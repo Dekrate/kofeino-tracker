@@ -7,9 +7,12 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import pl.dekrate.kofeino.R
 import pl.dekrate.kofeino.data.local.CaffeinePreferences
-import pl.dekrate.kofeino.data.repository.CaffeineRepository
-import pl.dekrate.kofeino.domain.model.CaffeineIntake
-import pl.dekrate.kofeino.domain.model.DrinkEntity
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import pl.dekrate.kofeino.common.domain.repository.CaffeineRepository
+import pl.dekrate.kofeino.common.domain.model.CaffeineIntake
+import pl.dekrate.kofeino.common.domain.model.DrinkEntity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -44,11 +47,15 @@ class CaffeineViewModel @Inject constructor(
 
         // Transform date changes into date-specific flows
         val dateIntakesFlow = _selectedDateMillis.flatMapLatest { dateMillis ->
-            repository.getIntakesForDate(dateMillis)
+            val date = Instant.fromEpochMilliseconds(dateMillis)
+                .toLocalDateTime(TimeZone.currentSystemDefault()).date
+            repository.getIntakesForDate(date)
         }
 
         val dateTotalFlow = _selectedDateMillis.flatMapLatest { dateMillis ->
-            repository.getTotalCaffeineForDate(dateMillis)
+            val date = Instant.fromEpochMilliseconds(dateMillis)
+                .toLocalDateTime(TimeZone.currentSystemDefault()).date
+            repository.getTotalCaffeineForDate(date)
         }
 
         // Combine everything into UI state

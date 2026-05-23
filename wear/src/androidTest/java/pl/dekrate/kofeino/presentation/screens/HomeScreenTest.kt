@@ -9,7 +9,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.platform.app.InstrumentationRegistry
 import pl.dekrate.kofeino.R
-import pl.dekrate.kofeino.domain.model.DrinkEntity
+import pl.dekrate.kofeino.common.domain.model.DrinkEntity
 import pl.dekrate.kofeino.presentation.theme.KofeinoTrackerTheme
 import pl.dekrate.kofeino.presentation.viewmodel.CaffeineUiState
 import pl.dekrate.kofeino.presentation.viewmodel.CaffeineViewModel
@@ -84,8 +84,8 @@ class HomeScreenTest {
     @Test
     fun homeScreen_displaysIntakeList() {
         val intakes = listOf(
-            pl.dekrate.kofeino.domain.model.CaffeineIntake(1, drinkName = "Espresso", caffeineMg = 63, volumeMl = 30, timestamp = 0L),
-            pl.dekrate.kofeino.domain.model.CaffeineIntake(2, drinkName = "Latte", caffeineMg = 63, volumeMl = 250, timestamp = 0L)
+            pl.dekrate.kofeino.common.domain.model.CaffeineIntake(1, drinkName = "Espresso", caffeineMg = 63, volumeMl = 30, timestamp = 0L),
+            pl.dekrate.kofeino.common.domain.model.CaffeineIntake(2, drinkName = "Latte", caffeineMg = 63, volumeMl = 250, timestamp = 0L)
         )
         val fakeViewModel = createFakeViewModel(CaffeineUiState(dateIntakes = intakes))
         composeTestRule.setContent {
@@ -199,7 +199,7 @@ class HomeScreenTest {
     fun homeScreen_intakeClick_callsOnEditIntake() {
         var editedId = -1L
         val intakes = listOf(
-            pl.dekrate.kofeino.domain.model.CaffeineIntake(42, drinkName = "Test", caffeineMg = 50, volumeMl = 200, timestamp = 0L)
+            pl.dekrate.kofeino.common.domain.model.CaffeineIntake(42, drinkName = "Test", caffeineMg = 50, volumeMl = 200, timestamp = 0L)
         )
         val fakeViewModel = createFakeViewModel(CaffeineUiState(dateIntakes = intakes))
         composeTestRule.setContent {

@@ -34,6 +34,9 @@ kotlin {
 }
 
 dependencies {
+    // Compose rules (harmless on pure JVM, kept for consistency across modules)
     detektPlugins(libs.detekt.compose.rules)
+    api(libs.kotlinx.coroutines.core)
+    api(libs.kotlinx.datetime)
     testImplementation(libs.junit)
 }

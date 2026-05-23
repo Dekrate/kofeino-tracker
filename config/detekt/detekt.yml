@@ -70,6 +70,7 @@ complexity:
     excludes: ['**/test/**', '**/androidTest/**']
     allowedFunctionsPerFile: 15
     allowedFunctionsPerClass: 15
+    allowedFunctionsPerInterface: 30
     ignoreAnnotatedFunctions:
       - 'Preview'
 

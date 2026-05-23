@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.StateFlow
 import org.junit.Rule
 import org.junit.Test
 import pl.dekrate.kofeino.tracker.R
-import pl.dekrate.kofeino.tracker.domain.model.CaffeineIntake
+import pl.dekrate.kofeino.common.domain.model.CaffeineIntake
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.HistoryUiState
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.HistoryViewModel
 import pl.dekrate.kofeino.tracker.ui.theme.KofeinoTrackerPhoneTheme

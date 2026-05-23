@@ -1,8 +1,8 @@
 package pl.dekrate.kofeino.presentation.viewmodel
 
 import app.cash.turbine.test
-import pl.dekrate.kofeino.data.repository.CaffeineRepository
-import pl.dekrate.kofeino.domain.model.DrinkEntity
+import pl.dekrate.kofeino.common.domain.repository.CaffeineRepository
+import pl.dekrate.kofeino.common.domain.model.DrinkEntity
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every

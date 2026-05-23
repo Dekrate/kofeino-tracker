@@ -12,8 +12,8 @@ import io.mockk.every
 import io.mockk.mockk
 import org.junit.Rule
 import org.junit.Test
-import pl.dekrate.kofeino.data.repository.OfficialDrinkRepository
-import pl.dekrate.kofeino.domain.model.OfficialDrink
+import pl.dekrate.kofeino.common.domain.repository.OfficialDrinkRepository
+import pl.dekrate.kofeino.common.domain.model.OfficialDrink
 import pl.dekrate.kofeino.presentation.viewmodel.OfficialDrinkViewModel
 
 /**
