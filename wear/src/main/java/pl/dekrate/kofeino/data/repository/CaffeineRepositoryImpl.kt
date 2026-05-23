@@ -14,8 +14,6 @@ import pl.dekrate.kofeino.data.local.DrinkDao
 import pl.dekrate.kofeino.data.sync.PendingChangeEntity
 import pl.dekrate.kofeino.data.sync.RealTimeSyncService
 import pl.dekrate.kofeino.data.sync.SyncPayloadSerializer
-import pl.dekrate.kofeino.domain.model.CaffeineIntake
-import pl.dekrate.kofeino.domain.model.DrinkEntity
 import timber.log.Timber
 import java.util.Calendar
 import javax.inject.Inject
