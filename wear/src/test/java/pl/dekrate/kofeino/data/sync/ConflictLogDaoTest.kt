@@ -3,10 +3,14 @@ package pl.dekrate.kofeino.data.sync
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
+import com.google.gson.Gson
 import pl.dekrate.kofeino.data.local.CaffeineDatabase
+import pl.dekrate.kofeino.domain.model.CaffeineIntake
+import pl.dekrate.kofeino.domain.model.DrinkEntity
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -96,10 +100,14 @@ class ConflictLogDaoTest {
         assertEquals("42", loaded.entityId)
         assertEquals("incoming_timestamp_newer", loaded.decisionReason)
         assertEquals("phone", loaded.winningSourceDeviceId)
-        assertEquals("{}", loaded.localEntityJson)
-        assertEquals("{}", loaded.incomingEntityJson)
+        assertTrue(loaded.localEntityJson.contains("\"name\""))
+        assertTrue(loaded.localEntityJson.contains("\"id\":42"))
+        assertTrue(loaded.incomingEntityJson.contains("\"name\""))
+        assertTrue(loaded.incomingEntityJson.contains("\"id\":42"))
         assert(loaded.id > 0)
     }
+
+    private val gson = Gson()
 
     private fun makeEntry(
         entityType: String = "intake",
@@ -108,11 +116,24 @@ class ConflictLogDaoTest {
         winningSourceId: String = "watch",
         resolvedAt: Long = System.currentTimeMillis()
     ): ConflictLogEntity {
+        val entity = if (entityType == "drink") {
+            DrinkEntity(id = entityId.toLongOrNull() ?: 1, name = "test drink", caffeineMg = 50, volumeMl = 250)
+        } else {
+            CaffeineIntake(
+                id = entityId.toLongOrNull() ?: 1,
+                drinkName = "test",
+                caffeineMg = 50,
+                volumeMl = 250,
+                timestamp = resolvedAt,
+                lastModifiedTimestamp = resolvedAt,
+                sourceDeviceId = winningSourceId
+            )
+        }
         return ConflictLogEntity(
             entityType = entityType,
             entityId = entityId,
-            localEntityJson = "{}",
-            incomingEntityJson = "{}",
+            localEntityJson = gson.toJson(entity),
+            incomingEntityJson = gson.toJson(entity),
             decisionReason = reason,
             resolvedAt = resolvedAt,
             winningSourceDeviceId = winningSourceId

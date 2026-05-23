@@ -136,6 +136,59 @@ class ConflictResolverTest {
         assertNotNull(result.clockSkewWarning)
     }
 
+    @Test
+    fun `within 1ms tolerance triggers tiebreaker even at 1ms difference`() {
+        val now = System.currentTimeMillis()
+        // 1ms difference — still within tolerance
+        val result = ConflictResolver.compareTimestamps(
+            localTimestamp = now,
+            localSourceId = "watch",
+            incomingTimestamp = now + 1,
+            incomingSourceId = "phone"
+        )
+        assertEquals(ConflictResolver.REASON_PHONE_WINS_TIE, result.reason)
+        assertEquals(false, result.localWins)
+    }
+
+    @Test
+    fun `just over 1ms difference uses timestamp`() {
+        val now = System.currentTimeMillis()
+        // 2ms difference — outside tolerance
+        val result = ConflictResolver.compareTimestamps(
+            localTimestamp = now,
+            localSourceId = "watch",
+            incomingTimestamp = now + 2,
+            incomingSourceId = "phone"
+        )
+        assertEquals(ConflictResolver.REASON_INCOMING_NEWER, result.reason)
+        assertEquals(false, result.localWins)
+    }
+
+    @Test
+    fun `clock skew warning at exactly 60s difference`() {
+        val now = System.currentTimeMillis()
+        val result = ConflictResolver.compareTimestamps(
+            localTimestamp = now,
+            localSourceId = "watch",
+            incomingTimestamp = now + 60_000,
+            incomingSourceId = "phone"
+        )
+        // At exactly 60s, should NOT trigger (threshold is >60s)
+        assertNull(result.clockSkewWarning)
+    }
+
+    @Test
+    fun `clock skew warning at 60001ms difference`() {
+        val now = System.currentTimeMillis()
+        val result = ConflictResolver.compareTimestamps(
+            localTimestamp = now,
+            localSourceId = "watch",
+            incomingTimestamp = now + 60_001,
+            incomingSourceId = "phone"
+        )
+        assertNotNull(result.clockSkewWarning)
+    }
+
     // ======================================================================
     // resolveIntakeConflict
     // ======================================================================
@@ -302,20 +355,30 @@ class ConflictResolverTest {
     }
 
     // ======================================================================
-    // serializeLoser
+    // serializeEntity
     // ======================================================================
 
     @Test
-    fun `serializeLoser handles null`() {
-        assertEquals("null", ConflictResolver.serializeLoser(null))
+    fun `serializeEntity handles null`() {
+        assertEquals("null", ConflictResolver.serializeEntity(null))
     }
 
     @Test
-    fun `serializeLoser produces valid JSON`() {
+    fun `serializeEntity produces valid JSON`() {
         val intake = makeIntake(id = 1, timestamp = 1000, sourceId = "watch")
-        val json = ConflictResolver.serializeLoser(intake)
+        val json = ConflictResolver.serializeEntity(intake)
         assertTrue(json.contains("\"id\":1"))
         assertTrue(json.contains("\"sourceDeviceId\":\"watch\""))
+    }
+
+    @Test
+    fun `serializeEntity with DrinkEntity produces valid JSON`() {
+        val drink = makeDrink(id = 5, timestamp = 2000, sourceId = "phone")
+        val json = ConflictResolver.serializeEntity(drink)
+        assertTrue(json.contains("\"id\":5"))
+        assertTrue(json.contains("\"name\":\"test drink\""))
+        assertTrue(json.contains("\"caffeineMg\":50"))
+        assertTrue(json.contains("\"sourceDeviceId\":\"phone\""))
     }
 
     // ======================================================================

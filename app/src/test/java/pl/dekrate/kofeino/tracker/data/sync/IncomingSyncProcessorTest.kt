@@ -4,10 +4,12 @@ import com.google.android.gms.wearable.MessageEvent
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
+import androidx.room.withTransaction
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
+import pl.dekrate.kofeino.tracker.data.local.CaffeineDatabase
 import pl.dekrate.kofeino.tracker.data.local.CaffeineIntakeDao
 import pl.dekrate.kofeino.tracker.data.local.DrinkDao
 import pl.dekrate.kofeino.tracker.domain.model.CaffeineIntake
@@ -25,12 +27,16 @@ class IncomingSyncProcessorTest {
     private val resolver: ConflictResolver = mockk()
     private val intakeDao: CaffeineIntakeDao = mockk()
     private val drinkDao: DrinkDao = mockk()
+    private val database: CaffeineDatabase = mockk()
     private val conflictLogDao: ConflictLogDao = mockk(relaxed = true)
     private lateinit var processor: IncomingSyncProcessor
 
     @Before
     fun setUp() {
-        processor = IncomingSyncProcessor(resolver, intakeDao, drinkDao, conflictLogDao)
+        coEvery { database.withTransaction(any<suspend () -> Any?>()) } coAnswers {
+            (invocation.args[0] as suspend () -> Any?)()
+        }
+        processor = IncomingSyncProcessor(resolver, intakeDao, drinkDao, conflictLogDao, database)
     }
 
     // ------------------------------------------------------------------

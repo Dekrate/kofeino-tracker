@@ -189,9 +189,9 @@ object ConflictResolver {
     }
 
     /**
-     * Serialize the loser entity to JSON for conflict logging.
+     * Serialize any entity to JSON for conflict logging.
      */
-    fun serializeLoser(local: Any?): String {
-        return if (local != null) gson.toJson(local) else "null"
+    fun serializeEntity(entity: Any?): String {
+        return if (entity != null) gson.toJson(entity) else "null"
     }
 }

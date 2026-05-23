@@ -55,12 +55,16 @@ class CaffeineRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deleteIntake(intake: CaffeineIntake) {
-        intakeDao.delete(intake)
+        val stamped = intake.copy(
+            lastModifiedTimestamp = System.currentTimeMillis(),
+            sourceDeviceId = sourceDeviceId
+        )
+        intakeDao.delete(stamped)
         propagateSync(
             entityType = "intake",
             entityId = intake.id.toString(),
             operationType = PendingChangeEntity.OPERATION_DELETE,
-            payload = SyncPayloadSerializer.serializeIntake(intake)
+            payload = SyncPayloadSerializer.serializeIntake(stamped)
         )
     }
 
@@ -123,12 +127,16 @@ class CaffeineRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deleteDrink(drink: DrinkEntity) {
-        drinkDao.delete(drink)
+        val stamped = drink.copy(
+            lastModifiedTimestamp = System.currentTimeMillis(),
+            sourceDeviceId = sourceDeviceId
+        )
+        drinkDao.delete(stamped)
         propagateSync(
             entityType = "drink",
             entityId = drink.id.toString(),
             operationType = PendingChangeEntity.OPERATION_DELETE,
-            payload = SyncPayloadSerializer.serializeDrink(drink)
+            payload = SyncPayloadSerializer.serializeDrink(stamped)
         )
     }
 
