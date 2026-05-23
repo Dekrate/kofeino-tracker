@@ -2,10 +2,14 @@
 
 package pl.dekrate.kofeino.data.sync
 
+import androidx.room.withTransaction
 import com.google.android.gms.wearable.MessageEvent
 import kotlinx.coroutines.CancellationException
+import pl.dekrate.kofeino.data.local.CaffeineDatabase
 import pl.dekrate.kofeino.data.local.CaffeineIntakeDao
 import pl.dekrate.kofeino.data.local.DrinkDao
+import pl.dekrate.kofeino.domain.model.CaffeineIntake
+import pl.dekrate.kofeino.domain.model.DrinkEntity
 import timber.log.Timber
 import java.util.Locale
 import javax.inject.Inject
@@ -14,15 +18,19 @@ import javax.inject.Singleton
 /**
  * Processes incoming sync messages from the paired phone on the watch module.
  *
- * ## Design
- * Unlike the app module's [pl.dekrate.kofeino.tracker.data.sync.IncomingSyncProcessor],
- * this processor has **no ConflictResolver** — the watch is a secondary device and
- * always accepts changes from the phone as authoritative.
+ * ## Conflict Resolution (LWW)
+ * Before applying any incoming change, this processor uses [ConflictResolver]
+ * to detect and resolve conflicts using a Last-Write-Wins strategy:
+ * - Compare lastModifiedTimestamp: the newer timestamp wins.
+ * - Within 1ms tolerance: phone wins (phone is the primary device).
+ * - Delete always wins over modification.
+ * - Loser data is logged to the [ConflictLogDao] for user review.
  *
  * ## Flow
  * 1. Parse the [MessageEvent] path into entity type and operation type.
  * 2. Deserialize the payload JSON into a domain entity.
- * 3. Apply the change directly to Room DAOs — **bypassing the repository
+ * 3. Resolve conflict between local and incoming using [ConflictResolver].
+ * 4. Apply the winning entity to Room DAOs — **bypassing the repository
  *    layer** to prevent echo-loop re-sync.
  *
  * ## Echo-loop prevention
@@ -33,8 +41,10 @@ import javax.inject.Singleton
  */
 @Singleton
 class IncomingSyncProcessor @Inject constructor(
+    private val database: CaffeineDatabase,
     private val intakeDao: CaffeineIntakeDao,
-    private val drinkDao: DrinkDao
+    private val drinkDao: DrinkDao,
+    private val conflictLogDao: ConflictLogDao
 ) {
     companion object {
         private const val SYNC_PATH_PREFIX = "/sync"
@@ -92,6 +102,105 @@ class IncomingSyncProcessor @Inject constructor(
     }
 
     // ------------------------------------------------------------------
+    // Helper methods
+    // ------------------------------------------------------------------
+
+    private suspend fun applyIntakeChange(
+        existing: CaffeineIntake?,
+        result: ConflictResolver.ConflictResult<CaffeineIntake>,
+        incoming: CaffeineIntake,
+        operationType: String
+    ): ProcessResult {
+        val winner = result.winner
+        when (operationType) {
+            PendingChangeEntity.OPERATION_DELETE -> {
+                if (existing != null) {
+                    intakeDao.delete(existing)
+                    Timber.d("Sync applied DELETE intake id=%s", incoming.id)
+                } else {
+                    Timber.d("Sync received DELETE for non-existent intake id=%s (ignored)", incoming.id)
+                }
+            }
+            else -> {
+                if (existing != null) {
+                    intakeDao.update(winner)
+                    Timber.d("Sync applied UPDATE intake id=%s", incoming.id)
+                } else {
+                    intakeDao.insert(winner)
+                    Timber.d("Sync applied INSERT intake id=%s", incoming.id)
+                }
+            }
+        }
+
+        logConflictIfNeeded(result, existing, incoming, "intake")
+        return ProcessResult.APPLIED
+    }
+
+    private suspend fun applyDrinkChange(
+        existing: DrinkEntity?,
+        result: ConflictResolver.ConflictResult<DrinkEntity>,
+        incoming: DrinkEntity,
+        operationType: String
+    ): ProcessResult {
+        val winner = result.winner
+        when (operationType) {
+            PendingChangeEntity.OPERATION_DELETE -> {
+                if (existing != null) {
+                    drinkDao.delete(existing)
+                    Timber.d("Sync applied DELETE drink id=%s", incoming.id)
+                } else {
+                    Timber.d("Sync received DELETE for non-existent drink id=%s (ignored)", incoming.id)
+                }
+            }
+            else -> {
+                if (existing != null) {
+                    drinkDao.update(winner)
+                    Timber.d("Sync applied UPDATE drink id=%s", incoming.id)
+                } else {
+                    drinkDao.insert(winner)
+                    Timber.d("Sync applied INSERT drink id=%s", incoming.id)
+                }
+            }
+        }
+
+        logConflictIfNeeded(result, existing, incoming, "drink")
+        return ProcessResult.APPLIED
+    }
+
+    private suspend fun logConflictIfNeeded(
+        result: ConflictResolver.ConflictResult<*>,
+        existing: Any?,
+        incoming: Any?,
+        entityType: String
+    ) {
+        if (result.wasConflict) {
+            conflictLogDao.log(
+                ConflictLogEntity(
+                    entityType = entityType,
+                    entityId = when (incoming) {
+                        is CaffeineIntake -> incoming.id.toString()
+                        is DrinkEntity -> incoming.id.toString()
+                        else -> ""
+                    },
+                    localEntityJson = ConflictResolver.serializeEntity(existing),
+                    incomingEntityJson = ConflictResolver.serializeEntity(incoming),
+                    decisionReason = result.reason,
+                    winningSourceDeviceId = result.winner.let {
+                        when (it) {
+                            is CaffeineIntake -> it.sourceDeviceId
+                            is DrinkEntity -> it.sourceDeviceId
+                            else -> ""
+                        }
+                    }
+                )
+            )
+            if (result.clockSkewWarning != null) {
+                Timber.w(result.clockSkewWarning)
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------
     // Intake processing
     // ------------------------------------------------------------------
 
@@ -107,23 +216,15 @@ class IncomingSyncProcessor @Inject constructor(
         }
 
         return try {
-            when (operationType) {
-                PendingChangeEntity.OPERATION_DELETE -> {
-                    intakeDao.delete(incoming)
-                    Timber.d("Sync applied DELETE intake id=%s", incoming.id)
-                }
-                else -> {
-                    val existing = intakeDao.getIntakeById(incoming.id)
-                    if (existing != null) {
-                        intakeDao.update(incoming)
-                        Timber.d("Sync applied UPDATE intake id=%s", incoming.id)
-                    } else {
-                        intakeDao.insert(incoming)
-                        Timber.d("Sync applied INSERT intake id=%s", incoming.id)
-                    }
-                }
+            database.withTransaction {
+                val existing = intakeDao.getIntakeById(incoming.id)
+                val result = ConflictResolver.resolveIntakeConflict(
+                    local = existing,
+                    incoming = incoming,
+                    operationType = operationType
+                )
+                applyIntakeChange(existing, result, incoming, operationType)
             }
-            ProcessResult.APPLIED
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -148,23 +249,15 @@ class IncomingSyncProcessor @Inject constructor(
         }
 
         return try {
-            when (operationType) {
-                PendingChangeEntity.OPERATION_DELETE -> {
-                    drinkDao.delete(incoming)
-                    Timber.d("Sync applied DELETE drink id=%s", incoming.id)
-                }
-                else -> {
-                    val existing = drinkDao.getDrinkById(incoming.id)
-                    if (existing != null) {
-                        drinkDao.update(incoming)
-                        Timber.d("Sync applied UPDATE drink id=%s", incoming.id)
-                    } else {
-                        drinkDao.insert(incoming)
-                        Timber.d("Sync applied INSERT drink id=%s", incoming.id)
-                    }
-                }
+            database.withTransaction {
+                val existing = drinkDao.getDrinkById(incoming.id)
+                val result = ConflictResolver.resolveDrinkConflict(
+                    local = existing,
+                    incoming = incoming,
+                    operationType = operationType
+                )
+                applyDrinkChange(existing, result, incoming, operationType)
             }
-            ProcessResult.APPLIED
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {

@@ -41,7 +41,7 @@ class CaffeineRepositoryImplTest {
 
     @Before
     fun setUp() {
-        repository = CaffeineRepositoryImpl(intakeDao, drinkDao, database, realTimeSyncService)
+        repository = CaffeineRepositoryImpl(intakeDao, drinkDao, database, realTimeSyncService, sourceDeviceId = "phone")
     }
 
     // --- Intake tests ---
@@ -53,7 +53,7 @@ class CaffeineRepositoryImplTest {
         val result = repository.addIntake(sampleIntake)
 
         assert(result == 42L) { "Expected 42L, got $result" }
-        coVerify { intakeDao.insert(sampleIntake) }
+        coVerify { intakeDao.insert(match { it.drinkName == "Espresso" && it.sourceDeviceId == "phone" }) }
     }
 
     @Test
@@ -62,7 +62,7 @@ class CaffeineRepositoryImplTest {
 
         repository.updateIntake(sampleIntake)
 
-        coVerify { intakeDao.update(sampleIntake) }
+        coVerify { intakeDao.update(match { it.id == sampleIntake.id && it.sourceDeviceId == "phone" }) }
     }
 
     @Test
@@ -71,7 +71,7 @@ class CaffeineRepositoryImplTest {
 
         repository.deleteIntake(sampleIntake)
 
-        coVerify { intakeDao.delete(sampleIntake) }
+        coVerify { intakeDao.delete(match { it.id == sampleIntake.id && it.sourceDeviceId == "phone" }) }
     }
 
     @Test
@@ -168,7 +168,7 @@ class CaffeineRepositoryImplTest {
         val result = repository.addDrink(sampleDrink)
 
         assert(result == 7L) { "Expected 7L, got $result" }
-        coVerify { drinkDao.insert(sampleDrink) }
+        coVerify { drinkDao.insert(match { it.name == "Espresso" && it.sourceDeviceId == "phone" }) }
     }
 
     @Test
@@ -177,7 +177,7 @@ class CaffeineRepositoryImplTest {
 
         repository.updateDrink(sampleDrink)
 
-        coVerify { drinkDao.update(sampleDrink) }
+        coVerify { drinkDao.update(match { it.id == sampleDrink.id && it.sourceDeviceId == "phone" }) }
     }
 
     @Test
@@ -186,7 +186,7 @@ class CaffeineRepositoryImplTest {
 
         repository.deleteDrink(sampleDrink)
 
-        coVerify { drinkDao.delete(sampleDrink) }
+        coVerify { drinkDao.delete(match { it.id == sampleDrink.id && it.sourceDeviceId == "phone" }) }
     }
 
     @Test

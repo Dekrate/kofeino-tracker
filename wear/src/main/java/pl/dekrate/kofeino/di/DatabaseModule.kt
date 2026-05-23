@@ -8,6 +8,7 @@ import pl.dekrate.kofeino.data.local.DrinkDao
 import pl.dekrate.kofeino.data.local.OfficialDrinkCacheDao
 import pl.dekrate.kofeino.data.repository.CaffeineRepository
 import pl.dekrate.kofeino.data.repository.CaffeineRepositoryImpl
+import pl.dekrate.kofeino.data.sync.ConflictLogDao
 import pl.dekrate.kofeino.data.sync.PendingChangeDao
 import pl.dekrate.kofeino.data.sync.PendingSyncQueue
 import pl.dekrate.kofeino.data.sync.RealTimeSyncService
@@ -59,6 +60,11 @@ object DatabaseModule {
     }
 
     @Provides
+    fun provideConflictLogDao(database: CaffeineDatabase): ConflictLogDao {
+        return database.conflictLogDao()
+    }
+
+    @Provides
     @Singleton
     fun providePendingSyncQueue(
         dao: PendingChangeDao,
@@ -74,7 +80,7 @@ object DatabaseModule {
         drinkDao: DrinkDao,
         realTimeSyncService: RealTimeSyncService
     ): CaffeineRepositoryImpl {
-        return CaffeineRepositoryImpl(intakeDao, drinkDao, realTimeSyncService)
+        return CaffeineRepositoryImpl(intakeDao, drinkDao, realTimeSyncService, sourceDeviceId = "watch")
     }
 
     @Provides

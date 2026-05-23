@@ -1,6 +1,8 @@
 package pl.dekrate.kofeino.tracker.data.sync
 
+import androidx.room.withTransaction
 import com.google.android.gms.wearable.MessageEvent
+import pl.dekrate.kofeino.tracker.data.local.CaffeineDatabase
 import pl.dekrate.kofeino.tracker.data.local.CaffeineIntakeDao
 import pl.dekrate.kofeino.tracker.data.local.DrinkDao
 import pl.dekrate.kofeino.tracker.domain.model.CaffeineIntake
@@ -35,7 +37,8 @@ class IncomingSyncProcessor @Inject constructor(
     private val resolver: ConflictResolver,
     private val intakeDao: CaffeineIntakeDao,
     private val drinkDao: DrinkDao,
-    private val conflictLogDao: ConflictLogDao
+    private val conflictLogDao: ConflictLogDao,
+    private val database: CaffeineDatabase
 ) {
     companion object {
         private const val SYNC_PATH_PREFIX = "/sync"
@@ -109,20 +112,22 @@ class IncomingSyncProcessor @Inject constructor(
             Timber.w(e, "Failed to deserialize intake payload")
             return ProcessResult.IGNORED
         }
-        val local = intakeDao.getIntakeById(incoming.id)
+        return database.withTransaction {
+            val local = intakeDao.getIntakeById(incoming.id)
 
-        val localChange = local?.toSyncChange(
-            operationType = PendingChangeEntity.OPERATION_UPDATE,
-            source = DeviceSource.PHONE
-        )
+            val localChange = local?.toSyncChange(
+                operationType = PendingChangeEntity.OPERATION_UPDATE,
+                source = DeviceSource.PHONE
+            )
 
-        val incomingChange = incoming.toSyncChange(
-            operationType = operationType,
-            source = DeviceSource.WATCH
-        )
+            val incomingChange = incoming.toSyncChange(
+                operationType = operationType,
+                source = DeviceSource.WATCH
+            )
 
-        val resolution = resolver.resolve(localChange, incomingChange)
-        return applyIntakeResolution(resolution, incoming, local)
+            val resolution = resolver.resolve(localChange, incomingChange)
+            applyIntakeResolution(resolution, incoming, local)
+        }
     }
 
     private suspend fun applyIntakeResolution(
@@ -178,20 +183,22 @@ class IncomingSyncProcessor @Inject constructor(
             Timber.w(e, "Failed to deserialize drink payload")
             return ProcessResult.IGNORED
         }
-        val local = drinkDao.getDrinkById(incoming.id)
+        return database.withTransaction {
+            val local = drinkDao.getDrinkById(incoming.id)
 
-        val localChange = local?.toSyncChange(
-            operationType = PendingChangeEntity.OPERATION_UPDATE,
-            source = DeviceSource.PHONE
-        )
+            val localChange = local?.toSyncChange(
+                operationType = PendingChangeEntity.OPERATION_UPDATE,
+                source = DeviceSource.PHONE
+            )
 
-        val incomingChange = incoming.toSyncChange(
-            operationType = operationType,
-            source = DeviceSource.WATCH
-        )
+            val incomingChange = incoming.toSyncChange(
+                operationType = operationType,
+                source = DeviceSource.WATCH
+            )
 
-        val resolution = resolver.resolve(localChange, incomingChange)
-        return applyDrinkResolution(resolution, incoming, local)
+            val resolution = resolver.resolve(localChange, incomingChange)
+            applyDrinkResolution(resolution, incoming, local)
+        }
     }
 
     private suspend fun applyDrinkResolution(
@@ -282,7 +289,7 @@ class IncomingSyncProcessor @Inject constructor(
         entityId = id.toString(),
         operationType = operationType,
         payload = SyncPayloadSerializer.serializeIntake(this),
-        timestamp = timestamp,
+        timestamp = lastModifiedTimestamp,
         source = source
     )
 
@@ -294,10 +301,7 @@ class IncomingSyncProcessor @Inject constructor(
         entityId = id.toString(),
         operationType = operationType,
         payload = SyncPayloadSerializer.serializeDrink(this),
-        // NOTE: DrinkEntity has no timestamp field — wall-clock time is used for LWW resolution.
-        // This means rapid conflicting drink edits on different devices may resolve based on
-        // processing time rather than modification time.
-        timestamp = System.currentTimeMillis(),
+        timestamp = lastModifiedTimestamp,
         source = source
     )
 }

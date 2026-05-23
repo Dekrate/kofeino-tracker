@@ -101,7 +101,7 @@ object DatabaseModule {
         database: CaffeineDatabase,
         realTimeSyncService: RealTimeSyncService
     ): CaffeineRepositoryImpl {
-        return CaffeineRepositoryImpl(intakeDao, drinkDao, database, realTimeSyncService)
+        return CaffeineRepositoryImpl(intakeDao, drinkDao, database, realTimeSyncService, sourceDeviceId = "phone")
     }
 
     @Provides

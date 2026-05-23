@@ -21,7 +21,7 @@ import pl.dekrate.kofeino.tracker.domain.model.DrinkEntity
         PendingChangeEntity::class,
         ConflictLogEntry::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 abstract class CaffeineDatabase : RoomDatabase() {

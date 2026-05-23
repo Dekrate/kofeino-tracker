@@ -11,5 +11,7 @@ data class DrinkEntity(
     val name: String,
     val caffeineMg: Int,
     val volumeMl: Int,
-    val isDefault: Boolean = false
+    val isDefault: Boolean = false,
+    val lastModifiedTimestamp: Long = System.currentTimeMillis(),
+    val sourceDeviceId: String = ""
 )
