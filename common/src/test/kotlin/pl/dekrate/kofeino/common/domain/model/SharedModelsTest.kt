@@ -3,6 +3,7 @@ package pl.dekrate.kofeino.common.domain.model
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertNotNull
 import org.junit.Test
 
 class SharedModelsTest {
@@ -200,5 +201,147 @@ class SharedModelsTest {
         )
         assertEquals(drink1, drink2)
         assertEquals(drink1.hashCode(), drink2.hashCode())
+    }
+
+    // --- CaffeineIntake edge cases ---
+
+    @Test
+    fun `CaffeineIntake with zero caffeine and volume`() {
+        val intake = CaffeineIntake(
+            drinkName = "Water",
+            caffeineMg = 0,
+            volumeMl = 0,
+            timestamp = 0L,
+        )
+        assertEquals("Water", intake.drinkName)
+        assertEquals(0, intake.caffeineMg)
+        assertEquals(0, intake.volumeMl)
+        assertEquals(0L, intake.timestamp)
+        assertEquals(0L, intake.id)
+        assertEquals(0L, intake.lastModifiedTimestamp)
+        assertEquals("", intake.sourceDeviceId)
+        assertNull(intake.drinkId)
+    }
+
+    @Test
+    fun `CaffeineIntake with extreme values`() {
+        val intake = CaffeineIntake(
+            drinkName = "Extreme",
+            caffeineMg = Int.MAX_VALUE,
+            volumeMl = Int.MAX_VALUE,
+            timestamp = Long.MAX_VALUE,
+        )
+        assertEquals(Int.MAX_VALUE, intake.caffeineMg)
+        assertEquals(Int.MAX_VALUE, intake.volumeMl)
+        assertEquals(Long.MAX_VALUE, intake.timestamp)
+    }
+
+    @Test
+    fun `CaffeineIntake with negative caffeine`() {
+        val intake = CaffeineIntake(
+            drinkName = "Negative",
+            caffeineMg = -50,
+            volumeMl = 250,
+            timestamp = 1000L,
+        )
+        assertEquals(-50, intake.caffeineMg)
+        assertEquals(250, intake.volumeMl)
+        assertEquals(1000L, intake.timestamp)
+    }
+
+    @Test
+    fun `CaffeineIntake with explicit null drinkId`() {
+        val intake = CaffeineIntake(
+            drinkName = "Tea",
+            caffeineMg = 30,
+            volumeMl = 200,
+            timestamp = 500L,
+            drinkId = null,
+        )
+        assertNull(intake.drinkId)
+    }
+
+    // --- DrinkEntity edge cases ---
+
+    @Test
+    fun `DrinkEntity with empty name`() {
+        val drink = DrinkEntity(
+            name = "",
+            caffeineMg = 50,
+            volumeMl = 150,
+        )
+        assertEquals("", drink.name)
+        assertEquals(50, drink.caffeineMg)
+        assertEquals(150, drink.volumeMl)
+    }
+
+    @Test
+    fun `DrinkEntity with isDefault true and negative caffeine`() {
+        val drink = DrinkEntity(
+            name = "Bad Coffee",
+            caffeineMg = -10,
+            volumeMl = 200,
+            isDefault = true,
+        )
+        assertTrue(drink.isDefault)
+        assertEquals(-10, drink.caffeineMg)
+    }
+
+    @Test
+    fun `DrinkEntity with zero volume`() {
+        val drink = DrinkEntity(
+            name = "Zero Volume",
+            caffeineMg = 100,
+            volumeMl = 0,
+        )
+        assertEquals(0, drink.volumeMl)
+        assertEquals(100, drink.caffeineMg)
+    }
+
+    // --- OfficialDrink edge cases ---
+
+    @Test
+    fun `OfficialDrink with zero caffeine`() {
+        val drink = OfficialDrink(
+            barcode = "0000000000000",
+            name = "Caffeine Free",
+            caffeineMgPer100ml = 0.0,
+        )
+        assertEquals(0.0, drink.caffeineMgPer100ml, 0.0)
+    }
+
+    @Test
+    fun `OfficialDrink with extremely high caffeine`() {
+        val drink = OfficialDrink(
+            barcode = "9999999999999",
+            name = "Ultra Shot",
+            caffeineMgPer100ml = 9999.9,
+        )
+        assertEquals(9999.9, drink.caffeineMgPer100ml, 0.0)
+    }
+
+    @Test
+    fun `OfficialDrink with all nullable fields as null`() {
+        val drink = OfficialDrink(
+            barcode = "1234567890123",
+            name = "Bare Minimum",
+            caffeineMgPer100ml = 5.0,
+            brand = null,
+            energyKcalPer100ml = null,
+            quantity = null,
+        )
+        assertNull(drink.brand)
+        assertNull(drink.energyKcalPer100ml)
+        assertNull(drink.quantity)
+    }
+
+    @Test
+    fun `OfficialDrink source defaults correctly`() {
+        val drink = OfficialDrink(
+            barcode = "5901234567890",
+            name = "Default Source",
+            caffeineMgPer100ml = 10.0,
+        )
+        assertEquals("Open Food Facts", drink.source)
     }
 }
