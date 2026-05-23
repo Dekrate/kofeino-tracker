@@ -68,6 +68,21 @@
     <string name="language_switch_description">Switch language to %s</string>
     <string name="language_system_description">Use system language</string>
 
+    <!-- Caffeine Limit Profiles -->
+    <string name="caffeine_limit_title">Caffeine limit</string>
+    <string name="caffeine_limit_summary">Choose your daily caffeine limit. This determines when notifications alert you.</string>
+    <string name="profile_adult">Standard adult</string>
+    <string name="profile_adult_desc">400 mg — recommended by EFSA</string>
+    <string name="profile_pregnant">Pregnant / breastfeeding</string>
+    <string name="profile_pregnant_desc">200 mg — recommended by WHO</string>
+    <string name="profile_sensitive">Caffeine-sensitive</string>
+    <string name="profile_sensitive_desc">100 mg — for low tolerance</string>
+    <string name="profile_custom">Custom</string>
+    <string name="profile_custom_desc">Set your own daily limit</string>
+    <string name="custom_limit_value">%d mg</string>
+    <string name="custom_limit_decrease">Decrease custom limit by 25 mg</string>
+    <string name="custom_limit_increase">Increase custom limit by 25 mg</string>
+
     <!-- Theme -->
     <string name="theme">Theme</string>
     <string name="app_theme">App theme</string>
@@ -89,7 +104,7 @@
     <string name="backup_error">Backup failed: %s</string>
     <string name="backup_error_unknown">Unknown error</string>
     <string name="backup_import_settings">Import settings</string>
-    <string name="backup_import_settings_desc">Restore language, theme, and notification preferences</string>
+    <string name="backup_import_settings_desc">Restore language, theme, caffeine limit, and notification preferences</string>
     <string name="backup_file_name">KofeinoTracker_backup_%1$s.json</string>
 
     <!-- About -->

@@ -68,6 +68,21 @@
     <string name="language_switch_description">Zmień język na %s</string>
     <string name="language_system_description">Użyj języka systemowego</string>
 
+    <!-- Caffeine limit -->
+    <string name="caffeine_limit_title">Limit kofeiny</string>
+    <string name="caffeine_limit_summary">Wybierz dzienny limit kofeiny. Określa, kiedy powiadomienia będą Cię ostrzegać.</string>
+    <string name="profile_adult">Standardowy dorosły</string>
+    <string name="profile_adult_desc">400 mg — zalecane przez EFSA</string>
+    <string name="profile_pregnant">W ciąży / karmiąca</string>
+    <string name="profile_pregnant_desc">200 mg — zalecane przez WHO</string>
+    <string name="profile_sensitive">Wrażliwy na kofeinę</string>
+    <string name="profile_sensitive_desc">100 mg — dla niskiej tolerancji</string>
+    <string name="profile_custom">Własny</string>
+    <string name="profile_custom_desc">Ustaw własny dzienny limit</string>
+    <string name="custom_limit_value">%d mg</string>
+    <string name="custom_limit_decrease">Zmniejsz limit o 25 mg</string>
+    <string name="custom_limit_increase">Zwiększ limit o 25 mg</string>
+
     <!-- Theme -->
     <string name="theme">Motyw</string>
     <string name="app_theme">Motyw aplikacji</string>
@@ -170,7 +185,7 @@
     <string name="backup_error">Błąd kopii zapasowej: %s</string>
     <string name="backup_error_unknown">Nieznany błąd</string>
     <string name="backup_import_settings">Importuj ustawienia</string>
-    <string name="backup_import_settings_desc">Przywróć język, motyw i preferencje powiadomień</string>
+    <string name="backup_import_settings_desc">Przywróć język, motyw, limit kofeiny i preferencje powiadomień</string>
     <string name="backup_file_name">KofeinoTracker_kopia_%1$s.json</string>
 
     <!-- OfficialDrinksScreen -->

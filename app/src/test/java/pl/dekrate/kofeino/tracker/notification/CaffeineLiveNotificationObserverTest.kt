@@ -26,7 +26,6 @@ import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 import pl.dekrate.kofeino.tracker.data.local.DataStorePreferences
 import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepository
-import pl.dekrate.kofeino.tracker.presentation.viewmodel.HomeViewModel
 
 /**
  * Unit tests for [CaffeineLiveNotificationObserver].
@@ -56,6 +55,7 @@ class CaffeineLiveNotificationObserverTest {
     private lateinit var observer: CaffeineLiveNotificationObserver
     private lateinit var testScope: CoroutineScope
     private val liveEnabledFlow = MutableStateFlow(true)
+    private val caffeineLimitFlow = MutableStateFlow(400)
 
     @Before
     fun setup() {
@@ -72,6 +72,7 @@ class CaffeineLiveNotificationObserverTest {
         every { preferences.observeNotificationRegularEnabled() } returns MutableStateFlow(false)
         every { preferences.observeNotificationEveningEnabled() } returns MutableStateFlow(false)
         every { preferences.isNotificationLiveEnabled() } returns true
+        every { preferences.observeCaffeineLimitMg() } returns caffeineLimitFlow
         every { reminderManager.scheduleMorning(any()) } just runs
         every { reminderManager.scheduleRegular(any()) } just runs
         every { reminderManager.scheduleEvening(any()) } just runs
@@ -158,15 +159,15 @@ class CaffeineLiveNotificationObserverTest {
         testDispatcher.scheduler.advanceUntilIdle()
 
         // Initial state should trigger update
-        verify(atLeast = 1) { notificationManager.update(0, HomeViewModel.SAFE_LIMIT_MG) }
+        verify(atLeast = 1) { notificationManager.update(0, 400) }
 
         totalFlow.value = 150
         testDispatcher.scheduler.advanceUntilIdle()
-        verify { notificationManager.update(150, HomeViewModel.SAFE_LIMIT_MG) }
+        verify { notificationManager.update(150, 400) }
 
         totalFlow.value = 300
         testDispatcher.scheduler.advanceUntilIdle()
-        verify { notificationManager.update(300, HomeViewModel.SAFE_LIMIT_MG) }
+        verify { notificationManager.update(300, 400) }
     }
 
     @Test
@@ -196,6 +197,34 @@ class CaffeineLiveNotificationObserverTest {
         verify(exactly = 1) { notificationManager.dismiss() }
     }
 
+    // ===== Limit change tests =====
+
+    @Test
+    fun `on limit change notification is updated with new limit`() = runTest(testDispatcher) {
+        val totalFlow = MutableStateFlow(200)
+        every { repository.getTotalCaffeineForDate(any()) } returns totalFlow
+
+        clearMocks(notificationManager)
+        every { notificationManager.update(any(), any()) } just runs
+        every { notificationManager.resetDismissedFlag() } just runs
+
+        observer.start()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Initial state should be 200 total with 400 limit
+        verify(atLeast = 1) { notificationManager.update(200, 400) }
+
+        // Change limit to 200 (pregnant profile) - same as total
+        caffeineLimitFlow.value = 200
+        testDispatcher.scheduler.advanceUntilIdle()
+        verify { notificationManager.update(200, 200) }
+
+        // Change limit to 100 (sensitive profile)
+        caffeineLimitFlow.value = 100
+        testDispatcher.scheduler.advanceUntilIdle()
+        verify { notificationManager.update(200, 100) }
+    }
+
     @Test
     fun `repository error does not crash observer`() = runTest(testDispatcher) {
         val totalFlow = MutableStateFlow(0)
@@ -212,6 +241,6 @@ class CaffeineLiveNotificationObserverTest {
         totalFlow.value = 50
         testDispatcher.scheduler.advanceUntilIdle()
 
-        verify { notificationManager.update(50, HomeViewModel.SAFE_LIMIT_MG) }
+        verify { notificationManager.update(50, 400) }
     }
 }

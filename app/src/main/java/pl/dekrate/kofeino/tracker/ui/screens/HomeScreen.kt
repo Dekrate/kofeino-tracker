@@ -172,7 +172,7 @@ private fun HomeContent(
                 total = state.totalCaffeineMg,
                 progress = state.progress,
                 exceeded = state.isLimitExceeded,
-                safeLimitMg = HomeViewModel.SAFE_LIMIT_MG,
+                safeLimitMg = state.safeLimitMg,
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -193,7 +193,7 @@ private fun HomeContent(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = "${state.totalCaffeineMg} / ${HomeViewModel.SAFE_LIMIT_MG} mg",
+                    text = "${state.totalCaffeineMg} / ${state.safeLimitMg} mg",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

@@ -21,6 +21,7 @@ import pl.dekrate.kofeino.tracker.R
 import pl.dekrate.kofeino.tracker.data.backup.BackupIOException
 import pl.dekrate.kofeino.tracker.data.backup.BackupManager
 import pl.dekrate.kofeino.tracker.data.backup.BackupVersionException
+import pl.dekrate.kofeino.tracker.data.local.CaffeineLimitProfile
 import pl.dekrate.kofeino.tracker.data.local.DataStorePreferences
 import pl.dekrate.kofeino.tracker.di.IoDispatcher
 import javax.inject.Inject
@@ -35,6 +36,9 @@ data class SettingsUiState(
     val notifMorningEnabled: Boolean = DataStorePreferences.DEFAULT_NOTIF_MORNING,
     val notifRegularEnabled: Boolean = DataStorePreferences.DEFAULT_NOTIF_REGULAR,
     val notifEveningEnabled: Boolean = DataStorePreferences.DEFAULT_NOTIF_EVENING,
+    // Caffeine limit profile
+    val currentCaffeineProfile: CaffeineLimitProfile = CaffeineLimitProfile.ADULT,
+    val currentCustomLimit: Int = DataStorePreferences.DEFAULT_CUSTOM_CAFFEINE_LIMIT,
     // Backup / Restore state
     val backupState: BackupUiState = BackupUiState.Idle,
     /** Whether to import settings from the backup file (toggled by user in UI). */
@@ -84,13 +88,17 @@ class SettingsViewModel @Inject constructor(
             val notifMorning = preferences.observeNotificationMorningEnabled().first()
             val notifRegular = preferences.observeNotificationRegularEnabled().first()
             val notifEvening = preferences.observeNotificationEveningEnabled().first()
+            val profile = preferences.observeCaffeineProfile().first()
+            val customLimit = preferences.observeCustomCaffeineLimit().first()
             _uiState.update {
                 it.copy(
                     currentLanguage = lang, currentThemeMode = theme,
                     notifLiveEnabled = notifLive,
                     notifMorningEnabled = notifMorning,
                     notifRegularEnabled = notifRegular,
-                    notifEveningEnabled = notifEvening
+                    notifEveningEnabled = notifEvening,
+                    currentCaffeineProfile = profile,
+                    currentCustomLimit = customLimit
                 )
             }
         }
@@ -147,6 +155,24 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             preferences.setNotificationEveningEnabled(enabled)
             _uiState.update { it.copy(notifEveningEnabled = enabled) }
+        }
+    }
+
+    // ===== Caffeine Limit Profile =====
+
+    fun setCaffeineProfile(profile: CaffeineLimitProfile) {
+        if (profile == _uiState.value.currentCaffeineProfile) return
+        viewModelScope.launch {
+            preferences.setCaffeineProfile(profile)
+            _uiState.update { it.copy(currentCaffeineProfile = profile) }
+        }
+    }
+
+    fun setCustomCaffeineLimit(mg: Int) {
+        if (mg == _uiState.value.currentCustomLimit) return
+        viewModelScope.launch {
+            preferences.setCustomCaffeineLimit(mg)
+            _uiState.update { it.copy(currentCustomLimit = mg) }
         }
     }
 

@@ -15,7 +15,6 @@ import androidx.core.app.NotificationManagerCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
 import pl.dekrate.kofeino.tracker.MainActivity
 import pl.dekrate.kofeino.tracker.R
-import pl.dekrate.kofeino.tracker.presentation.viewmodel.HomeViewModel
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -42,9 +41,6 @@ class CaffeineLiveNotificationManager @Inject constructor(
         const val NOTIFICATION_ID = 1001
         const val ACTION_DISMISS = "pl.dekrate.kofeino.tracker.action.DISMISS_LIVE"
         private const val TAG = "CaffeineNotifMgr"
-
-        /** The user-set daily target — reuses the 400 mg safe limit as progress ceiling. */
-        val TARGET_MG: Int get() = HomeViewModel.SAFE_LIMIT_MG
 
         /** Static reference for system-triggered receivers (MidnightReceiver). */
         @Volatile
@@ -103,7 +99,7 @@ class CaffeineLiveNotificationManager @Inject constructor(
      * @param targetMg  daily target (default 400 mg)
      */
     @SuppressLint("MissingPermission")
-    fun update(currentMg: Int, targetMg: Int = TARGET_MG) {
+    fun update(currentMg: Int, targetMg: Int) {
         if (isUserDismissed) {
             Timber.tag(TAG).d("Skipping update — user dismissed")
             return
