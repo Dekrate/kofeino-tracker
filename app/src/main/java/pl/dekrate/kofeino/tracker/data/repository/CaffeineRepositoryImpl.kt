@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
-import kotlinx.datetime.toInstant
 import timber.log.Timber
 import java.util.Calendar
 import javax.inject.Inject
