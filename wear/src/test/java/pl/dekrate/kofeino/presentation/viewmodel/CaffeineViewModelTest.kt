@@ -3,9 +3,10 @@ package pl.dekrate.kofeino.presentation.viewmodel
 import android.content.Context
 import app.cash.turbine.test
 import pl.dekrate.kofeino.data.local.CaffeinePreferences
-import pl.dekrate.kofeino.data.repository.CaffeineRepository
-import pl.dekrate.kofeino.domain.model.CaffeineIntake
-import pl.dekrate.kofeino.domain.model.DrinkEntity
+import kotlinx.datetime.LocalDate
+import pl.dekrate.kofeino.common.domain.repository.CaffeineRepository
+import pl.dekrate.kofeino.common.domain.model.CaffeineIntake
+import pl.dekrate.kofeino.common.domain.model.DrinkEntity
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify

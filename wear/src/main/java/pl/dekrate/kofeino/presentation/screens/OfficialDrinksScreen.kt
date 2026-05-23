@@ -44,7 +44,7 @@ import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.Text
 import pl.dekrate.kofeino.R
-import pl.dekrate.kofeino.domain.model.OfficialDrink
+import pl.dekrate.kofeino.common.domain.model.OfficialDrink
 import pl.dekrate.kofeino.presentation.viewmodel.OfficialDrinkViewModel
 import java.util.Locale
 

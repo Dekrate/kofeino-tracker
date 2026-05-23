@@ -35,5 +35,7 @@ kotlin {
 
 dependencies {
     detektPlugins(libs.detekt.compose.rules)
+    api(libs.kotlinx.coroutines.core)
+    api(libs.kotlinx.datetime)
     testImplementation(libs.junit)
 }

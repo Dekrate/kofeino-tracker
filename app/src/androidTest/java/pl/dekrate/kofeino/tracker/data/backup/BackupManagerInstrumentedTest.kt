@@ -21,8 +21,8 @@ import pl.dekrate.kofeino.tracker.data.local.CaffeineDatabase
 import pl.dekrate.kofeino.tracker.data.local.DataStorePreferences
 import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepository
 import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepositoryImpl
-import pl.dekrate.kofeino.tracker.domain.model.CaffeineIntake
-import pl.dekrate.kofeino.tracker.domain.model.DrinkEntity
+import pl.dekrate.kofeino.common.domain.model.CaffeineIntake
+import pl.dekrate.kofeino.common.domain.model.DrinkEntity
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 

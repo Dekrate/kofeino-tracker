@@ -2,8 +2,8 @@ package pl.dekrate.kofeino.presentation.viewmodel
 
 import app.cash.turbine.test
 import android.content.Context
-import pl.dekrate.kofeino.data.repository.OfficialDrinkRepository
-import pl.dekrate.kofeino.domain.model.OfficialDrink
+import pl.dekrate.kofeino.common.domain.repository.OfficialDrinkRepository
+import pl.dekrate.kofeino.common.domain.model.OfficialDrink
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every

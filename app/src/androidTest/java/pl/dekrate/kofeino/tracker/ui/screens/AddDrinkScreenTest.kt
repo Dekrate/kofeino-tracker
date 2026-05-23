@@ -18,7 +18,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import pl.dekrate.kofeino.tracker.R
-import pl.dekrate.kofeino.tracker.domain.model.DrinkEntity
+import pl.dekrate.kofeino.common.domain.model.DrinkEntity
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.DrinkUiState
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.DrinkViewModel
 import pl.dekrate.kofeino.tracker.ui.theme.KofeinoTrackerPhoneTheme

@@ -4,12 +4,16 @@ import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import app.cash.turbine.test
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import pl.dekrate.kofeino.common.domain.model.CaffeineIntake
+import pl.dekrate.kofeino.common.domain.model.DrinkEntity
 import pl.dekrate.kofeino.data.local.CaffeineDatabase
 import pl.dekrate.kofeino.data.local.CaffeineIntakeDao
 import pl.dekrate.kofeino.data.local.DrinkDao
 import pl.dekrate.kofeino.data.sync.RealTimeSyncService
-import pl.dekrate.kofeino.domain.model.CaffeineIntake
-import pl.dekrate.kofeino.domain.model.DrinkEntity
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -54,7 +58,7 @@ class CaffeineRepositoryImplTest {
         val intake = createIntake(caffeineMg = 63)
         repository.addIntake(intake)
 
-        val now = startOfDay(System.currentTimeMillis())
+        val now = millisToLocalDate(System.currentTimeMillis())
         repository.getIntakesForDate(now).test {
             val list = awaitItem()
             assertEquals(1, list.size)
@@ -68,7 +72,7 @@ class CaffeineRepositoryImplTest {
         repository.addIntake(createIntake(caffeineMg = 63))
         repository.addIntake(createIntake(caffeineMg = 95))
 
-        val now = startOfDay(System.currentTimeMillis())
+        val now = millisToLocalDate(System.currentTimeMillis())
         repository.getTotalCaffeineForDate(now).test {
             assertEquals(158, awaitItem())
             cancelAndIgnoreRemainingEvents()
@@ -81,7 +85,7 @@ class CaffeineRepositoryImplTest {
         repository.addIntake(createIntake(caffeineMg = 200, timestamp = yesterday))
         repository.addIntake(createIntake(caffeineMg = 50))
 
-        val now = startOfDay(System.currentTimeMillis())
+        val now = millisToLocalDate(System.currentTimeMillis())
         repository.getIntakesForDate(now).test {
             val list = awaitItem()
             assertEquals(1, list.size)
@@ -89,7 +93,7 @@ class CaffeineRepositoryImplTest {
             cancelAndIgnoreRemainingEvents()
         }
 
-        val yesterdayStart = startOfDay(yesterday)
+        val yesterdayStart = millisToLocalDate(yesterday)
         repository.getIntakesForDate(yesterdayStart).test {
             val list = awaitItem()
             assertEquals(1, list.size)
@@ -103,7 +107,7 @@ class CaffeineRepositoryImplTest {
         repository.addIntake(createIntake(caffeineMg = 100))
         repository.clearAll()
 
-        val now = startOfDay(System.currentTimeMillis())
+        val now = millisToLocalDate(System.currentTimeMillis())
         repository.getIntakesForDate(now).test {
             assertEquals(emptyList<CaffeineIntake>(), awaitItem())
             cancelAndIgnoreRemainingEvents()
@@ -113,7 +117,7 @@ class CaffeineRepositoryImplTest {
     @Test
     fun `updateIntake should persist changes`() = runTest {
         repository.addIntake(createIntake(caffeineMg = 50))
-        val now = startOfDay(System.currentTimeMillis())
+        val now = millisToLocalDate(System.currentTimeMillis())
         val intake = repository.getIntakesForDate(now).let {
             // find the intake via test
             var result: CaffeineIntake? = null
@@ -134,7 +138,7 @@ class CaffeineRepositoryImplTest {
     @Test
     fun `deleteIntake should remove entry`() = runTest {
         repository.addIntake(createIntake(caffeineMg = 50))
-        val now = startOfDay(System.currentTimeMillis())
+        val now = millisToLocalDate(System.currentTimeMillis())
         var intake: CaffeineIntake? = null
         repository.getIntakesForDate(now).test {
             intake = awaitItem().first()
@@ -150,7 +154,7 @@ class CaffeineRepositoryImplTest {
 
     @Test
     fun `empty repository should emit zero total and empty list`() = runTest {
-        val now = startOfDay(System.currentTimeMillis())
+        val now = millisToLocalDate(System.currentTimeMillis())
         repository.getIntakesForDate(now).test {
             assertEquals(emptyList<CaffeineIntake>(), awaitItem())
             cancelAndIgnoreRemainingEvents()
@@ -168,7 +172,7 @@ class CaffeineRepositoryImplTest {
         repository.addIntake(createIntake(caffeineMg = 20, timestamp = now))
         repository.addIntake(createIntake(caffeineMg = 30, timestamp = now - 5_000))
 
-        val today = startOfDay(now)
+        val today = millisToLocalDate(now)
         repository.getIntakesForDate(today).test {
             val list = awaitItem()
             assertEquals(listOf(20, 30, 10), list.map { it.caffeineMg })
@@ -199,7 +203,7 @@ class CaffeineRepositoryImplTest {
         repository.addDrink(DrinkEntity(name = "A", caffeineMg = 10, volumeMl = 100))
         repository.addDrink(DrinkEntity(name = "B", caffeineMg = 20, volumeMl = 200))
 
-        val now = startOfDay(System.currentTimeMillis())
+        val now = millisToLocalDate(System.currentTimeMillis())
         repository.getAllDrinks().test {
             val list = awaitItem()
             assertTrue(list.size >= 2) // may include seeded defaults
@@ -347,7 +351,7 @@ class CaffeineRepositoryImplTest {
         repository.addIntake(createIntake(caffeineMg = 20))
         repository.addIntake(createIntake(caffeineMg = 30))
 
-        val now = startOfDay(System.currentTimeMillis())
+        val now = millisToLocalDate(System.currentTimeMillis())
         val intakes = repository.getIntakesForDate(now).let {
             var result = listOf<CaffeineIntake>()
             repository.getIntakesForDate(now).test {
@@ -370,15 +374,8 @@ class CaffeineRepositoryImplTest {
      * Replikuje logikę CaffeineRepositoryImpl.dayBounds dla testów.
      * Zwraca początek dnia (północ) dla podanego timestampu.
      */
-    private fun testDayStart(millis: Long): Long {
-        val cal = java.util.Calendar.getInstance().apply {
-            timeInMillis = millis
-            set(java.util.Calendar.HOUR_OF_DAY, 0)
-            set(java.util.Calendar.MINUTE, 0)
-            set(java.util.Calendar.SECOND, 0)
-            set(java.util.Calendar.MILLISECOND, 0)
-        }
-        return cal.timeInMillis
+    private fun testDayStart(millis: Long): LocalDate {
+        return millisToLocalDate(millis)
     }
 
     private fun createIntake(
@@ -393,15 +390,9 @@ class CaffeineRepositoryImplTest {
         )
     }
 
-    private fun startOfDay(millis: Long): Long {
-        val cal = java.util.Calendar.getInstance().apply {
-            timeInMillis = millis
-            set(java.util.Calendar.HOUR_OF_DAY, 0)
-            set(java.util.Calendar.MINUTE, 0)
-            set(java.util.Calendar.SECOND, 0)
-            set(java.util.Calendar.MILLISECOND, 0)
-        }
-        return cal.timeInMillis
+    private fun millisToLocalDate(millis: Long): LocalDate {
+        return Instant.fromEpochMilliseconds(millis)
+            .toLocalDateTime(TimeZone.currentSystemDefault()).date
     }
 
     // ===== Edge case tests =====
@@ -426,7 +417,7 @@ class CaffeineRepositoryImplTest {
 
     @Test
     fun `getTotalCaffeineForDate with no intakes should emit zero`() = runTest {
-        val now = startOfDay(System.currentTimeMillis())
+        val now = millisToLocalDate(System.currentTimeMillis())
         repository.getTotalCaffeineForDate(now).test {
             assertEquals(0, awaitItem())
             cancelAndIgnoreRemainingEvents()
@@ -437,8 +428,8 @@ class CaffeineRepositoryImplTest {
     fun `getIntakesForDate with future date should return empty`() = runTest {
         repository.addIntake(createIntake(caffeineMg = 50))
 
-        val futureStart = startOfDay(System.currentTimeMillis()) + 86_400_000L * 365
-        repository.getIntakesForDate(futureStart).test {
+        val futureDate = millisToLocalDate(System.currentTimeMillis() + 86_400_000L * 365)
+        repository.getIntakesForDate(futureDate).test {
             assertEquals(emptyList<CaffeineIntake>(), awaitItem())
             cancelAndIgnoreRemainingEvents()
         }

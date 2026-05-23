@@ -1,5 +1,14 @@
 package pl.dekrate.kofeino.data.repository
 
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
+import pl.dekrate.kofeino.common.domain.repository.CaffeineRepository
+import pl.dekrate.kofeino.common.domain.model.CaffeineIntake as CommonCaffeineIntake
+import pl.dekrate.kofeino.common.domain.model.DrinkEntity as CommonDrinkEntity
 import pl.dekrate.kofeino.data.local.CaffeineIntakeDao
 import pl.dekrate.kofeino.data.local.DrinkDao
 import pl.dekrate.kofeino.data.sync.PendingChangeEntity
@@ -7,8 +16,6 @@ import pl.dekrate.kofeino.data.sync.RealTimeSyncService
 import pl.dekrate.kofeino.data.sync.SyncPayloadSerializer
 import pl.dekrate.kofeino.domain.model.CaffeineIntake
 import pl.dekrate.kofeino.domain.model.DrinkEntity
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.flow.Flow
 import timber.log.Timber
 import java.util.Calendar
 import javax.inject.Inject
@@ -24,8 +31,9 @@ class CaffeineRepositoryImpl @Inject constructor(
 
     // --- Intake operations ---
 
-    override suspend fun addIntake(intake: CaffeineIntake): Long {
-        val stamped = intake.copy(
+    override suspend fun addIntake(intake: CommonCaffeineIntake): Long {
+        val entity = intake.toEntity()
+        val stamped = entity.copy(
             lastModifiedTimestamp = System.currentTimeMillis(),
             sourceDeviceId = sourceDeviceId
         )
@@ -40,8 +48,9 @@ class CaffeineRepositoryImpl @Inject constructor(
         return id
     }
 
-    override suspend fun updateIntake(intake: CaffeineIntake) {
-        val stamped = intake.copy(
+    override suspend fun updateIntake(intake: CommonCaffeineIntake) {
+        val entity = intake.toEntity()
+        val stamped = entity.copy(
             lastModifiedTimestamp = System.currentTimeMillis(),
             sourceDeviceId = sourceDeviceId
         )
@@ -54,8 +63,9 @@ class CaffeineRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun deleteIntake(intake: CaffeineIntake) {
-        val stamped = intake.copy(
+    override suspend fun deleteIntake(intake: CommonCaffeineIntake) {
+        val entity = intake.toEntity()
+        val stamped = entity.copy(
             lastModifiedTimestamp = System.currentTimeMillis(),
             sourceDeviceId = sourceDeviceId
         )
@@ -68,18 +78,22 @@ class CaffeineRepositoryImpl @Inject constructor(
         )
     }
 
-    override fun getIntakesForDate(dateMillis: Long): Flow<List<CaffeineIntake>> {
-        val (start, end) = dayBounds(dateMillis)
-        return intakeDao.getIntakesByDate(start, end)
+    override fun getIntakesForDate(date: LocalDate): Flow<List<CommonCaffeineIntake>> {
+        val millis = date.toEpochMillis()
+        val (start, end) = dayBounds(millis)
+        return intakeDao.getIntakesByDate(start, end).map { list ->
+            list.map { it.toCommon() }
+        }
     }
 
-    override fun getTotalCaffeineForDate(dateMillis: Long): Flow<Int> {
-        val (start, end) = dayBounds(dateMillis)
+    override fun getTotalCaffeineForDate(date: LocalDate): Flow<Int> {
+        val millis = date.toEpochMillis()
+        val (start, end) = dayBounds(millis)
         return intakeDao.getTotalCaffeineByDate(start, end)
     }
 
-    override suspend fun getIntakeById(id: Long): CaffeineIntake? {
-        return intakeDao.getIntakeById(id)
+    override suspend fun getIntakeById(id: Long): CommonCaffeineIntake? {
+        return intakeDao.getIntakeById(id)?.toCommon()
     }
 
     override suspend fun clearAll() {
@@ -89,16 +103,17 @@ class CaffeineRepositoryImpl @Inject constructor(
 
     // --- Drink operations ---
 
-    override fun getAllDrinks(): Flow<List<DrinkEntity>> {
-        return drinkDao.getAllDrinks()
+    override fun getAllDrinks(): Flow<List<CommonDrinkEntity>> {
+        return drinkDao.getAllDrinks().map { list -> list.map { it.toCommon() } }
     }
 
-    override suspend fun getDrinkById(id: Long): DrinkEntity? {
-        return drinkDao.getDrinkById(id)
+    override suspend fun getDrinkById(id: Long): CommonDrinkEntity? {
+        return drinkDao.getDrinkById(id)?.toCommon()
     }
 
-    override suspend fun addDrink(drink: DrinkEntity): Long {
-        val stamped = drink.copy(
+    override suspend fun addDrink(drink: CommonDrinkEntity): Long {
+        val entity = drink.toEntity()
+        val stamped = entity.copy(
             lastModifiedTimestamp = System.currentTimeMillis(),
             sourceDeviceId = sourceDeviceId
         )
@@ -112,8 +127,9 @@ class CaffeineRepositoryImpl @Inject constructor(
         return id
     }
 
-    override suspend fun updateDrink(drink: DrinkEntity) {
-        val stamped = drink.copy(
+    override suspend fun updateDrink(drink: CommonDrinkEntity) {
+        val entity = drink.toEntity()
+        val stamped = entity.copy(
             lastModifiedTimestamp = System.currentTimeMillis(),
             sourceDeviceId = sourceDeviceId
         )
@@ -126,8 +142,9 @@ class CaffeineRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun deleteDrink(drink: DrinkEntity) {
-        val stamped = drink.copy(
+    override suspend fun deleteDrink(drink: CommonDrinkEntity) {
+        val entity = drink.toEntity()
+        val stamped = entity.copy(
             lastModifiedTimestamp = System.currentTimeMillis(),
             sourceDeviceId = sourceDeviceId
         )
@@ -164,12 +181,10 @@ class CaffeineRepositoryImpl @Inject constructor(
     }
 
     /**
-     * Zwraca parę (początekDnia, koniecDnia) dla podanego timestampu.
+     * Returns (dayStart, dayEnd) for the given timestamp.
      *
-     * Używa Calendar.add(DAY_OF_YEAR, 1) zamiast +86400000,
-     * aby poprawnie obsłużyć zmiany czasu (DST).
-     * W dni "cofnięcia" (fall back, 25h) obejmuje wszystkie 25h,
-     * w dni "przeskoku" (spring forward, 23h) nie wychodzi poza dobę.
+     * Uses Calendar.add(DAY_OF_YEAR, 1) instead of +86400000
+     * to correctly handle DST changes.
      */
     private fun dayBounds(millis: Long): Pair<Long, Long> {
         val calendar = Calendar.getInstance().apply {
@@ -183,5 +198,9 @@ class CaffeineRepositoryImpl @Inject constructor(
         calendar.add(Calendar.DAY_OF_YEAR, 1)
         val end = calendar.timeInMillis
         return start to end
+    }
+
+    private fun LocalDate.toEpochMillis(): Long {
+        return this.atStartOfDayIn(TimeZone.currentSystemDefault()).toEpochMilliseconds()
     }
 }

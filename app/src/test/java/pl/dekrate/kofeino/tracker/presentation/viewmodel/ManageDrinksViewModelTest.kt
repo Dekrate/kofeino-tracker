@@ -26,7 +26,7 @@ import org.junit.Test
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepository
-import pl.dekrate.kofeino.tracker.domain.model.DrinkEntity
+import pl.dekrate.kofeino.common.domain.model.DrinkEntity
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ManageDrinksViewModelTest {

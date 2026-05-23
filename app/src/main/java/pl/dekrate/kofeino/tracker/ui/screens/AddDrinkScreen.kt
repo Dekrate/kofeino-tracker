@@ -51,7 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import pl.dekrate.kofeino.tracker.R
-import pl.dekrate.kofeino.tracker.domain.model.DrinkEntity
+import pl.dekrate.kofeino.common.domain.model.DrinkEntity
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.DrinkError
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.DrinkViewModel
 

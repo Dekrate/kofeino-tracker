@@ -16,16 +16,22 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.minus
+import kotlinx.datetime.plus
+import kotlinx.datetime.toLocalDateTime
+import pl.dekrate.kofeino.common.domain.model.CaffeineIntake
+import timber.log.Timber
 import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepository
-import pl.dekrate.kofeino.tracker.domain.model.CaffeineIntake
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 import javax.inject.Inject
 
 data class HistoryUiState(
-    val selectedDateMillis: Long = System.currentTimeMillis(),
+    val selectedDate: LocalDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date,
     val dateIntakes: List<CaffeineIntake> = emptyList(),
     val totalCaffeineMg: Int = 0,
     val dateLabel: String = "",
@@ -40,10 +46,13 @@ class HistoryViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val _selectedDateMillis = MutableStateFlow(
-        savedStateHandle.get<Long>(KEY_SELECTED_DATE) ?: getStartOfToday().also {
-            savedStateHandle[KEY_SELECTED_DATE] = it
-        }
+    private val _selectedDate = MutableStateFlow(
+        savedStateHandle.get<String>(KEY_SELECTED_DATE)?.let {
+            try { LocalDate.parse(it) } catch (e: IllegalArgumentException) {
+                Timber.w(e, "Failed to parse saved date '%s', falling back to today", it)
+                getTodayDate()
+            }
+        } ?: getTodayDate()
     )
     private val _uiState = MutableStateFlow(HistoryUiState(isLoading = true))
     val uiState: StateFlow<HistoryUiState> = _uiState.asStateFlow()
@@ -51,22 +60,22 @@ class HistoryViewModel @Inject constructor(
     init {
         // Persist selected date to SavedStateHandle on every change (survives process death)
         viewModelScope.launch {
-            _selectedDateMillis.collectLatest { dateMillis ->
-                savedStateHandle[KEY_SELECTED_DATE] = dateMillis
+            _selectedDate.collectLatest { date ->
+                savedStateHandle[KEY_SELECTED_DATE] = date.toString()
             }
         }
 
-        _selectedDateMillis
-            .flatMapLatest { dateMillis ->
+        _selectedDate
+            .flatMapLatest { date ->
                 combine(
-                    repository.getIntakesForDate(dateMillis),
-                    repository.getTotalCaffeineForDate(dateMillis)
+                    repository.getIntakesForDate(date),
+                    repository.getTotalCaffeineForDate(date)
                 ) { intakes, total ->
                     HistoryUiState(
-                        selectedDateMillis = dateMillis,
+                        selectedDate = date,
                         dateIntakes = intakes,
                         totalCaffeineMg = total,
-                        dateLabel = formatDateLabel(dateMillis),
+                        dateLabel = formatDateLabel(date),
                         isLoading = false
                     )
                 }
@@ -74,7 +83,7 @@ class HistoryViewModel @Inject constructor(
             .catch { e ->
                 emit(
                     HistoryUiState(
-                        selectedDateMillis = _selectedDateMillis.value,
+                        selectedDate = _selectedDate.value,
                         error = e.message ?: "Failed to load history",
                         isLoading = false
                     )
@@ -89,23 +98,23 @@ class HistoryViewModel @Inject constructor(
     // --- Date navigation ---
 
     fun previousDay() {
-        _selectedDateMillis.update { addDays(it, -1) }
+        _selectedDate.update { it.minus(1, DateTimeUnit.DAY) }
     }
 
     fun nextDay() {
-        _selectedDateMillis.update { addDays(it, 1) }
+        _selectedDate.update { it.plus(1, DateTimeUnit.DAY) }
     }
 
     fun goToToday() {
-        _selectedDateMillis.value = getStartOfToday()
+        _selectedDate.value = getTodayDate()
     }
 
     fun isToday(): Boolean {
-        return getStartOfToday() == _selectedDateMillis.value
+        return getTodayDate() == _selectedDate.value
     }
 
     fun isYesterday(): Boolean {
-        return startOfDayOffset(getStartOfToday(), -1) == _selectedDateMillis.value
+        return getTodayDate().minus(1, DateTimeUnit.DAY) == _selectedDate.value
     }
 
     // --- Error handling ---
@@ -114,44 +123,17 @@ class HistoryViewModel @Inject constructor(
         _uiState.update { it.copy(error = null) }
     }
 
-    // Package-private for testing, mirrors the repository's dayBounds logic
-    fun getStartOfToday(): Long {
-        val cal = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
-        return cal.timeInMillis
+    private fun getTodayDate(): LocalDate {
+        return Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
     }
 
-    private fun addDays(millis: Long, days: Int): Long {
-        val cal = Calendar.getInstance().apply {
-            timeInMillis = millis
-            add(Calendar.DAY_OF_YEAR, days)
-        }
-        return cal.timeInMillis
-    }
-
-    private fun formatDateLabel(millis: Long): String {
-        return SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(Date(millis))
-    }
-
-    /** Returns start of day offset by `days` from given timestamp (DST-safe). */
-    private fun startOfDayOffset(millis: Long, days: Int): Long {
-        val cal = Calendar.getInstance().apply {
-            timeInMillis = millis
-            add(Calendar.DAY_OF_YEAR, days)
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
-        return cal.timeInMillis
+    private fun formatDateLabel(date: LocalDate): String {
+        val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy", Locale.getDefault())
+        return java.time.LocalDate.of(date.year, date.monthNumber, date.dayOfMonth).format(formatter)
     }
 
     companion object {
         const val SAFE_LIMIT_MG = 400
-        private const val KEY_SELECTED_DATE = "selectedDateMillis"
+        private const val KEY_SELECTED_DATE = "selectedDate"
     }
 }

@@ -2,8 +2,8 @@ package pl.dekrate.kofeino.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import pl.dekrate.kofeino.data.repository.CaffeineRepository
-import pl.dekrate.kofeino.domain.model.DrinkEntity
+import pl.dekrate.kofeino.common.domain.repository.CaffeineRepository
+import pl.dekrate.kofeino.common.domain.model.DrinkEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

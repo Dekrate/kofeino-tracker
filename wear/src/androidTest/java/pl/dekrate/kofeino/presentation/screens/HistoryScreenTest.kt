@@ -9,7 +9,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.platform.app.InstrumentationRegistry
 import pl.dekrate.kofeino.R
-import pl.dekrate.kofeino.domain.model.CaffeineIntake
+import pl.dekrate.kofeino.common.domain.model.CaffeineIntake
 import pl.dekrate.kofeino.presentation.theme.KofeinoTrackerTheme
 import pl.dekrate.kofeino.presentation.viewmodel.CaffeineUiState
 import pl.dekrate.kofeino.presentation.viewmodel.CaffeineViewModel

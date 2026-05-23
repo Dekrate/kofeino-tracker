@@ -6,14 +6,17 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
+import kotlinx.datetime.LocalDate
 import org.junit.Before
 import org.junit.Test
 import pl.dekrate.kofeino.tracker.data.local.CaffeineDatabase
 import pl.dekrate.kofeino.tracker.data.local.CaffeineIntakeDao
 import pl.dekrate.kofeino.tracker.data.local.DrinkDao
 import pl.dekrate.kofeino.tracker.data.sync.RealTimeSyncService
-import pl.dekrate.kofeino.tracker.domain.model.CaffeineIntake
-import pl.dekrate.kofeino.tracker.domain.model.DrinkEntity
+import pl.dekrate.kofeino.tracker.domain.model.CaffeineIntake as EntityCaffeineIntake
+import pl.dekrate.kofeino.tracker.domain.model.DrinkEntity as EntityDrinkEntity
+import pl.dekrate.kofeino.common.domain.model.CaffeineIntake as CommonCaffeineIntake
+import pl.dekrate.kofeino.common.domain.model.DrinkEntity as CommonDrinkEntity
 
 class CaffeineRepositoryImplTest {
 
@@ -23,7 +26,7 @@ class CaffeineRepositoryImplTest {
     private val realTimeSyncService: RealTimeSyncService = mockk()
     private lateinit var repository: CaffeineRepositoryImpl
 
-    private val sampleIntake = CaffeineIntake(
+    private val sampleEntityIntake = EntityCaffeineIntake(
         id = 1,
         drinkName = "Espresso",
         caffeineMg = 63,
@@ -31,7 +34,7 @@ class CaffeineRepositoryImplTest {
         timestamp = 1_000_000L
     )
 
-    private val sampleDrink = DrinkEntity(
+    private val sampleEntityDrink = EntityDrinkEntity(
         id = 1,
         name = "Espresso",
         caffeineMg = 63,
@@ -50,7 +53,8 @@ class CaffeineRepositoryImplTest {
     fun `addIntake delegates to dao and returns id`() = runTest {
         coEvery { intakeDao.insert(any()) } returns 42L
 
-        val result = repository.addIntake(sampleIntake)
+        val commonIntake = sampleEntityIntake.toCommon()
+        val result = repository.addIntake(commonIntake)
 
         assert(result == 42L) { "Expected 42L, got $result" }
         coVerify { intakeDao.insert(match { it.drinkName == "Espresso" && it.sourceDeviceId == "phone" }) }
@@ -60,27 +64,29 @@ class CaffeineRepositoryImplTest {
     fun `updateIntake delegates to dao`() = runTest {
         coEvery { intakeDao.update(any()) } returns Unit
 
-        repository.updateIntake(sampleIntake)
+        val commonIntake = sampleEntityIntake.toCommon()
+        repository.updateIntake(commonIntake)
 
-        coVerify { intakeDao.update(match { it.id == sampleIntake.id && it.sourceDeviceId == "phone" }) }
+        coVerify { intakeDao.update(match { it.id == sampleEntityIntake.id && it.sourceDeviceId == "phone" }) }
     }
 
     @Test
     fun `deleteIntake delegates to dao`() = runTest {
         coEvery { intakeDao.delete(any()) } returns Unit
 
-        repository.deleteIntake(sampleIntake)
+        val commonIntake = sampleEntityIntake.toCommon()
+        repository.deleteIntake(commonIntake)
 
-        coVerify { intakeDao.delete(match { it.id == sampleIntake.id && it.sourceDeviceId == "phone" }) }
+        coVerify { intakeDao.delete(match { it.id == sampleEntityIntake.id && it.sourceDeviceId == "phone" }) }
     }
 
     @Test
     fun `getIntakeById delegates to dao`() = runTest {
-        coEvery { intakeDao.getIntakeById(1L) } returns sampleIntake
+        coEvery { intakeDao.getIntakeById(1L) } returns sampleEntityIntake
 
         val result = repository.getIntakeById(1L)
 
-        assert(result == sampleIntake) { "Expected intake, got $result" }
+        assert(result == sampleEntityIntake.toCommon()) { "Expected intake, got $result" }
         coVerify { intakeDao.getIntakeById(1L) }
     }
 
@@ -95,12 +101,13 @@ class CaffeineRepositoryImplTest {
 
     @Test
     fun `getIntakesForDate returns flow from dao`() = runTest {
-        val intakes = listOf(sampleIntake)
+        val intakes = listOf(sampleEntityIntake)
         coEvery { intakeDao.getIntakesByDate(any(), any()) } returns flowOf(intakes)
 
-        repository.getIntakesForDate(1_000_000L).test {
+        repository.getIntakesForDate(LocalDate(2026, 1, 1)).test {
             val emitted = awaitItem()
-            assert(emitted == intakes) { "Expected intakes, got $emitted" }
+            val expected = intakes.map { it.toCommon() }
+            assert(emitted == expected) { "Expected intakes, got $emitted" }
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -109,7 +116,7 @@ class CaffeineRepositoryImplTest {
     fun `getTotalCaffeineForDate returns flow from dao`() = runTest {
         coEvery { intakeDao.getTotalCaffeineByDate(any(), any()) } returns flowOf(126)
 
-        repository.getTotalCaffeineForDate(1_000_000L).test {
+        repository.getTotalCaffeineForDate(LocalDate(2026, 1, 1)).test {
             val emitted = awaitItem()
             assert(emitted == 126) { "Expected 126, got $emitted" }
             cancelAndIgnoreRemainingEvents()
@@ -127,12 +134,13 @@ class CaffeineRepositoryImplTest {
 
     @Test
     fun `getRecentIntakes delegates to dao`() = runTest {
-        val intakes = listOf(sampleIntake)
+        val intakes = listOf(sampleEntityIntake)
         coEvery { intakeDao.getRecentIntakes(50) } returns flowOf(intakes)
 
         repository.getRecentIntakes(50).test {
             val emitted = awaitItem()
-            assert(emitted == intakes) { "Expected intakes, got $emitted" }
+            val expected = intakes.map { it.toCommon() }
+            assert(emitted == expected) { "Expected intakes, got $emitted" }
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -141,23 +149,24 @@ class CaffeineRepositoryImplTest {
 
     @Test
     fun `getAllDrinks delegates to dao`() = runTest {
-        val drinks = listOf(sampleDrink)
+        val drinks = listOf(sampleEntityDrink)
         coEvery { drinkDao.getAllDrinks() } returns flowOf(drinks)
 
         repository.getAllDrinks().test {
             val emitted = awaitItem()
-            assert(emitted == drinks) { "Expected drinks, got $emitted" }
+            val expected = drinks.map { it.toCommon() }
+            assert(emitted == expected) { "Expected drinks, got $emitted" }
             cancelAndIgnoreRemainingEvents()
         }
     }
 
     @Test
     fun `getDrinkById delegates to dao`() = runTest {
-        coEvery { drinkDao.getDrinkById(1L) } returns sampleDrink
+        coEvery { drinkDao.getDrinkById(1L) } returns sampleEntityDrink
 
         val result = repository.getDrinkById(1L)
 
-        assert(result == sampleDrink) { "Expected drink, got $result" }
+        assert(result == sampleEntityDrink.toCommon()) { "Expected drink, got $result" }
         coVerify { drinkDao.getDrinkById(1L) }
     }
 
@@ -165,7 +174,8 @@ class CaffeineRepositoryImplTest {
     fun `addDrink delegates to dao and returns id`() = runTest {
         coEvery { drinkDao.insert(any()) } returns 7L
 
-        val result = repository.addDrink(sampleDrink)
+        val commonDrink = sampleEntityDrink.toCommon()
+        val result = repository.addDrink(commonDrink)
 
         assert(result == 7L) { "Expected 7L, got $result" }
         coVerify { drinkDao.insert(match { it.name == "Espresso" && it.sourceDeviceId == "phone" }) }
@@ -175,28 +185,31 @@ class CaffeineRepositoryImplTest {
     fun `updateDrink delegates to dao`() = runTest {
         coEvery { drinkDao.update(any()) } returns Unit
 
-        repository.updateDrink(sampleDrink)
+        val commonDrink = sampleEntityDrink.toCommon()
+        repository.updateDrink(commonDrink)
 
-        coVerify { drinkDao.update(match { it.id == sampleDrink.id && it.sourceDeviceId == "phone" }) }
+        coVerify { drinkDao.update(match { it.id == sampleEntityDrink.id && it.sourceDeviceId == "phone" }) }
     }
 
     @Test
     fun `deleteDrink delegates to dao`() = runTest {
         coEvery { drinkDao.delete(any()) } returns Unit
 
-        repository.deleteDrink(sampleDrink)
+        val commonDrink = sampleEntityDrink.toCommon()
+        repository.deleteDrink(commonDrink)
 
-        coVerify { drinkDao.delete(match { it.id == sampleDrink.id && it.sourceDeviceId == "phone" }) }
+        coVerify { drinkDao.delete(match { it.id == sampleEntityDrink.id && it.sourceDeviceId == "phone" }) }
     }
 
     @Test
     fun `searchDrinks delegates to dao`() = runTest {
-        val drinks = listOf(sampleDrink)
+        val drinks = listOf(sampleEntityDrink)
         coEvery { drinkDao.searchDrinks("Espresso") } returns flowOf(drinks)
 
         repository.searchDrinks("Espresso").test {
             val emitted = awaitItem()
-            assert(emitted == drinks) { "Expected drinks, got $emitted" }
+            val expected = drinks.map { it.toCommon() }
+            assert(emitted == expected) { "Expected drinks, got $emitted" }
             cancelAndIgnoreRemainingEvents()
         }
     }

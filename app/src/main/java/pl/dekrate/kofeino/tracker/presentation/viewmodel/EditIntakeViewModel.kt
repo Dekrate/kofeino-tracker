@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepository
-import pl.dekrate.kofeino.tracker.domain.model.CaffeineIntake
+import pl.dekrate.kofeino.common.domain.model.CaffeineIntake
 import timber.log.Timber
 import javax.inject.Inject
 

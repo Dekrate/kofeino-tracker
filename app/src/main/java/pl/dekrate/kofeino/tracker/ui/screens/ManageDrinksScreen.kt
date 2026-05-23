@@ -62,7 +62,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import pl.dekrate.kofeino.tracker.R
-import pl.dekrate.kofeino.tracker.domain.model.DrinkEntity
+import pl.dekrate.kofeino.common.domain.model.DrinkEntity
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.ManageDrinksError
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.ManageDrinksViewModel
 

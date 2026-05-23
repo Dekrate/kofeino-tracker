@@ -1,5 +1,7 @@
 package pl.dekrate.kofeino.tracker.data.repository
 
+import pl.dekrate.kofeino.common.domain.model.OfficialDrink as CommonOfficialDrink
+import pl.dekrate.kofeino.common.domain.repository.OfficialDrinkRepository
 import pl.dekrate.kofeino.tracker.data.local.OfficialDrinkCacheDao
 import pl.dekrate.kofeino.tracker.data.local.OfficialDrinkCacheEntity
 import pl.dekrate.kofeino.tracker.data.remote.ConnectivityObserver
@@ -45,7 +47,8 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
         private const val CAFFEINE_G_TO_MG = 10.0
     }
 
-    override suspend fun getOfficialDrinks(): Result<List<OfficialDrink>> {
+    @Suppress("ReturnCount")
+    override suspend fun getOfficialDrinks(): Result<List<CommonOfficialDrink>> {
         // 1. Return fresh cache immediately if available
         val cached = loadFreshFromCache()
         if (cached.isSuccess) return cached
@@ -74,7 +77,7 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
                 val unique = allDrinks.distinctBy { it.barcode }
                 cacheDao.insertAll(unique.map { it.toCacheEntity() })
                 Timber.d("Loaded ${unique.size} drinks from API (${allDrinks.size} raw)")
-                return Result.success(unique)
+                return Result.success(unique.map { it.toCommon() })
             }
 
             // 4. API returned nothing — last resort: stale cache
@@ -86,7 +89,7 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun searchOfficialDrinks(query: String): Result<List<OfficialDrink>> {
+    override suspend fun searchOfficialDrinks(query: String): Result<List<CommonOfficialDrink>> {
         // Check connectivity before attempting API call
         if (!connectivityObserver.isOnline) {
             Timber.d("Offline — searching local cache for '%s'", query)
@@ -105,7 +108,7 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
                 cacheDao.insertAll(drinks.map { it.toCacheEntity() })
             }
             Timber.d("API search for '%s' returned %d total, %d with caffeine", query, response.count, drinks.size)
-            Result.success(drinks)
+            Result.success(drinks.map { it.toCommon() })
         } catch (e: Exception) {
             Timber.w(e, "API search failed for '%s', searching local cache", query)
             searchLocalCache(query)
@@ -127,7 +130,7 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
     // --- Cache helpers ---
 
     /** Returns only TTL-fresh cached entries, or failure. */
-    private suspend fun loadFreshFromCache(): Result<List<OfficialDrink>> {
+    private suspend fun loadFreshFromCache(): Result<List<CommonOfficialDrink>> {
         val now = System.currentTimeMillis()
         val fresh = cacheDao.getAllCached()
             .filter { now - it.fetchedAtMillis < CACHE_TTL_MILLIS }
@@ -135,21 +138,21 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
             return Result.failure(Exception("No fresh cached data available"))
         }
         Timber.d("Loaded ${fresh.size} fresh drinks from local cache")
-        return Result.success(fresh.map { it.toOfficialDrink() })
+        return Result.success(fresh.map { it.toOfficialDrink().toCommon() })
     }
 
     /** Returns ALL cached entries even if stale — last resort fallback. */
-    private suspend fun loadStaleFromCache(): Result<List<OfficialDrink>> {
+    private suspend fun loadStaleFromCache(): Result<List<CommonOfficialDrink>> {
         val all = cacheDao.getAllCached()
         if (all.isEmpty()) {
             return Result.failure(Exception("No cached data available"))
         }
         Timber.d("Loaded ${all.size} drinks from stale cache")
-        return Result.success(all.map { it.toOfficialDrink() })
+        return Result.success(all.map { it.toOfficialDrink().toCommon() })
     }
 
     /** Searches only TTL-fresh cached entries, or returns empty list. */
-    private suspend fun searchLocalCache(query: String): Result<List<OfficialDrink>> {
+    private suspend fun searchLocalCache(query: String): Result<List<CommonOfficialDrink>> {
         val now = System.currentTimeMillis()
         val fresh = cacheDao.getAllCached()
             .filter { now - it.fetchedAtMillis < CACHE_TTL_MILLIS }
@@ -161,7 +164,7 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
             it.name.lowercase().contains(lower) ||
                 (it.brand?.lowercase()?.contains(lower) == true)
         }
-        return Result.success(filtered.map { it.toOfficialDrink() })
+        return Result.success(filtered.map { it.toOfficialDrink().toCommon() })
     }
 
     // --- Mapping ---

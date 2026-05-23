@@ -1,10 +1,13 @@
 package pl.dekrate.kofeino.data.repository
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import pl.dekrate.kofeino.common.domain.repository.OfficialDrinkRepository
+import pl.dekrate.kofeino.common.domain.model.OfficialDrink as CommonOfficialDrink
 import pl.dekrate.kofeino.data.local.OfficialDrinkCacheDao
 import pl.dekrate.kofeino.data.remote.CaffeineApiService
 import pl.dekrate.kofeino.data.remote.ConnectivityObserver
@@ -12,13 +15,12 @@ import pl.dekrate.kofeino.data.remote.OpenFoodFactsConfig
 import pl.dekrate.kofeino.data.repository.OfficialDrinkMapper.hasValidCaffeineData
 import pl.dekrate.kofeino.data.repository.OfficialDrinkMapper.toCacheEntity
 import pl.dekrate.kofeino.data.repository.OfficialDrinkMapper.toOfficialDrink
-import pl.dekrate.kofeino.domain.model.OfficialDrink
+import pl.dekrate.kofeino.domain.model.OfficialDrink as WearOfficialDrink
 import retrofit2.HttpException
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.CancellationException
 
 /**
  * Implementation of OfficialDrinkRepository with rate-limit-aware resilience.
@@ -63,25 +65,28 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
         backgroundScope.cancel()
     }
 
-    override suspend fun getOfficialDrinks(): Result<List<OfficialDrink>> {
-        return if (connectivityObserver.isOnline && !isCircuitBroken()) {
+    override suspend fun getOfficialDrinks(): Result<List<CommonOfficialDrink>> {
+        val result: Result<List<WearOfficialDrink>> = if (connectivityObserver.isOnline && !isCircuitBroken()) {
             if (hasFreshCache()) {
                 Timber.d("Serving fresh cache, initiating background refresh")
                 launchBackgroundRefresh()
-                return loadFromCache()
+                loadFromCache()
+            } else {
+                fetchFromApi()
             }
-            fetchFromApi()
         } else {
             loadFromCache()
         }
+        return result.map { list -> list.map { it.toCommon() } }
     }
 
-    override suspend fun searchOfficialDrinks(query: String): Result<List<OfficialDrink>> {
-        return if (connectivityObserver.isOnline && !isCircuitBroken()) {
+    override suspend fun searchOfficialDrinks(query: String): Result<List<CommonOfficialDrink>> {
+        val result: Result<List<WearOfficialDrink>> = if (connectivityObserver.isOnline && !isCircuitBroken()) {
             searchFromApi(query)
         } else {
             searchCacheLocally(query)
         }
+        return result.map { list -> list.map { it.toCommon() } }
     }
 
     override suspend fun hasFreshCache(): Boolean {
@@ -163,7 +168,7 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
 
     // ── API Fetch ───────────────────────────────────────────
 
-    private suspend fun fetchFromApi(): Result<List<OfficialDrink>> {
+    private suspend fun fetchFromApi(): Result<List<WearOfficialDrink>> {
         return try {
             Timber.d("Fetching official drinks from Open Food Facts API")
             val response = apiService.searchBeveragesWithCaffeine(
@@ -212,7 +217,7 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
         }
     }
 
-    private suspend fun searchFromApi(query: String): Result<List<OfficialDrink>> {
+    private suspend fun searchFromApi(query: String): Result<List<WearOfficialDrink>> {
         return try {
             Timber.d("Searching API for: $query")
             val response = apiService.searchProducts(query = query)
@@ -250,7 +255,7 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
 
     // ── Cache Operations ────────────────────────────────────
 
-    private suspend fun searchCacheLocally(query: String): Result<List<OfficialDrink>> {
+    private suspend fun searchCacheLocally(query: String): Result<List<WearOfficialDrink>> {
         val all = cacheDao.getAllCached()
         val lower = query.lowercase()
         val filtered = all.filter {
@@ -263,7 +268,7 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
         return Result.success(filtered.map { it.toOfficialDrink() })
     }
 
-    private suspend fun loadFromCache(): Result<List<OfficialDrink>> {
+    private suspend fun loadFromCache(): Result<List<WearOfficialDrink>> {
         val cached = cacheDao.getAllCached()
         if (cached.isEmpty()) {
             return Result.failure(Exception("No cached data and no connection"))
