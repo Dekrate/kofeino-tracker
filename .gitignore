@@ -25,5 +25,6 @@ out/
 ~$*.ppt*
 wear/build/
 app/build/
+common/build/
 /screen*.png
 .kotlin/

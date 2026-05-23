@@ -17,4 +17,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "KofeinoTracker"
 include(":app")
+include(":common")
 include(":wear")
