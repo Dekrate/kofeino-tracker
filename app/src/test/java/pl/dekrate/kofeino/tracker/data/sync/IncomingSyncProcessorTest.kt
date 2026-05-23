@@ -4,7 +4,6 @@ import com.google.android.gms.wearable.MessageEvent
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
-import androidx.room.withTransaction
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -14,6 +13,7 @@ import pl.dekrate.kofeino.tracker.data.local.CaffeineIntakeDao
 import pl.dekrate.kofeino.tracker.data.local.DrinkDao
 import pl.dekrate.kofeino.tracker.domain.model.CaffeineIntake
 import pl.dekrate.kofeino.tracker.domain.model.DrinkEntity
+import java.util.concurrent.Executor
 
 /**
  * Unit tests for [IncomingSyncProcessor].
@@ -27,15 +27,15 @@ class IncomingSyncProcessorTest {
     private val resolver: ConflictResolver = mockk()
     private val intakeDao: CaffeineIntakeDao = mockk()
     private val drinkDao: DrinkDao = mockk()
-    private val database: CaffeineDatabase = mockk()
+    private val database: CaffeineDatabase = mockk(relaxed = true)
     private val conflictLogDao: ConflictLogDao = mockk(relaxed = true)
     private lateinit var processor: IncomingSyncProcessor
 
     @Before
     fun setUp() {
-        coEvery { database.withTransaction(any<suspend () -> Any?>()) } coAnswers {
-            (invocation.args[0] as suspend () -> Any?)()
-        }
+        // Stub transactionExecutor so Room's real withTransaction can run inline.
+        // ClockExecutor runs tasks synchronously on the calling thread.
+        every { database.transactionExecutor } returns Executor { it.run() }
         processor = IncomingSyncProcessor(resolver, intakeDao, drinkDao, conflictLogDao, database)
     }
 
