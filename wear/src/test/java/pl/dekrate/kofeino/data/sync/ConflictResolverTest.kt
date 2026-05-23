@@ -20,8 +20,7 @@ class ConflictResolverTest {
         val result = ConflictResolver.compareTimestamps(
             localTimestamp = now,
             localSourceId = "watch",
-            incomingTimestamp = now - 10_000,
-            incomingSourceId = "phone"
+            incomingTimestamp = now - 10_000
         )
         assertTrue(result.localWins)
         assertEquals(ConflictResolver.REASON_LOCAL_NEWER, result.reason)
@@ -33,8 +32,7 @@ class ConflictResolverTest {
         val result = ConflictResolver.compareTimestamps(
             localTimestamp = now - 10_000,
             localSourceId = "watch",
-            incomingTimestamp = now,
-            incomingSourceId = "phone"
+            incomingTimestamp = now
         )
         assertEquals(false, result.localWins)
         assertEquals(ConflictResolver.REASON_INCOMING_NEWER, result.reason)
@@ -46,8 +44,7 @@ class ConflictResolverTest {
         val result = ConflictResolver.compareTimestamps(
             localTimestamp = now,
             localSourceId = ConflictResolver.PHONE_DEVICE_ID,
-            incomingTimestamp = now,
-            incomingSourceId = ConflictResolver.WATCH_DEVICE_ID
+            incomingTimestamp = now
         )
         assertTrue(result.localWins)
         assertEquals(ConflictResolver.REASON_PHONE_WINS_TIE, result.reason)
@@ -59,8 +56,7 @@ class ConflictResolverTest {
         val result = ConflictResolver.compareTimestamps(
             localTimestamp = now,
             localSourceId = ConflictResolver.WATCH_DEVICE_ID,
-            incomingTimestamp = now,
-            incomingSourceId = ConflictResolver.PHONE_DEVICE_ID
+            incomingTimestamp = now
         )
         assertEquals(false, result.localWins)
         assertEquals(ConflictResolver.REASON_PHONE_WINS_TIE, result.reason)
@@ -72,8 +68,7 @@ class ConflictResolverTest {
         val result = ConflictResolver.compareTimestamps(
             localTimestamp = now,
             localSourceId = "watch",
-            incomingTimestamp = now,
-            incomingSourceId = "phone"
+            incomingTimestamp = now
         )
         assertEquals(false, result.localWins)
         assertEquals(ConflictResolver.REASON_PHONE_WINS_TIE, result.reason)
@@ -86,8 +81,7 @@ class ConflictResolverTest {
         val result = ConflictResolver.compareTimestamps(
             localTimestamp = now,
             localSourceId = "watch",
-            incomingTimestamp = now,
-            incomingSourceId = "phone"
+            incomingTimestamp = now
         )
         assertEquals(ConflictResolver.REASON_PHONE_WINS_TIE, result.reason)
         assertEquals(false, result.localWins)
@@ -100,8 +94,7 @@ class ConflictResolverTest {
         val result = ConflictResolver.compareTimestamps(
             localTimestamp = now,
             localSourceId = "watch",
-            incomingTimestamp = farFuture,
-            incomingSourceId = "phone"
+            incomingTimestamp = farFuture
         )
         assertEquals(ConflictResolver.REASON_INCOMING_NEWER, result.reason)
         assertNotNull(result.clockSkewWarning)
@@ -115,8 +108,7 @@ class ConflictResolverTest {
         val result = ConflictResolver.compareTimestamps(
             localTimestamp = now,
             localSourceId = "watch",
-            incomingTimestamp = slightFuture,
-            incomingSourceId = "phone"
+            incomingTimestamp = slightFuture
         )
         assertEquals(ConflictResolver.REASON_INCOMING_NEWER, result.reason)
         assertNull(result.clockSkewWarning)
@@ -129,8 +121,7 @@ class ConflictResolverTest {
         val result = ConflictResolver.compareTimestamps(
             localTimestamp = now,
             localSourceId = "phone",
-            incomingTimestamp = farPast,
-            incomingSourceId = "watch"
+            incomingTimestamp = farPast
         )
         assertEquals(ConflictResolver.REASON_LOCAL_NEWER, result.reason)
         assertNotNull(result.clockSkewWarning)
@@ -143,8 +134,7 @@ class ConflictResolverTest {
         val result = ConflictResolver.compareTimestamps(
             localTimestamp = now,
             localSourceId = "watch",
-            incomingTimestamp = now + 1,
-            incomingSourceId = "phone"
+            incomingTimestamp = now + 1
         )
         assertEquals(ConflictResolver.REASON_PHONE_WINS_TIE, result.reason)
         assertEquals(false, result.localWins)
@@ -157,8 +147,7 @@ class ConflictResolverTest {
         val result = ConflictResolver.compareTimestamps(
             localTimestamp = now,
             localSourceId = "watch",
-            incomingTimestamp = now + 2,
-            incomingSourceId = "phone"
+            incomingTimestamp = now + 2
         )
         assertEquals(ConflictResolver.REASON_INCOMING_NEWER, result.reason)
         assertEquals(false, result.localWins)
@@ -170,8 +159,7 @@ class ConflictResolverTest {
         val result = ConflictResolver.compareTimestamps(
             localTimestamp = now,
             localSourceId = "watch",
-            incomingTimestamp = now + 60_000,
-            incomingSourceId = "phone"
+            incomingTimestamp = now + 60_000
         )
         // At exactly 60s, should NOT trigger (threshold is >60s)
         assertNull(result.clockSkewWarning)
@@ -183,8 +171,7 @@ class ConflictResolverTest {
         val result = ConflictResolver.compareTimestamps(
             localTimestamp = now,
             localSourceId = "watch",
-            incomingTimestamp = now + 60_001,
-            incomingSourceId = "phone"
+            incomingTimestamp = now + 60_001
         )
         assertNotNull(result.clockSkewWarning)
     }
