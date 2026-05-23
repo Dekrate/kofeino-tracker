@@ -158,8 +158,9 @@ class OfficialDrinkRepositoryContractTest {
     @Test
     fun `searchOfficialDrinks with query matching multiple drinks`() = runTest {
         val repository = InMemoryOfficialDrinkRepository(drinks = allDrinks)
-        // The letter "e" appears in all three drink names:
-        // "Monster Energy Original", "Caffè Nero Espresso", and "Green Tea Sencha"
+        // Searching for "e" (lowercase) matches "Energy" and "Espresso" —
+        // "Caffè" contains 'è' which does NOT match via contains(ignoreCase=true).
+        // However, "Green Tea Sencha" also contains 'e'.
         val result = repository.searchOfficialDrinks("e")
 
         assertTrue(result.isSuccess)

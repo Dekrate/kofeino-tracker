@@ -163,7 +163,7 @@ class SharedModelsTest {
             drinkName = "Tea",
             caffeineMg = 30,
             volumeMl = 200,
-            timestamp = System.currentTimeMillis(),
+            timestamp = 1000L,
         )
         val str = intake.toString()
         assertTrue(str.contains("Tea"))

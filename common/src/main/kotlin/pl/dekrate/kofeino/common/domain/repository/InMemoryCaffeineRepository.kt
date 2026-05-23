@@ -25,8 +25,8 @@ class InMemoryCaffeineRepository(
     initialDrinks: List<DrinkEntity> = emptyList(),
 ) : CaffeineRepository {
 
-    private val _intakes = MutableStateFlow(initialIntakes)
-    private val _drinks = MutableStateFlow(initialDrinks)
+    private val _intakes = MutableStateFlow(initialIntakes.toList().toMutableList())
+    private val _drinks = MutableStateFlow(initialDrinks.toList().toMutableList())
 
     private var nextIntakeId: Long = (initialIntakes.maxOfOrNull { it.id } ?: 0L) + 1L
     private var nextDrinkId: Long = (initialDrinks.maxOfOrNull { it.id } ?: 0L) + 1L
@@ -43,17 +43,18 @@ class InMemoryCaffeineRepository(
     }
 
     override suspend fun updateIntake(intake: CaffeineIntake) {
-        _intakes.value = _intakes.value.toMutableList().apply {
-            val index = indexOfFirst { it.id == intake.id }
-            if (index >= 0) {
-                set(index, intake)
-            }
-        }
+        val temp = _intakes.value.toMutableList()
+        val index = temp.indexOfFirst { it.id == intake.id }
+        if (index < 0) return
+        temp[index] = intake
+        _intakes.value = temp
     }
 
     override suspend fun deleteIntake(intake: CaffeineIntake) {
-        _intakes.value = _intakes.value.toMutableList().apply {
-            removeAll { it.id == intake.id }
+        val temp = _intakes.value.toMutableList()
+        val removed = temp.removeAll { it.id == intake.id }
+        if (removed) {
+            _intakes.value = temp
         }
     }
 
@@ -78,8 +79,8 @@ class InMemoryCaffeineRepository(
     }
 
     override suspend fun clearAll() {
-        _intakes.value = emptyList()
-        _drinks.value = emptyList()
+        _intakes.value = mutableListOf()
+        _drinks.value = mutableListOf()
     }
 
     // ------------------------------------------------------------------
@@ -87,7 +88,7 @@ class InMemoryCaffeineRepository(
     // ------------------------------------------------------------------
 
     override fun getAllDrinks(): Flow<List<DrinkEntity>> {
-        return _drinks.map { it }
+        return _drinks
     }
 
     override suspend fun getDrinkById(id: Long): DrinkEntity? {
@@ -111,8 +112,10 @@ class InMemoryCaffeineRepository(
     }
 
     override suspend fun deleteDrink(drink: DrinkEntity) {
-        _drinks.value = _drinks.value.toMutableList().apply {
-            removeAll { it.id == drink.id }
+        val temp = _drinks.value.toMutableList()
+        val removed = temp.removeAll { it.id == drink.id }
+        if (removed) {
+            _drinks.value = temp
         }
     }
 }
