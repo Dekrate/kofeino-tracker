@@ -75,7 +75,7 @@ object ConflictResolver {
 
         val comparison = compareTimestamps(
             local.lastModifiedTimestamp, local.sourceDeviceId,
-            incoming.lastModifiedTimestamp, incoming.sourceDeviceId
+            incoming.lastModifiedTimestamp
         )
 
         return if (comparison.localWins) {
@@ -121,7 +121,7 @@ object ConflictResolver {
 
         val comparison = compareTimestamps(
             local.lastModifiedTimestamp, local.sourceDeviceId,
-            incoming.lastModifiedTimestamp, incoming.sourceDeviceId
+            incoming.lastModifiedTimestamp
         )
 
         return if (comparison.localWins) {
@@ -149,8 +149,7 @@ object ConflictResolver {
     fun compareTimestamps(
         localTimestamp: Long,
         localSourceId: String,
-        incomingTimestamp: Long,
-        incomingSourceId: String
+        incomingTimestamp: Long
     ): TimestampComparison {
         val timeDiff = incomingTimestamp - localTimestamp
         val absDiff = kotlin.math.abs(timeDiff)
