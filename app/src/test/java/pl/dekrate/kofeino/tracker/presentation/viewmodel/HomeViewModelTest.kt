@@ -23,6 +23,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
+import pl.dekrate.kofeino.tracker.data.local.DataStorePreferences
 import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepository
 import pl.dekrate.kofeino.common.domain.model.CaffeineIntake
 import java.text.SimpleDateFormat
@@ -46,20 +47,23 @@ class HomeViewModelTest {
     }
 
     private lateinit var repository: CaffeineRepository
+    private lateinit var preferences: DataStorePreferences
     private lateinit var viewModel: HomeViewModel
 
     @Before
     fun setup() {
         repository = mockk(relaxed = true)
+        preferences = mockk(relaxed = true)
         every { repository.getIntakesForDate(any()) } returns flowOf(emptyList())
         every { repository.getTotalCaffeineForDate(any()) } returns flowOf(0)
+        every { preferences.observeCaffeineLimitMg() } returns flowOf(400)
     }
 
     // ===== Initial state tests =====
 
     @Test
     fun `initial state should be loading then emit empty today data`() = runTest {
-        viewModel = HomeViewModel(repository)
+        viewModel = HomeViewModel(repository, preferences)
 
         viewModel.uiState.test {
             val loadingState = awaitItem()
@@ -78,7 +82,7 @@ class HomeViewModelTest {
 
     @Test
     fun `date label should be formatted for today`() = runTest {
-        viewModel = HomeViewModel(repository)
+        viewModel = HomeViewModel(repository, preferences)
 
         viewModel.uiState.test {
             // Skip loading
@@ -94,7 +98,7 @@ class HomeViewModelTest {
 
     @Test
     fun `date label should contain day of week`() = runTest {
-        viewModel = HomeViewModel(repository)
+        viewModel = HomeViewModel(repository, preferences)
 
         val expectedDay = SimpleDateFormat("EEEE", Locale.getDefault()).format(Date())
         viewModel.uiState.test {
@@ -114,7 +118,7 @@ class HomeViewModelTest {
     fun `progress should be 0 for no intakes`() = runTest {
         every { repository.getTotalCaffeineForDate(any()) } returns flowOf(0)
 
-        viewModel = HomeViewModel(repository)
+        viewModel = HomeViewModel(repository, preferences)
 
         viewModel.uiState.test {
             awaitItem() // loading
@@ -134,7 +138,7 @@ class HomeViewModelTest {
         )
         every { repository.getTotalCaffeineForDate(any()) } returns flowOf(200)
 
-        viewModel = HomeViewModel(repository)
+        viewModel = HomeViewModel(repository, preferences)
 
         viewModel.uiState.test {
             awaitItem() // loading
@@ -150,7 +154,7 @@ class HomeViewModelTest {
     fun `progress should not exceed 1f`() = runTest {
         every { repository.getTotalCaffeineForDate(any()) } returns flowOf(800)
 
-        viewModel = HomeViewModel(repository)
+        viewModel = HomeViewModel(repository, preferences)
 
         viewModel.uiState.test {
             awaitItem() // loading
@@ -164,7 +168,7 @@ class HomeViewModelTest {
     fun `isLimitExceeded should be true when total exceeds limit`() = runTest {
         every { repository.getTotalCaffeineForDate(any()) } returns flowOf(450)
 
-        viewModel = HomeViewModel(repository)
+        viewModel = HomeViewModel(repository, preferences)
 
         viewModel.uiState.test {
             awaitItem() // loading
@@ -178,7 +182,7 @@ class HomeViewModelTest {
     fun `isLimitExceeded should be false when total equals limit`() = runTest {
         every { repository.getTotalCaffeineForDate(any()) } returns flowOf(400)
 
-        viewModel = HomeViewModel(repository)
+        viewModel = HomeViewModel(repository, preferences)
 
         viewModel.uiState.test {
             awaitItem() // loading
@@ -200,7 +204,7 @@ class HomeViewModelTest {
         every { repository.getIntakesForDate(any()) } returns flowOf(intakes)
         every { repository.getTotalCaffeineForDate(any()) } returns flowOf(221)
 
-        viewModel = HomeViewModel(repository)
+        viewModel = HomeViewModel(repository, preferences)
 
         viewModel.uiState.test {
             awaitItem() // loading
@@ -217,7 +221,7 @@ class HomeViewModelTest {
         every { repository.getIntakesForDate(any()) } returns flowOf(emptyList())
         every { repository.getTotalCaffeineForDate(any()) } returns flowOf(0)
 
-        viewModel = HomeViewModel(repository)
+        viewModel = HomeViewModel(repository, preferences)
 
         viewModel.uiState.test {
             awaitItem() // loading
@@ -240,7 +244,7 @@ class HomeViewModelTest {
 
     @Test
     fun `should query repository for today date`() = runTest {
-        viewModel = HomeViewModel(repository)
+        viewModel = HomeViewModel(repository, preferences)
 
         viewModel.uiState.test {
             awaitItem() // loading
@@ -260,7 +264,7 @@ class HomeViewModelTest {
         )
         every { repository.getTotalCaffeineForDate(any()) } returns flowOf(0, 100)
 
-        viewModel = HomeViewModel(repository)
+        viewModel = HomeViewModel(repository, preferences)
 
         viewModel.uiState.test {
             awaitItem() // loading
@@ -285,7 +289,7 @@ class HomeViewModelTest {
         // Progress is total/limit which is >= 0 for non-negative values
         every { repository.getTotalCaffeineForDate(any()) } returns flowOf(-50)
 
-        viewModel = HomeViewModel(repository)
+        viewModel = HomeViewModel(repository, preferences)
 
         viewModel.uiState.test {
             awaitItem() // loading
@@ -304,7 +308,7 @@ class HomeViewModelTest {
 
     @Test
     fun `getNextMidnight returns start of tomorrow`() {
-        viewModel = HomeViewModel(repository)
+        viewModel = HomeViewModel(repository, preferences)
         val startOfToday = getStartOfTodayMillis()
         val nextMidnight = viewModel.getNextMidnight()
 
@@ -323,7 +327,7 @@ class HomeViewModelTest {
 
     @Test
     fun `flow emits today date via uiState`() = runTest {
-        viewModel = HomeViewModel(repository)
+        viewModel = HomeViewModel(repository, preferences)
 
         viewModel.uiState.test {
             awaitItem() // loading

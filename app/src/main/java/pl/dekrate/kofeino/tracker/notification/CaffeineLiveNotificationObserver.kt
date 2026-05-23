@@ -16,14 +16,12 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import pl.dekrate.kofeino.tracker.data.local.DataStorePreferences
 import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepository
-import pl.dekrate.kofeino.tracker.presentation.viewmodel.HomeViewModel
 import timber.log.Timber
 import java.util.Calendar
 import javax.inject.Inject
@@ -105,13 +103,15 @@ class CaffeineLiveNotificationObserver @Inject constructor(
     private fun startObservingRepository() {
         repositoryJob?.cancel()
         repositoryJob = scope.launch {
-            repository.getTotalCaffeineForDate(todayDate())
-                .map { total -> total to isOverLimit(total) }
+            combine(
+                repository.getTotalCaffeineForDate(todayDate()),
+                preferences.observeCaffeineLimitMg()
+            ) { total, limit -> total to limit }
                 .distinctUntilChanged()
                 .catch { e -> Timber.tag(TAG).e(e, "Error observing caffeine total") }
-                .collect { (total, _) ->
-                    Timber.tag(TAG).d("Caffeine total updated: $total mg")
-                    notificationManager.update(total, HomeViewModel.SAFE_LIMIT_MG)
+                .collect { (total, limit) ->
+                    Timber.tag(TAG).d("Caffeine total updated: %d mg (limit: %d mg)", total, limit)
+                    notificationManager.update(total, limit)
                 }
         }
     }
@@ -172,8 +172,6 @@ class CaffeineLiveNotificationObserver @Inject constructor(
         return Clock.System.now()
             .toLocalDateTime(TimeZone.currentSystemDefault()).date
     }
-
-    private fun isOverLimit(total: Int): Boolean = total > HomeViewModel.SAFE_LIMIT_MG
 
     class MidnightReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {

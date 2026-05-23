@@ -34,6 +34,7 @@ import pl.dekrate.kofeino.tracker.data.backup.BackupManager
 import pl.dekrate.kofeino.tracker.data.backup.BackupVersionException
 import pl.dekrate.kofeino.tracker.data.backup.ExportResult
 import pl.dekrate.kofeino.tracker.data.backup.ImportResult
+import pl.dekrate.kofeino.tracker.data.local.CaffeineLimitProfile
 import pl.dekrate.kofeino.tracker.data.local.DataStorePreferences
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -63,6 +64,8 @@ class SettingsViewModelTest {
     private val notifMorningFlow = MutableStateFlow(DataStorePreferences.DEFAULT_NOTIF_MORNING)
     private val notifRegularFlow = MutableStateFlow(DataStorePreferences.DEFAULT_NOTIF_REGULAR)
     private val notifEveningFlow = MutableStateFlow(DataStorePreferences.DEFAULT_NOTIF_EVENING)
+    private val caffeineProfileFlow = MutableStateFlow(CaffeineLimitProfile.ADULT)
+    private val customLimitFlow = MutableStateFlow(DataStorePreferences.DEFAULT_CUSTOM_CAFFEINE_LIMIT)
 
     @Before
     fun setup() {
@@ -77,6 +80,8 @@ class SettingsViewModelTest {
         every { preferences.observeNotificationMorningEnabled() } returns notifMorningFlow
         every { preferences.observeNotificationRegularEnabled() } returns notifRegularFlow
         every { preferences.observeNotificationEveningEnabled() } returns notifEveningFlow
+        every { preferences.observeCaffeineProfile() } returns caffeineProfileFlow
+        every { preferences.observeCustomCaffeineLimit() } returns customLimitFlow
         every { preferences.getLanguage() } returns DataStorePreferences.DEFAULT_LANGUAGE
         every { preferences.getThemeMode() } returns DataStorePreferences.DEFAULT_THEME
     }
@@ -492,6 +497,69 @@ class SettingsViewModelTest {
         assertEquals("system", DataStorePreferences.THEME_SYSTEM)
         assertEquals("light", DataStorePreferences.THEME_LIGHT)
         assertEquals("dark", DataStorePreferences.THEME_DARK)
+    }
+
+    // ===== Caffeine profile tests =====
+
+    @Test
+    fun `setCaffeineProfile should update state and call preferences setCaffeineProfile`() = runTest {
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        advanceUntilIdle()
+
+        viewModel.setCaffeineProfile(CaffeineLimitProfile.PREGNANT)
+        advanceUntilIdle()
+
+        assertEquals(CaffeineLimitProfile.PREGNANT, viewModel.uiState.value.currentCaffeineProfile)
+        coVerify { preferences.setCaffeineProfile(CaffeineLimitProfile.PREGNANT) }
+    }
+
+    @Test
+    fun `setCaffeineProfile with same profile should not persist again`() = runTest {
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        advanceUntilIdle()
+
+        // First change
+        viewModel.setCaffeineProfile(CaffeineLimitProfile.PREGNANT)
+        advanceUntilIdle()
+        assertEquals(CaffeineLimitProfile.PREGNANT, viewModel.uiState.value.currentCaffeineProfile)
+
+        // Same profile again — no-op
+        viewModel.setCaffeineProfile(CaffeineLimitProfile.PREGNANT)
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) { preferences.setCaffeineProfile(CaffeineLimitProfile.PREGNANT) }
+    }
+
+    @Test
+    fun `setCustomCaffeineLimit should update state and call preferences setCustomCaffeineLimit`() = runTest {
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        advanceUntilIdle()
+
+        viewModel.setCustomCaffeineLimit(200)
+        advanceUntilIdle()
+
+        assertEquals(200, viewModel.uiState.value.currentCustomLimit)
+        coVerify { preferences.setCustomCaffeineLimit(200) }
+    }
+
+    @Test
+    fun `state should reflect observed caffeine profile from preferences`() = runTest {
+        caffeineProfileFlow.value = CaffeineLimitProfile.SENSITIVE
+
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        advanceUntilIdle()
+
+        assertEquals(CaffeineLimitProfile.SENSITIVE, viewModel.uiState.value.currentCaffeineProfile)
+    }
+
+    @Test
+    fun `state should reflect observed custom caffeine limit from preferences`() = runTest {
+        customLimitFlow.value = 150
+
+        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        advanceUntilIdle()
+
+        assertEquals(150, viewModel.uiState.value.currentCustomLimit)
     }
 
     // ===== Backup / Restore operation tests =====

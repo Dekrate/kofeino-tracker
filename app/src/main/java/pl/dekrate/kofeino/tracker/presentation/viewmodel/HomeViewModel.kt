@@ -17,6 +17,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import pl.dekrate.kofeino.common.domain.model.CaffeineIntake
+import pl.dekrate.kofeino.tracker.data.local.DataStorePreferences
 import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepository
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
@@ -26,6 +27,7 @@ import javax.inject.Inject
 data class HomeUiState(
     val dateLabel: String = "",
     val totalCaffeineMg: Int = 0,
+    val safeLimitMg: Int = HomeViewModel.SAFE_LIMIT_MG,
     val progress: Float = 0f,
     val isLimitExceeded: Boolean = false,
     val todayIntakes: List<CaffeineIntake> = emptyList(),
@@ -35,7 +37,8 @@ data class HomeUiState(
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val repository: CaffeineRepository
+    private val repository: CaffeineRepository,
+    private val preferences: DataStorePreferences
 ) : ViewModel() {
 
     /** Emits today's date, re-emitting at midnight when the date rolls over. */
@@ -45,13 +48,15 @@ class HomeViewModel @Inject constructor(
         .flatMapLatest { today ->
             combine(
                 repository.getIntakesForDate(today),
-                repository.getTotalCaffeineForDate(today)
-            ) { intakes, total ->
+                repository.getTotalCaffeineForDate(today),
+                preferences.observeCaffeineLimitMg()
+            ) { intakes, total, safeLimit ->
                 HomeUiState(
                     dateLabel = formatDateLabel(today),
                     totalCaffeineMg = total,
-                    progress = (total / SAFE_LIMIT_MG.toFloat()).coerceIn(0f, 1f),
-                    isLimitExceeded = total > SAFE_LIMIT_MG,
+                    safeLimitMg = safeLimit,
+                    progress = if (safeLimit > 0) (total.toFloat() / safeLimit.toFloat()).coerceIn(0f, 1f) else 0f,
+                    isLimitExceeded = safeLimit > 0 && total > safeLimit,
                     todayIntakes = intakes,
                     isLoading = false
                 )

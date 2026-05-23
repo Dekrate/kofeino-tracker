@@ -8,6 +8,7 @@ package pl.dekrate.kofeino.tracker.data.backup
  *
  * ## Schema history
  * - **v1** – initial release: intakes + custom drinks + settings
+ * - **v2** – added caffeineLimitProfile and customCaffeineLimitMg to settings
  */
 data class BackupData(
     /** Schema version — used for forward-compat checks in import. */
@@ -26,7 +27,7 @@ data class BackupData(
     val settings: BackupSettings = BackupSettings()
 ) {
     companion object {
-        const val CURRENT_VERSION = 1
+        const val CURRENT_VERSION = 2
         const val MIN_SUPPORTED_VERSION = 1
     }
 }
@@ -53,6 +54,8 @@ data class BackupDrink(
 /** Serializable snapshot of user-facing app settings. */
 data class BackupSettings(
     val dailyLimitMg: Int = 400,
+    val caffeineLimitProfile: String? = null,
+    val customCaffeineLimitMg: Int? = null,
     val language: String = "system",
     val themeMode: String = "system",
     val notifLiveEnabled: Boolean = true,

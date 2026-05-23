@@ -3,6 +3,7 @@ package pl.dekrate.kofeino.tracker.data.backup
 import android.content.Context
 import android.net.Uri
 import dagger.hilt.android.qualifiers.ApplicationContext
+import pl.dekrate.kofeino.tracker.data.local.CaffeineLimitProfile
 import pl.dekrate.kofeino.tracker.data.local.DataStorePreferences
 import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepository
 import pl.dekrate.kofeino.common.domain.model.CaffeineIntake
@@ -181,7 +182,9 @@ class BackupManager @Inject constructor(
             notifLiveEnabled = preferences.isNotificationLiveEnabled(),
             notifMorningEnabled = preferences.isNotificationMorningEnabled(),
             notifRegularEnabled = preferences.isNotificationRegularEnabled(),
-            notifEveningEnabled = preferences.isNotificationEveningEnabled()
+            notifEveningEnabled = preferences.isNotificationEveningEnabled(),
+            caffeineLimitProfile = preferences.getCaffeineProfile().name,
+            customCaffeineLimitMg = preferences.getCustomCaffeineLimit()
         )
     }
 
@@ -225,7 +228,23 @@ class BackupManager @Inject constructor(
         if (settings.notifEveningEnabled != preferences.isNotificationEveningEnabled()) {
             preferences.setNotificationEveningEnabled(settings.notifEveningEnabled)
         }
-        Timber.d("Settings imported — language=%s theme=%s", settings.language, settings.themeMode)
+        // Apply caffeine limit profile (nullable for backward compat with v1 backups)
+        if (settings.caffeineLimitProfile != null) {
+            val profile = try {
+                CaffeineLimitProfile.valueOf(settings.caffeineLimitProfile)
+            } catch (_: IllegalArgumentException) {
+                CaffeineLimitProfile.ADULT
+            }
+            if (profile != preferences.getCaffeineProfile()) {
+                preferences.setCaffeineProfile(profile)
+            }
+        }
+        val customLimit = settings.customCaffeineLimitMg
+        if (customLimit != null && customLimit != preferences.getCustomCaffeineLimit()) {
+            preferences.setCustomCaffeineLimit(customLimit)
+        }
+        Timber.d("Settings imported — language=%s theme=%s profile=%s",
+            settings.language, settings.themeMode, settings.caffeineLimitProfile)
     }
 }
 

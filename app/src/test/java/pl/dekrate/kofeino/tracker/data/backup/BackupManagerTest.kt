@@ -17,6 +17,7 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import pl.dekrate.kofeino.tracker.data.local.CaffeineLimitProfile
 import pl.dekrate.kofeino.tracker.data.local.DataStorePreferences
 import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepository
 import pl.dekrate.kofeino.common.domain.model.CaffeineIntake
@@ -88,6 +89,8 @@ class BackupManagerTest {
         every { preferences.isNotificationMorningEnabled() } returns false
         every { preferences.isNotificationRegularEnabled() } returns false
         every { preferences.isNotificationEveningEnabled() } returns false
+        every { preferences.getCaffeineProfile() } returns CaffeineLimitProfile.ADULT
+        every { preferences.getCustomCaffeineLimit() } returns 400
 
         val outputStream = ByteArrayOutputStream()
         every { contentResolver.openOutputStream(uri) } returns outputStream
@@ -114,6 +117,8 @@ class BackupManagerTest {
         every { preferences.isNotificationMorningEnabled() } returns false
         every { preferences.isNotificationRegularEnabled() } returns false
         every { preferences.isNotificationEveningEnabled() } returns false
+        every { preferences.getCaffeineProfile() } returns CaffeineLimitProfile.ADULT
+        every { preferences.getCustomCaffeineLimit() } returns 400
 
         val outputStream = ByteArrayOutputStream()
         every { contentResolver.openOutputStream(uri) } returns outputStream
@@ -143,6 +148,8 @@ class BackupManagerTest {
         every { preferences.isNotificationMorningEnabled() } returns false
         every { preferences.isNotificationRegularEnabled() } returns false
         every { preferences.isNotificationEveningEnabled() } returns false
+        every { preferences.getCaffeineProfile() } returns CaffeineLimitProfile.ADULT
+        every { preferences.getCustomCaffeineLimit() } returns 400
 
         every { contentResolver.openOutputStream(uri) } returns null
 
@@ -231,7 +238,8 @@ class BackupManagerTest {
                 "intakes": [],
                 "drinks": [],
                 "settings": {"language": "pl", "themeMode": "dark", "notifLiveEnabled": true,
-                    "notifMorningEnabled": true, "notifRegularEnabled": false, "notifEveningEnabled": false}
+                    "notifMorningEnabled": true, "notifRegularEnabled": false, "notifEveningEnabled": false,
+                    "caffeineLimitProfile": "PREGNANT", "customCaffeineLimitMg": 300}
             }
         """.trimIndent()
 
@@ -244,11 +252,15 @@ class BackupManagerTest {
         every { preferences.isNotificationMorningEnabled() } returns false
         every { preferences.isNotificationRegularEnabled() } returns false
         every { preferences.isNotificationEveningEnabled() } returns false
+        every { preferences.getCaffeineProfile() } returns CaffeineLimitProfile.ADULT
+        every { preferences.getCustomCaffeineLimit() } returns 400
         coEvery { preferences.setLanguage(any()) } just Runs
         coEvery { preferences.setThemeMode(any()) } just Runs
         coEvery { preferences.setNotificationLiveEnabled(any()) } just Runs
         coEvery { preferences.setNotificationMorningEnabled(any()) } just Runs
         coEvery { preferences.setNotificationRegularEnabled(any()) } just Runs
+        coEvery { preferences.setCaffeineProfile(any()) } just Runs
+        coEvery { preferences.setCustomCaffeineLimit(any()) } just Runs
 
         val result = backupManager.importBackup(uri, importSettings = true)
 
@@ -333,6 +345,8 @@ class BackupManagerTest {
         every { preferences.isNotificationMorningEnabled() } returns false
         every { preferences.isNotificationRegularEnabled() } returns false
         every { preferences.isNotificationEveningEnabled() } returns false
+        every { preferences.getCaffeineProfile() } returns CaffeineLimitProfile.ADULT
+        every { preferences.getCustomCaffeineLimit() } returns 400
 
         val outputStream = ByteArrayOutputStream()
         every { contentResolver.openOutputStream(uri) } returns outputStream
@@ -374,5 +388,49 @@ class BackupManagerTest {
         assertEquals(1, result.intakesSkipped)
         assertEquals(0, result.drinksImported)
         assertEquals(1, result.drinksSkipped)
+    }
+
+    // ------------------------------------------------------------------
+    // 10. Import v1 backup with importSettings=true (null profile fields)
+    // ------------------------------------------------------------------
+
+    @Test
+    fun `importBackup with v1 backup and importSettings does not crash with null profile fields`() = runTest {
+        val json = """
+            {
+                "version": 1,
+                "exportedAt": "now",
+                "intakes": [],
+                "drinks": [],
+                "settings": {"language": "pl", "themeMode": "dark", "notifLiveEnabled": true,
+                    "notifMorningEnabled": false, "notifRegularEnabled": false, "notifEveningEnabled": false}
+            }
+        """.trimIndent()
+
+        every { contentResolver.openInputStream(uri) } returns ByteArrayInputStream(json.toByteArray())
+        coEvery { repository.getAllIntakeIds() } returns emptyList()
+        coEvery { repository.getAllDrinkNames() } returns emptyList()
+        every { preferences.getLanguage() } returns "en"
+        every { preferences.getThemeMode() } returns "system"
+        every { preferences.isNotificationLiveEnabled() } returns true
+        every { preferences.isNotificationMorningEnabled() } returns false
+        every { preferences.isNotificationRegularEnabled() } returns false
+        every { preferences.isNotificationEveningEnabled() } returns false
+        every { preferences.getCaffeineProfile() } returns CaffeineLimitProfile.ADULT
+        every { preferences.getCustomCaffeineLimit() } returns 400
+        coEvery { preferences.setLanguage(any()) } just Runs
+        coEvery { preferences.setThemeMode(any()) } just Runs
+        coEvery { preferences.setNotificationLiveEnabled(any()) } just Runs
+        coEvery { preferences.setNotificationMorningEnabled(any()) } just Runs
+        coEvery { preferences.setNotificationRegularEnabled(any()) } just Runs
+        coEvery { preferences.setCaffeineProfile(any()) } just Runs
+        coEvery { preferences.setCustomCaffeineLimit(any()) } just Runs
+
+        val result = backupManager.importBackup(uri, importSettings = true)
+
+        assertTrue(result.settingsImported)
+        // Profile should remain at default (ADULT) since v1 backup has no profile fields
+        coVerify(exactly = 0) { preferences.setCaffeineProfile(any()) }
+        coVerify(exactly = 0) { preferences.setCustomCaffeineLimit(any()) }
     }
 }

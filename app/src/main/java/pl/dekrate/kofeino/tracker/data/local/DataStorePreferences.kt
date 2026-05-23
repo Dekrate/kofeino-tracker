@@ -6,6 +6,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -13,6 +14,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -25,7 +27,7 @@ import javax.inject.Singleton
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "kofeino_settings")
 
 /**
- * DataStore-backed preferences for language and theme.
+ * DataStore-backed preferences for language, theme, notifications, and caffeine limit profile.
  *
  * **Two-layer storage design**:
  * - [DataStore] is the canonical store (async, type-safe, modern).
@@ -48,10 +50,6 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
  * val lang = preferences.getLanguage()          // Sync (cached, falls back to SP if not ready)
  * preferences.observeLanguage().collect { ... }  // Reactive
  * preferences.setLanguage("pl")                  // Async write
- *
- * // Pre-Hilt (attachBaseContext):
- * DataStorePreferences.getLanguage(context)
- * DataStorePreferences.getThemeMode(context)
  * ```
  */
 @Singleton
@@ -67,6 +65,8 @@ class DataStorePreferences @Inject constructor(
     @Volatile private var cachedNotifMorning: Boolean = DEFAULT_NOTIF_MORNING
     @Volatile private var cachedNotifRegular: Boolean = DEFAULT_NOTIF_REGULAR
     @Volatile private var cachedNotifEvening: Boolean = DEFAULT_NOTIF_EVENING
+    @Volatile private var cachedProfile: String = DEFAULT_CAFFEINE_PROFILE
+    @Volatile private var cachedCustomLimit: Int = DEFAULT_CUSTOM_CAFFEINE_LIMIT
     @Volatile private var initialized = false
 
     /** Application-scoped coroutine scope with supervisor behaviour. */
@@ -85,10 +85,15 @@ class DataStorePreferences @Inject constructor(
                 cachedNotifMorning = prefs[NOTIF_MORNING_KEY] ?: DEFAULT_NOTIF_MORNING
                 cachedNotifRegular = prefs[NOTIF_REGULAR_KEY] ?: DEFAULT_NOTIF_REGULAR
                 cachedNotifEvening = prefs[NOTIF_EVENING_KEY] ?: DEFAULT_NOTIF_EVENING
+                cachedProfile = prefs[CAFFEINE_PROFILE_KEY] ?: DEFAULT_CAFFEINE_PROFILE
+                cachedCustomLimit = prefs[CUSTOM_CAFFEINE_LIMIT_KEY] ?: DEFAULT_CUSTOM_CAFFEINE_LIMIT
                 initialized = true
-                Timber.d("DataStorePreferences initialized — lang=%s theme=%s notif=%b,%b,%b,%b",
+                Timber.d(
+                    "DataStorePreferences initialized — lang=%s theme=%s notif=%b,%b,%b,%b profile=%s customLimit=%d",
                     cachedLanguage, cachedThemeMode,
-                    cachedNotifLive, cachedNotifMorning, cachedNotifRegular, cachedNotifEvening)
+                    cachedNotifLive, cachedNotifMorning, cachedNotifRegular, cachedNotifEvening,
+                    cachedProfile, cachedCustomLimit
+                )
             } catch (e: Exception) {
                 // Fallback to SharedPreferences
                 cachedLanguage = LanguagePreferences.getLanguage(context)
@@ -193,6 +198,87 @@ class DataStorePreferences @Inject constructor(
         cachedNotifEvening = enabled
     }
 
+    // ===== Caffeine Limit Profile =====
+
+    /**
+     * Synchronous read of current caffeine limit profile.
+     * Falls back to [CaffeineLimitProfile.ADULT] if cache is not yet initialized.
+     */
+    fun getCaffeineProfile(): CaffeineLimitProfile {
+        val name = if (!initialized) DEFAULT_CAFFEINE_PROFILE else cachedProfile
+        return try {
+            CaffeineLimitProfile.valueOf(name)
+        } catch (_: IllegalArgumentException) {
+            CaffeineLimitProfile.ADULT
+        }
+    }
+
+    /** Reactive stream of caffeine profile changes. */
+    fun observeCaffeineProfile(): Flow<CaffeineLimitProfile> = dataStore.data.map { settings ->
+        val name = settings[CAFFEINE_PROFILE_KEY] ?: DEFAULT_CAFFEINE_PROFILE
+        try {
+            CaffeineLimitProfile.valueOf(name)
+        } catch (_: IllegalArgumentException) {
+            CaffeineLimitProfile.ADULT
+        }
+    }
+
+    /** Persist caffeine profile. */
+    suspend fun setCaffeineProfile(profile: CaffeineLimitProfile) {
+        dataStore.edit { settings ->
+            settings[CAFFEINE_PROFILE_KEY] = profile.name
+        }
+        cachedProfile = profile.name
+        initialized = true
+        Timber.d("Caffeine profile set to: %s", profile.name)
+    }
+
+    /**
+     * Synchronous read of custom caffeine limit.
+     * Defaults to 400 if not set.
+     */
+    fun getCustomCaffeineLimit(): Int {
+        val limit = if (!initialized) DEFAULT_CUSTOM_CAFFEINE_LIMIT else cachedCustomLimit
+        return limit.coerceIn(MIN_CUSTOM_LIMIT, MAX_CUSTOM_LIMIT)
+    }
+
+    /** Reactive stream of custom caffeine limit changes. */
+    fun observeCustomCaffeineLimit(): Flow<Int> = dataStore.data.map { settings ->
+        (settings[CUSTOM_CAFFEINE_LIMIT_KEY] ?: DEFAULT_CUSTOM_CAFFEINE_LIMIT)
+            .coerceIn(MIN_CUSTOM_LIMIT, MAX_CUSTOM_LIMIT)
+    }
+
+    /** Persist custom caffeine limit (coerced to valid range). */
+    suspend fun setCustomCaffeineLimit(mg: Int) {
+        val clamped = mg.coerceIn(MIN_CUSTOM_LIMIT, MAX_CUSTOM_LIMIT)
+        dataStore.edit { settings ->
+            settings[CUSTOM_CAFFEINE_LIMIT_KEY] = clamped
+        }
+        cachedCustomLimit = clamped
+        initialized = true
+        Timber.d("Custom caffeine limit set to: %d mg", clamped)
+    }
+
+    /**
+     * Convenient synchronous read — returns the effective daily caffeine limit
+     * based on the selected profile (or custom limit for CUSTOM profile).
+     */
+    fun getCaffeineLimitMg(): Int {
+        val profile = getCaffeineProfile()
+        return profile.limitMg ?: getCustomCaffeineLimit()
+    }
+
+    /**
+     * Reactive stream of the effective daily caffeine limit.
+     * Combines profile and custom limit flows so any change in either triggers an emission.
+     */
+    fun observeCaffeineLimitMg(): Flow<Int> = combine(
+        observeCaffeineProfile(),
+        observeCustomCaffeineLimit()
+    ) { profile, customLimit ->
+        profile.limitMg ?: customLimit
+    }
+
     /** Returns true once the cache has been populated. */
     fun isReady(): Boolean = initialized
 
@@ -204,7 +290,7 @@ class DataStorePreferences @Inject constructor(
             dataStore.edit { settings ->
                 settings[LANGUAGE_KEY] = old
             }
-            Timber.d("Migrated language '%s' from SharedPreferences → DataStore", old)
+            Timber.d("Migrated language '%s' from SharedPreferences \u2192 DataStore", old)
         }
         return old
     }
@@ -215,7 +301,7 @@ class DataStorePreferences @Inject constructor(
             dataStore.edit { settings ->
                 settings[THEME_KEY] = old
             }
-            Timber.d("Migrated theme '%s' from SharedPreferences → DataStore", old)
+            Timber.d("Migrated theme '%s' from SharedPreferences \u2192 DataStore", old)
         }
         return old
     }
@@ -229,6 +315,8 @@ class DataStorePreferences @Inject constructor(
         private val NOTIF_MORNING_KEY = booleanPreferencesKey("notification_morning")
         private val NOTIF_REGULAR_KEY = booleanPreferencesKey("notification_regular")
         private val NOTIF_EVENING_KEY = booleanPreferencesKey("notification_evening")
+        private val CAFFEINE_PROFILE_KEY = stringPreferencesKey("caffeine_profile")
+        private val CUSTOM_CAFFEINE_LIMIT_KEY = intPreferencesKey("custom_caffeine_limit")
 
         const val LANGUAGE_SYSTEM = LanguagePreferences.LANGUAGE_SYSTEM
         const val LANGUAGE_PL = LanguagePreferences.LANGUAGE_PL
@@ -244,6 +332,11 @@ class DataStorePreferences @Inject constructor(
         const val DEFAULT_NOTIF_MORNING = false
         const val DEFAULT_NOTIF_REGULAR = false
         const val DEFAULT_NOTIF_EVENING = false
+
+        const val DEFAULT_CAFFEINE_PROFILE = "ADULT"
+        const val DEFAULT_CUSTOM_CAFFEINE_LIMIT = 400
+        const val MIN_CUSTOM_LIMIT = 25
+        const val MAX_CUSTOM_LIMIT = 2000
 
         /**
          * Synchronous read for [android.app.Application.attachBaseContext].

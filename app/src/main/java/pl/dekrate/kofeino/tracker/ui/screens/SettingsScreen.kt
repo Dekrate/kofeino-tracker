@@ -24,6 +24,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -47,12 +48,44 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import pl.dekrate.kofeino.tracker.R
+import pl.dekrate.kofeino.tracker.data.local.CaffeineLimitProfile
 import pl.dekrate.kofeino.tracker.data.local.DataStorePreferences
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.BackupUiState
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.SettingsEvent
+import pl.dekrate.kofeino.tracker.presentation.viewmodel.SettingsUiState
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.SettingsViewModel
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+
+/**
+ * Internal sealed interface for settings UI actions — enables state hoisting
+ * instead of forwarding the ViewModel through composables.
+ */
+private sealed interface SettingsAction {
+    data class SetThemeMode(val mode: String) : SettingsAction
+    data class SetLanguage(val lang: String) : SettingsAction
+    data class SetCaffeineProfile(val profile: CaffeineLimitProfile) : SettingsAction
+    data class SetCustomCaffeineLimit(val mg: Int) : SettingsAction
+    data class SetNotifLive(val enabled: Boolean) : SettingsAction
+    data class SetNotifMorning(val enabled: Boolean) : SettingsAction
+    data class SetNotifRegular(val enabled: Boolean) : SettingsAction
+    data class SetNotifEvening(val enabled: Boolean) : SettingsAction
+    data class SetImportSettings(val enabled: Boolean) : SettingsAction
+}
+
+private fun SettingsViewModel.toSettingsActionHandler(): (SettingsAction) -> Unit = { action ->
+    when (action) {
+        is SettingsAction.SetThemeMode -> setThemeMode(action.mode)
+        is SettingsAction.SetLanguage -> setLanguage(action.lang)
+        is SettingsAction.SetCaffeineProfile -> setCaffeineProfile(action.profile)
+        is SettingsAction.SetCustomCaffeineLimit -> setCustomCaffeineLimit(action.mg)
+        is SettingsAction.SetNotifLive -> setNotifLiveEnabled(action.enabled)
+        is SettingsAction.SetNotifMorning -> setNotifMorningEnabled(action.enabled)
+        is SettingsAction.SetNotifRegular -> setNotifRegularEnabled(action.enabled)
+        is SettingsAction.SetNotifEvening -> setNotifEveningEnabled(action.enabled)
+        is SettingsAction.SetImportSettings -> setImportSettingsEnabled(action.enabled)
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -116,15 +149,8 @@ fun SettingsScreen(
     }
 
     val backDesc = stringResource(R.string.back)
-    val englishDesc = stringResource(R.string.language_switch_description, stringResource(R.string.english))
-    val polishDesc = stringResource(R.string.language_switch_description, stringResource(R.string.polish))
-    val systemLangDesc = stringResource(R.string.language_system_description)
-    val systemThemeDesc = stringResource(R.string.theme_system_description)
-    val lightThemeDesc = stringResource(R.string.theme_light_description)
-    val darkThemeDesc = stringResource(R.string.theme_dark_description)
 
-    val isBackupInProgress = state.backupState is BackupUiState.Exporting ||
-        state.backupState is BackupUiState.Importing
+    val onSettingsAction = viewModel.toSettingsActionHandler()
 
     Scaffold(
         topBar = {
@@ -140,98 +166,216 @@ fun SettingsScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
-        Column(
+        SettingsContent(
+            state = state,
+            versionName = versionName,
+            onExportClick = {
+                val today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE)
+                val filename = resources.getString(R.string.backup_file_name, today)
+                exportLauncher.launch(filename)
+            },
+            onImportClick = {
+                importLauncher.launch(arrayOf("application/json"))
+            },
+            onSettingsAction = onSettingsAction,
             modifier = Modifier.fillMaxSize().padding(innerPadding).verticalScroll(rememberScrollState())
-        ) {
-            // ── Theme section ──
-            SectionHeader(stringResource(R.string.app_theme), Modifier.padding(horizontal = 16.dp, vertical = 12.dp))
+        )
+    }
+}
 
-            ThemeOption(stringResource(R.string.theme_system), state.currentThemeMode == DataStorePreferences.THEME_SYSTEM,
-                { viewModel.setThemeMode(DataStorePreferences.THEME_SYSTEM) }, Modifier.semantics { contentDescription = systemThemeDesc })
-            ThemeOption(stringResource(R.string.theme_light), state.currentThemeMode == DataStorePreferences.THEME_LIGHT,
-                { viewModel.setThemeMode(DataStorePreferences.THEME_LIGHT) }, Modifier.semantics { contentDescription = lightThemeDesc })
-            ThemeOption(stringResource(R.string.theme_dark), state.currentThemeMode == DataStorePreferences.THEME_DARK,
-                { viewModel.setThemeMode(DataStorePreferences.THEME_DARK) }, Modifier.semantics { contentDescription = darkThemeDesc })
+@Composable
+private fun SettingsContent(
+    state: SettingsUiState,
+    versionName: String,
+    onExportClick: () -> Unit,
+    onImportClick: () -> Unit,
+    onSettingsAction: (SettingsAction) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val themeSystemDesc = stringResource(R.string.theme_system_description)
+    val themeLightDesc = stringResource(R.string.theme_light_description)
+    val themeDarkDesc = stringResource(R.string.theme_dark_description)
 
-            HorizontalDivider(Modifier.padding(vertical = 8.dp))
+    Column(modifier = modifier) {
+        // ── Theme section ──
+        SectionHeader(stringResource(R.string.app_theme), Modifier.padding(horizontal = 16.dp, vertical = 12.dp))
+        RadioOption(stringResource(R.string.theme_system), state.currentThemeMode == DataStorePreferences.THEME_SYSTEM,
+            { onSettingsAction(SettingsAction.SetThemeMode(DataStorePreferences.THEME_SYSTEM)) },
+            Modifier.semantics { contentDescription = themeSystemDesc })
+        RadioOption(stringResource(R.string.theme_light), state.currentThemeMode == DataStorePreferences.THEME_LIGHT,
+            { onSettingsAction(SettingsAction.SetThemeMode(DataStorePreferences.THEME_LIGHT)) },
+            Modifier.semantics { contentDescription = themeLightDesc })
+        RadioOption(stringResource(R.string.theme_dark), state.currentThemeMode == DataStorePreferences.THEME_DARK,
+            { onSettingsAction(SettingsAction.SetThemeMode(DataStorePreferences.THEME_DARK)) },
+            Modifier.semantics { contentDescription = themeDarkDesc })
 
-            // ── Language section ──
-            SectionHeader(stringResource(R.string.app_language), Modifier.padding(horizontal = 16.dp, vertical = 12.dp))
+        HorizontalDivider(Modifier.padding(vertical = 8.dp))
 
-            LanguageOption(stringResource(R.string.language_system), state.currentLanguage == DataStorePreferences.LANGUAGE_SYSTEM,
-                { viewModel.setLanguage(DataStorePreferences.LANGUAGE_SYSTEM) }, Modifier.semantics { contentDescription = systemLangDesc })
-            LanguageOption(stringResource(R.string.english), state.currentLanguage == DataStorePreferences.LANGUAGE_EN,
-                { viewModel.setLanguage(DataStorePreferences.LANGUAGE_EN) }, Modifier.semantics { contentDescription = englishDesc })
-            LanguageOption(stringResource(R.string.polish), state.currentLanguage == DataStorePreferences.LANGUAGE_PL,
-                { viewModel.setLanguage(DataStorePreferences.LANGUAGE_PL) }, Modifier.semantics { contentDescription = polishDesc })
+        LanguageSection(state.currentLanguage, onSettingsAction)
+        HorizontalDivider(Modifier.padding(vertical = 8.dp))
+        CaffeineLimitSection(
+            currentCaffeineProfile = state.currentCaffeineProfile,
+            currentCustomLimit = state.currentCustomLimit,
+            onSettingsAction = onSettingsAction
+        )
+        HorizontalDivider(Modifier.padding(vertical = 8.dp))
+        NotificationSection(
+            notifLiveEnabled = state.notifLiveEnabled,
+            notifMorningEnabled = state.notifMorningEnabled,
+            notifRegularEnabled = state.notifRegularEnabled,
+            notifEveningEnabled = state.notifEveningEnabled,
+            onSettingsAction = onSettingsAction
+        )
+        HorizontalDivider(Modifier.padding(vertical = 8.dp))
+        BackupSection(
+            isExporting = state.backupState is BackupUiState.Exporting,
+            isImporting = state.backupState is BackupUiState.Importing,
+            importSettingsEnabled = state.importSettingsEnabled,
+            onExportClick = onExportClick,
+            onImportClick = onImportClick,
+            onSettingsAction = onSettingsAction
+        )
+        HorizontalDivider(Modifier.padding(vertical = 8.dp))
+        HealthDisclaimerSection()
+        HorizontalDivider(Modifier.padding(vertical = 8.dp))
 
-            HorizontalDivider(Modifier.padding(vertical = 8.dp))
+        // ── About section ──
+        SectionHeader(stringResource(R.string.about), Modifier.padding(horizontal = 16.dp, vertical = 12.dp))
+        AboutRow(stringResource(R.string.app_name), stringResource(R.string.version_format, versionName),
+            stringResource(R.string.version_format, versionName), Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp))
+    }
+}
 
-            // ── Notification section ──
-            SectionHeader(stringResource(R.string.notification_section), Modifier.padding(horizontal = 16.dp, vertical = 12.dp))
+// ── Section composables ──
 
-            NotifToggle(stringResource(R.string.notif_live), stringResource(R.string.notif_live_desc),
-                state.notifLiveEnabled, { viewModel.setNotifLiveEnabled(it) })
-            NotifToggle(stringResource(R.string.notif_morning), stringResource(R.string.notif_morning_desc),
-                state.notifMorningEnabled, { viewModel.setNotifMorningEnabled(it) })
-            NotifToggle(stringResource(R.string.notif_regular), stringResource(R.string.notif_regular_desc),
-                state.notifRegularEnabled, { viewModel.setNotifRegularEnabled(it) })
-            NotifToggle(stringResource(R.string.notif_evening), stringResource(R.string.notif_evening_desc),
-                state.notifEveningEnabled, { viewModel.setNotifEveningEnabled(it) })
+@Composable
+private fun LanguageSection(
+    currentLanguage: String,
+    onSettingsAction: (SettingsAction) -> Unit
+) {
+    Column {
+        val langSystemDesc = stringResource(R.string.language_system_description)
+        val langEnglishDesc = stringResource(R.string.language_switch_description, stringResource(R.string.english))
+        val langPolishDesc = stringResource(R.string.language_switch_description, stringResource(R.string.polish))
 
-            HorizontalDivider(Modifier.padding(vertical = 8.dp))
+        SectionHeader(stringResource(R.string.app_language), Modifier.padding(horizontal = 16.dp, vertical = 12.dp))
+        RadioOption(stringResource(R.string.language_system), currentLanguage == DataStorePreferences.LANGUAGE_SYSTEM,
+            { onSettingsAction(SettingsAction.SetLanguage(DataStorePreferences.LANGUAGE_SYSTEM)) },
+            Modifier.semantics { contentDescription = langSystemDesc })
+        RadioOption(stringResource(R.string.english), currentLanguage == DataStorePreferences.LANGUAGE_EN,
+            { onSettingsAction(SettingsAction.SetLanguage(DataStorePreferences.LANGUAGE_EN)) },
+            Modifier.semantics { contentDescription = langEnglishDesc })
+        RadioOption(stringResource(R.string.polish), currentLanguage == DataStorePreferences.LANGUAGE_PL,
+            { onSettingsAction(SettingsAction.SetLanguage(DataStorePreferences.LANGUAGE_PL)) },
+            Modifier.semantics { contentDescription = langPolishDesc })
+    }
+}
 
-            // ── Backup / Restore section ──
-            SectionHeader(
-                stringResource(R.string.backup_section),
-                Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+@Composable
+private fun CaffeineLimitSection(
+    currentCaffeineProfile: CaffeineLimitProfile,
+    currentCustomLimit: Int,
+    onSettingsAction: (SettingsAction) -> Unit
+) {
+    Column {
+        val decreaseDesc = stringResource(R.string.custom_limit_decrease)
+        val increaseDesc = stringResource(R.string.custom_limit_increase)
+
+        SectionHeader(
+            stringResource(R.string.caffeine_limit_title),
+            Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+        )
+        Text(
+            text = stringResource(R.string.caffeine_limit_summary),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+        )
+        CaffeineLimitProfile.entries.forEach { profile ->
+            ProfileOption(
+                profile = profile,
+                isSelected = currentCaffeineProfile == profile,
+                onSelect = { onSettingsAction(SettingsAction.SetCaffeineProfile(profile)) },
+                modifier = Modifier.fillMaxWidth()
             )
-
-            // Export button
-            BackupButton(
-                label = stringResource(R.string.export_backup),
-                loadingLabel = stringResource(R.string.backup_exporting),
-                isLoading = state.backupState is BackupUiState.Exporting,
-                enabled = !isBackupInProgress,
-                onClick = {
-                    val today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE)
-                    val filename = resources.getString(R.string.backup_file_name, today)
-                    exportLauncher.launch(filename)
-                }
-            )
-
-            // Import settings toggle
-            NotifToggle(
-                label = stringResource(R.string.backup_import_settings),
-                description = stringResource(R.string.backup_import_settings_desc),
-                checked = state.importSettingsEnabled,
-                onCheckedChange = { viewModel.setImportSettingsEnabled(it) }
-            )
-
-            // Import button
-            BackupButton(
-                label = stringResource(R.string.import_backup),
-                loadingLabel = stringResource(R.string.backup_importing),
-                isLoading = state.backupState is BackupUiState.Importing,
-                enabled = !isBackupInProgress,
-                onClick = {
-                    importLauncher.launch(arrayOf("application/json"))
-                }
-            )
-
-            HorizontalDivider(Modifier.padding(vertical = 8.dp))
-
-            // ── Health disclaimer section ──
-            HealthDisclaimerSection()
-
-            HorizontalDivider(Modifier.padding(vertical = 8.dp))
-
-            // ── About section ──
-            SectionHeader(stringResource(R.string.about), Modifier.padding(horizontal = 16.dp, vertical = 12.dp))
-
-            AboutRow(stringResource(R.string.app_name), stringResource(R.string.version_format, versionName),
-                stringResource(R.string.version_format, versionName), Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp))
         }
+        if (currentCaffeineProfile == CaffeineLimitProfile.CUSTOM) {
+            CustomLimitControls(
+                customLimit = currentCustomLimit,
+                decreaseDesc = decreaseDesc,
+                increaseDesc = increaseDesc,
+                onDecrease = {
+                    val newValue = (currentCustomLimit - 25)
+                        .coerceAtLeast(DataStorePreferences.MIN_CUSTOM_LIMIT)
+                    onSettingsAction(SettingsAction.SetCustomCaffeineLimit(newValue))
+                },
+                onIncrease = {
+                    val newValue = (currentCustomLimit + 25)
+                        .coerceAtMost(DataStorePreferences.MAX_CUSTOM_LIMIT)
+                    onSettingsAction(SettingsAction.SetCustomCaffeineLimit(newValue))
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun NotificationSection(
+    notifLiveEnabled: Boolean,
+    notifMorningEnabled: Boolean,
+    notifRegularEnabled: Boolean,
+    notifEveningEnabled: Boolean,
+    onSettingsAction: (SettingsAction) -> Unit
+) {
+    Column {
+        SectionHeader(stringResource(R.string.notification_section), Modifier.padding(horizontal = 16.dp, vertical = 12.dp))
+        NotifToggle(stringResource(R.string.notif_live), stringResource(R.string.notif_live_desc),
+            notifLiveEnabled, { onSettingsAction(SettingsAction.SetNotifLive(it)) })
+        NotifToggle(stringResource(R.string.notif_morning), stringResource(R.string.notif_morning_desc),
+            notifMorningEnabled, { onSettingsAction(SettingsAction.SetNotifMorning(it)) })
+        NotifToggle(stringResource(R.string.notif_regular), stringResource(R.string.notif_regular_desc),
+            notifRegularEnabled, { onSettingsAction(SettingsAction.SetNotifRegular(it)) })
+        NotifToggle(stringResource(R.string.notif_evening), stringResource(R.string.notif_evening_desc),
+            notifEveningEnabled, { onSettingsAction(SettingsAction.SetNotifEvening(it)) })
+    }
+}
+
+@Composable
+private fun BackupSection(
+    isExporting: Boolean,
+    isImporting: Boolean,
+    importSettingsEnabled: Boolean,
+    onExportClick: () -> Unit,
+    onImportClick: () -> Unit,
+    onSettingsAction: (SettingsAction) -> Unit
+) {
+    val isBackupInProgress = isExporting || isImporting
+
+    Column {
+        SectionHeader(
+            stringResource(R.string.backup_section),
+            Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+        )
+        BackupButton(
+            label = stringResource(R.string.export_backup),
+            loadingLabel = stringResource(R.string.backup_exporting),
+            isLoading = isExporting,
+            enabled = !isBackupInProgress,
+            onClick = onExportClick
+        )
+        NotifToggle(
+            label = stringResource(R.string.backup_import_settings),
+            description = stringResource(R.string.backup_import_settings_desc),
+            checked = importSettingsEnabled,
+            onCheckedChange = { onSettingsAction(SettingsAction.SetImportSettings(it)) }
+        )
+        BackupButton(
+            label = stringResource(R.string.import_backup),
+            loadingLabel = stringResource(R.string.backup_importing),
+            isLoading = isImporting,
+            enabled = !isBackupInProgress,
+            onClick = onImportClick
+        )
     }
 }
 
@@ -241,8 +385,8 @@ internal fun SectionHeader(text: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun LanguageOption(label: String, isSelected: Boolean, onSelect: () -> Unit, modifier: Modifier = Modifier) {
-    Row(modifier = modifier.fillMaxWidth().clickable { onSelect() }.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+private fun RadioOption(label: String, isSelected: Boolean, onSelect: () -> Unit, modifier: Modifier = Modifier) {
+    Row(modifier = modifier.clickable { onSelect() }.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
         RadioButton(selected = isSelected, onClick = onSelect)
         Spacer(Modifier.width(12.dp))
         Text(label, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
@@ -250,11 +394,70 @@ private fun LanguageOption(label: String, isSelected: Boolean, onSelect: () -> U
 }
 
 @Composable
-private fun ThemeOption(label: String, isSelected: Boolean, onSelect: () -> Unit, modifier: Modifier = Modifier) {
-    Row(modifier = modifier.fillMaxWidth().clickable { onSelect() }.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+private fun ProfileOption(
+    profile: CaffeineLimitProfile,
+    isSelected: Boolean,
+    onSelect: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.clickable { onSelect() }.padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         RadioButton(selected = isSelected, onClick = onSelect)
         Spacer(Modifier.width(12.dp))
-        Text(label, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = stringResource(profile.displayNameResId),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = stringResource(profile.descriptionResId),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+private fun CustomLimitControls(
+    customLimit: Int,
+    decreaseDesc: String,
+    increaseDesc: String,
+    onDecrease: () -> Unit,
+    onIncrease: () -> Unit
+) {
+    Column(
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.custom_limit_value, customLimit),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        Row(modifier = Modifier.fillMaxWidth()) {
+            OutlinedButton(
+                onClick = onDecrease,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 4.dp)
+                    .semantics { contentDescription = decreaseDesc }
+            ) {
+                Text("-25 mg")
+            }
+            OutlinedButton(
+                onClick = onIncrease,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 4.dp)
+                    .semantics { contentDescription = increaseDesc }
+            ) {
+                Text("+25 mg")
+            }
+        }
     }
 }
 
