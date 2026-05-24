@@ -8,10 +8,10 @@ import kotlinx.coroutines.flow.Flow
 interface CaffeineRepository : CommonCaffeineRepository {
 
     // --- Phone-specific: get recent intakes (global history descending). ---
-    fun getRecentIntakes(limit: Int = 100): Flow<List<CaffeineIntake>>
+    override fun getRecentIntakes(limit: Int): Flow<List<CaffeineIntake>>
 
     // --- Phone-specific: search drinks by name. ---
-    fun searchDrinks(query: String): Flow<List<DrinkEntity>>
+    override fun searchDrinks(query: String): Flow<List<DrinkEntity>>
 
     // --- Backup / Snapshot operations ---
     suspend fun getAllIntakesSnapshot(): List<CaffeineIntake>

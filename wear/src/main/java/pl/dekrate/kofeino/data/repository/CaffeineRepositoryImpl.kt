@@ -20,6 +20,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
+@Suppress("TooManyFunctions")
 class CaffeineRepositoryImpl @Inject constructor(
     private val intakeDao: CaffeineIntakeDao,
     private val drinkDao: DrinkDao,

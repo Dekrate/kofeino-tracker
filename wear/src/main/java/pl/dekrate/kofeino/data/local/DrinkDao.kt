@@ -29,6 +29,10 @@ interface DrinkDao {
     @Query("SELECT COUNT(*) FROM drinks")
     suspend fun getDrinkCount(): Int
 
-    @Query("SELECT * FROM drinks WHERE name LIKE '%' || REPLACE(REPLACE(:query, '%', '\\%'), '_', '\\_') || '%' ESCAPE '\\' ORDER BY name ASC")
+    @Query(
+        "SELECT * FROM drinks WHERE name LIKE '%' || " +
+        "REPLACE(REPLACE(:query, '%', '\\%'), '_', '\\_') || " +
+        "'%' ESCAPE '\\' ORDER BY name ASC"
+    )
     fun searchDrinks(query: String): Flow<List<DrinkEntity>>
 }

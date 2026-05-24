@@ -27,6 +27,11 @@ class AddDrinkViewModel @Inject constructor(
     private val repository: CaffeineRepository
 ) : ViewModel() {
 
+    companion object {
+        private const val RECENT_INTAKES_LIMIT = 5
+        private const val SEARCH_DEBOUNCE_MS = 300L
+    }
+
     private val _searchQuery = MutableStateFlow("")
     private val _uiState = MutableStateFlow(AddDrinkUiState())
     val uiState: StateFlow<AddDrinkUiState> = _uiState.asStateFlow()
@@ -35,7 +40,7 @@ class AddDrinkViewModel @Inject constructor(
         Timber.d("AddDrinkViewModel initialized")
 
         val searchResults: Flow<List<DrinkEntity>> = _searchQuery
-            .debounce(300)
+            .debounce(SEARCH_DEBOUNCE_MS)
             .flatMapLatest { query ->
                 if (query.isBlank()) {
                     repository.getAllDrinks()
@@ -47,7 +52,7 @@ class AddDrinkViewModel @Inject constructor(
         combine(
             _searchQuery,
             searchResults,
-            repository.getRecentIntakes(5)
+            repository.getRecentIntakes(RECENT_INTAKES_LIMIT)
         ) { query, drinks, recentIntakes ->
             AddDrinkUiState(
                 searchQuery = query,
@@ -67,6 +72,7 @@ class AddDrinkViewModel @Inject constructor(
         _searchQuery.value = ""
     }
 
+    @Suppress("TooGenericExceptionCaught") // Catch-all to prevent UI crashes — Room/sync errors are logged via Timber
     fun addDrink(drink: DrinkEntity, onComplete: () -> Unit = {}, onError: () -> Unit = {}) {
         viewModelScope.launch {
             try {
@@ -81,7 +87,7 @@ class AddDrinkViewModel @Inject constructor(
                 onComplete()
             } catch (e: CancellationException) {
                 throw e
-            } catch (e: Exception) {
+            } catch (e: RuntimeException) {
                 Timber.e(e, "Failed to add intake from AddDrinkViewModel")
                 onError()
             }

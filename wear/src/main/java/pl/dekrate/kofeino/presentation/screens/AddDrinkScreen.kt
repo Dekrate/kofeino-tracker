@@ -23,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -36,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.wear.compose.foundation.lazy.TransformingLazyColumn
+import androidx.wear.compose.foundation.lazy.TransformingLazyColumnScope
 import androidx.wear.compose.foundation.lazy.items
 import androidx.wear.compose.foundation.lazy.rememberTransformingLazyColumnState
 import androidx.wear.compose.material3.Button
@@ -104,120 +106,158 @@ fun AddDrinkScreen(
             ) {
                 // ── Search bar ──────────────────────────────────────────
                 item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp)
-                            .background(
-                                color = MaterialTheme.colorScheme.surfaceContainer,
-                                shape = RoundedCornerShape(8.dp)
-                            )
-                            .padding(horizontal = 12.dp, vertical = 8.dp)
-                    ) {
-                        if (state.searchQuery.isEmpty()) {
-                            Text(
-                                text = searchHint,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        BasicTextField(
-                            value = state.searchQuery,
-                            onValueChange = { viewModel.onSearchQueryChanged(it) },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .semantics {
-                                    contentDescription = searchHint
-                                },
-                            textStyle = TextStyle(
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontSize = 14.sp
-                            ),
-                            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                            singleLine = true
-                        )
-                    }
+                    SearchBar(
+                        query = state.searchQuery,
+                        onQueryChange = { viewModel.onSearchQueryChanged(it) },
+                        searchHint = searchHint
+                    )
                 }
 
                 // ── Recent intakes chips (only when not searching) ──────
                 if (!state.searchQuery.isNotBlank() && state.recentIntakes.isNotEmpty()) {
                     item {
-                        ListHeader {
-                            Text(
-                                text = stringResource(R.string.recent_intakes),
-                                style = MaterialTheme.typography.labelSmall
-                            )
-                        }
-                    }
-                    item {
-                        LazyRow(
-                            contentPadding = PaddingValues(horizontal = 8.dp),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            foundationItems(state.recentIntakes, key = { it.id }) { intake ->
-                                RecentIntakeChip(
-                                    intake = intake,
-                                    onClick = {
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        val drink = DrinkEntity(
-                                            id = intake.drinkId ?: 0L,
-                                            name = intake.drinkName,
-                                            caffeineMg = intake.caffeineMg,
-                                            volumeMl = intake.volumeMl
-                                        )
-                                        selectedDrink = drink
-                                    }
-                                )
-                            }
-                        }
-                    }
-                }
-
-                // ── Drink list header ───────────────────────────────────
-                item {
-                    ListHeader {
-                        Text(
-                            text = stringResource(R.string.select_drink),
-                            style = MaterialTheme.typography.titleMedium
+                        RecentIntakesSection(
+                            recentIntakes = state.recentIntakes,
+                            onIntakeSelect = { drink -> selectedDrink = drink }
                         )
                     }
                 }
 
                 // ── Drink list ──────────────────────────────────────────
-                if (state.drinks.isEmpty()) {
-                    item {
-                        Text(
-                            text = if (state.searchQuery.isNotBlank()) {
-                                stringResource(R.string.no_search_results)
-                            } else {
-                                stringResource(R.string.no_drinks_defined)
-                            },
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                            textAlign = TextAlign.Center
+                DrinkListSection(
+                    drinks = state.drinks,
+                    searchQuery = state.searchQuery,
+                    onDrinkSelected = { drink -> selectedDrink = drink },
+                    haptic = haptic
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    searchHint: String,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp)
+            .background(
+                color = MaterialTheme.colorScheme.surfaceContainer,
+                shape = RoundedCornerShape(8.dp)
+            )
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+    ) {
+        if (query.isEmpty()) {
+            Text(
+                text = searchHint,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        BasicTextField(
+            value = query,
+            onValueChange = onQueryChange,
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics {
+                    contentDescription = searchHint
+                },
+            textStyle = TextStyle(
+                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = 14.sp
+            ),
+            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+            singleLine = true
+        )
+    }
+}
+
+@Composable
+private fun RecentIntakesSection(
+    recentIntakes: List<CaffeineIntake>,
+    onIntakeSelect: (DrinkEntity) -> Unit,
+) {
+    val haptic = LocalHapticFeedback.current
+    Column {
+        ListHeader {
+            Text(
+                text = stringResource(R.string.recent_intakes),
+                style = MaterialTheme.typography.labelSmall
+            )
+        }
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            foundationItems(recentIntakes, key = { it.id }) { intake ->
+                RecentIntakeChip(
+                    intake = intake,
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        val drink = DrinkEntity(
+                            id = intake.drinkId ?: 0L,
+                            name = intake.drinkName,
+                            caffeineMg = intake.caffeineMg,
+                            volumeMl = intake.volumeMl
                         )
+                        onIntakeSelect(drink)
                     }
+                )
+            }
+        }
+    }
+}
+
+private fun TransformingLazyColumnScope.DrinkListSection(
+    drinks: List<DrinkEntity>,
+    searchQuery: String,
+    onDrinkSelected: (DrinkEntity) -> Unit,
+    haptic: HapticFeedback,
+) {
+    item {
+        ListHeader {
+            Text(
+                text = stringResource(R.string.select_drink),
+                style = MaterialTheme.typography.titleMedium
+            )
+        }
+    }
+
+    if (drinks.isEmpty()) {
+        item {
+            Text(
+                text = if (searchQuery.isNotBlank()) {
+                    stringResource(R.string.no_search_results)
                 } else {
-                    items(state.drinks, key = { it.id }) { drink ->
-                        Button(
-                            onClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                selectedDrink = drink
-                            },
-                            modifier = Modifier
-                                .padding(horizontal = 8.dp)
-                                .semantics {
-                                    contentDescription = "${drink.name} ${drink.caffeineMg} mg"
-                                }
-                        ) {
-                            Text(
-                                text = "${drink.name}  ${drink.caffeineMg} mg",
-                                style = MaterialTheme.typography.bodyMedium,
-                                maxLines = 1
-                            )
-                        }
+                    stringResource(R.string.no_drinks_defined)
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                textAlign = TextAlign.Center
+            )
+        }
+    } else {
+        items(drinks, key = { it.id }) { drink ->
+            Button(
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onDrinkSelected(drink)
+                },
+                modifier = Modifier
+                    .padding(horizontal = 8.dp)
+                    .semantics {
+                        contentDescription = "${drink.name} ${drink.caffeineMg} mg"
                     }
-                }
+            ) {
+                Text(
+                    text = "${drink.name}  ${drink.caffeineMg} mg",
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 1
+                )
             }
         }
     }
