@@ -74,15 +74,6 @@ class RealTimeSyncServiceContractTest {
         return task
     }
 
-    @Suppress("unused")
-    private fun <T> failedTask(exception: Exception): Task<T> {
-        val task = mockk<Task<T>>()
-        every { task.isComplete } returns true
-        every { task.isSuccessful } returns false
-        every { task.exception } returns exception
-        return task
-    }
-
     private fun <T> queueTaskResults(vararg results: T) {
         val iterator = results.iterator()
         every { Tasks.await<Any>(any()) } answers {
@@ -239,6 +230,21 @@ class RealTimeSyncServiceContractTest {
     // ======================================================================
     // Contract 6: Graceful degradation — no crash on failures
     // ======================================================================
+
+    @Test
+    fun `propagateChange does not throw when sendMessage fails`() = runTest {
+        coEvery { pendingSyncQueue.enqueue(any(), any(), any(), any()) } just Runs
+        every { capabilityClient.getCapability(any(), any()) } returns completedTask(capabilityInfoWithNodes("node-1"))
+        val iterator = mutableListOf<Any>(capabilityInfoWithNodes("node-1")).iterator()
+        every { Tasks.await<Any>(any()) } answers {
+            if (iterator.hasNext()) iterator.next()
+            else throw ExecutionException(RuntimeException("Send failed"))
+        }
+        every { messageClient.sendMessage(any(), any(), any()) } returns completedTask(1)
+
+        // Should not throw
+        service.propagateChange("intake", "1", "UPDATE", """{}""")
+    }
 
     @Test
     fun `propagateChange does not throw when capability client throws`() = runTest {

@@ -1,5 +1,6 @@
 package pl.dekrate.kofeino.data.sync
 
+import com.google.gson.Gson
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -30,26 +31,22 @@ class SyncPayloadSerializerSchemaTest {
     @Test
     fun `serializeIntake includes all expected fields`() {
         val intake = CaffeineIntake(
-            id = 42,
-            drinkId = 1,
-            drinkName = "Espresso",
-            caffeineMg = 63,
-            volumeMl = 30,
-            timestamp = 1000L,
-            lastModifiedTimestamp = 2000L,
-            sourceDeviceId = "phone"
+            id = 42, drinkId = 1, drinkName = "Espresso",
+            caffeineMg = 63, volumeMl = 30, timestamp = 1000L,
+            lastModifiedTimestamp = 2000L, sourceDeviceId = "phone"
         )
 
         val json = SyncPayloadSerializer.serializeIntake(intake)
+        val jsonObject = Gson().fromJson(json, Map::class.java)
 
-        assertTrue("JSON must contain id field", json.contains("\"id\""))
-        assertTrue("JSON must contain drinkId field", json.contains("\"drinkId\""))
-        assertTrue("JSON must contain drinkName field", json.contains("\"drinkName\""))
-        assertTrue("JSON must contain caffeineMg field", json.contains("\"caffeineMg\""))
-        assertTrue("JSON must contain volumeMl field", json.contains("\"volumeMl\""))
-        assertTrue("JSON must contain timestamp field", json.contains("\"timestamp\""))
-        assertTrue("JSON must contain lastModifiedTimestamp field", json.contains("\"lastModifiedTimestamp\""))
-        assertTrue("JSON must contain sourceDeviceId field", json.contains("\"sourceDeviceId\""))
+        assertTrue("Missing field: id", jsonObject.containsKey("id"))
+        assertTrue("Missing field: drinkId", jsonObject.containsKey("drinkId"))
+        assertTrue("Missing field: drinkName", jsonObject.containsKey("drinkName"))
+        assertTrue("Missing field: caffeineMg", jsonObject.containsKey("caffeineMg"))
+        assertTrue("Missing field: volumeMl", jsonObject.containsKey("volumeMl"))
+        assertTrue("Missing field: timestamp", jsonObject.containsKey("timestamp"))
+        assertTrue("Missing field: lastModifiedTimestamp", jsonObject.containsKey("lastModifiedTimestamp"))
+        assertTrue("Missing field: sourceDeviceId", jsonObject.containsKey("sourceDeviceId"))
     }
 
     @Test
@@ -145,24 +142,20 @@ class SyncPayloadSerializerSchemaTest {
     @Test
     fun `serializeDrink includes all expected fields`() {
         val drink = DrinkEntity(
-            id = 7,
-            name = "Latte",
-            caffeineMg = 63,
-            volumeMl = 200,
-            isDefault = true,
-            lastModifiedTimestamp = 1000L,
-            sourceDeviceId = "phone"
+            id = 7, name = "Latte", caffeineMg = 63, volumeMl = 200,
+            isDefault = true, lastModifiedTimestamp = 1000L, sourceDeviceId = "phone"
         )
 
         val json = SyncPayloadSerializer.serializeDrink(drink)
+        val jsonObject = Gson().fromJson(json, Map::class.java)
 
-        assertTrue("JSON must contain id field", json.contains("\"id\""))
-        assertTrue("JSON must contain name field", json.contains("\"name\""))
-        assertTrue("JSON must contain caffeineMg field", json.contains("\"caffeineMg\""))
-        assertTrue("JSON must contain volumeMl field", json.contains("\"volumeMl\""))
-        assertTrue("JSON must contain isDefault field", json.contains("\"isDefault\""))
-        assertTrue("JSON must contain lastModifiedTimestamp field", json.contains("\"lastModifiedTimestamp\""))
-        assertTrue("JSON must contain sourceDeviceId field", json.contains("\"sourceDeviceId\""))
+        assertTrue("Missing field: id", jsonObject.containsKey("id"))
+        assertTrue("Missing field: name", jsonObject.containsKey("name"))
+        assertTrue("Missing field: caffeineMg", jsonObject.containsKey("caffeineMg"))
+        assertTrue("Missing field: volumeMl", jsonObject.containsKey("volumeMl"))
+        assertTrue("Missing field: isDefault", jsonObject.containsKey("isDefault"))
+        assertTrue("Missing field: lastModifiedTimestamp", jsonObject.containsKey("lastModifiedTimestamp"))
+        assertTrue("Missing field: sourceDeviceId", jsonObject.containsKey("sourceDeviceId"))
     }
 
     @Test

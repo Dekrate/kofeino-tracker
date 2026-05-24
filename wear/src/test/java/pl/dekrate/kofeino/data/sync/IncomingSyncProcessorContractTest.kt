@@ -121,7 +121,7 @@ class IncomingSyncProcessorContractTest {
     }
 
     @Test
-    fun `applies intake UPDATE when incoming is newer than local`() = runTest {
+    fun `applies intake UPDATE when incoming is newer with same creation timestamp`() = runTest {
         val payload = """{"id":42,"drinkId":null,"drinkName":"Espresso","caffeineMg":63,"volumeMl":30,"timestamp":2000,"lastModifiedTimestamp":5000,"sourceDeviceId":"phone"}"""
         val local = CaffeineIntake(
             id = 42, drinkName = "Espresso", caffeineMg = 50, volumeMl = 30,
@@ -161,6 +161,40 @@ class IncomingSyncProcessorContractTest {
         coVerify { intakeDao.update(match { it.lastModifiedTimestamp == 5000L }) }
     }
 
+    @Test
+    fun `tiebreaker phone wins when equal timestamps`() = runTest {
+        val now = 1000L
+        val payload = """{"id":42,"drinkId":null,"drinkName":"Phone Version","caffeineMg":80,"volumeMl":200,"timestamp":1000,"lastModifiedTimestamp":$now,"sourceDeviceId":"phone"}"""
+        val local = CaffeineIntake(
+            id = 42, drinkName = "Watch Version", caffeineMg = 50, volumeMl = 150,
+            timestamp = 1000, lastModifiedTimestamp = now, sourceDeviceId = "watch"
+        )
+        coEvery { intakeDao.getIntakeById(42) } returns local
+        coEvery { intakeDao.update(any()) } returns Unit
+
+        val result = processor.processIncoming(
+            mockMessageEvent("/sync/intake/update", payload.toByteArray())
+        )
+
+        assert(result == IncomingSyncProcessor.ProcessResult.APPLIED)
+        // Phone wins tiebreaker → phone's version should be stored
+        coVerify { intakeDao.update(match { it.drinkName == "Phone Version" }) }
+    }
+
+    @Test
+    fun `handles unknown operation type as insert-update fallthrough`() = runTest {
+        val payload = """{"id":42,"drinkId":null,"drinkName":"Espresso","caffeineMg":63,"volumeMl":30,"timestamp":1000,"lastModifiedTimestamp":2000,"sourceDeviceId":"phone"}"""
+        coEvery { intakeDao.getIntakeById(42) } returns null
+        coEvery { intakeDao.insert(any()) } returns 42L
+
+        val result = processor.processIncoming(
+            mockMessageEvent("/sync/intake/upsert", payload.toByteArray())
+        )
+
+        assert(result == IncomingSyncProcessor.ProcessResult.APPLIED)
+        coVerify { intakeDao.insert(match { it.id == 42L }) }
+    }
+
     // ======================================================================
     // Contract 5: Intake DELETE
     // ======================================================================
@@ -181,6 +215,7 @@ class IncomingSyncProcessorContractTest {
 
         assert(result == IncomingSyncProcessor.ProcessResult.APPLIED)
         coVerify { intakeDao.delete(existing) }
+        coVerify(exactly = 1) { conflictLogDao.log(any()) }
     }
 
     @Test
