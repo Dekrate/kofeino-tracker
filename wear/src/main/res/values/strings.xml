@@ -54,6 +54,11 @@
     <string name="adjust_serving">Adjust serving</string>
     <string name="log_drink">Log drink</string>
 
+    <!-- Serving adjustment -->
+    <string name="serving_label">Serving: %d ml</string>
+    <string name="serving_decrease">Serving -10 ml</string>
+    <string name="serving_increase">Serving +10 ml</string>
+
     <!-- AddDrink search & recent -->
     <string name="search_drinks_hint">Search drinks…</string>
     <string name="recent_intakes">Recent</string>

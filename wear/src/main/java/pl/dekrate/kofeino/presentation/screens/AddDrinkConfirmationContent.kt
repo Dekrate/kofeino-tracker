@@ -24,13 +24,14 @@ import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.material3.OutlinedButton
 import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.Text
+import kotlin.math.roundToInt
 import pl.dekrate.kofeino.R
 import pl.dekrate.kofeino.common.domain.model.DrinkEntity
 
 /**
  * Full-screen confirmation dialog shown after tapping a drink in [AddDrinkScreen].
- * Allows adjusting caffeine (stepper +/-5) and volume (stepper +/-10)
- * before logging the intake.
+ * Allows adjusting serving size (proportional caffeine recalculation)
+ * and fine-tuning caffeine (+/-5, +/-1) before logging the intake.
  *
  * @param drink The selected drink with default values.
  * @param isLogging True while the log operation is in progress (prevents double-click).
@@ -46,12 +47,15 @@ fun AddDrinkConfirmationContent(
     modifier: Modifier = Modifier
 ) {
     var caffeineMg by remember(drink) { mutableIntStateOf(drink.caffeineMg) }
-    var volumeMl by remember(drink) { mutableIntStateOf(drink.volumeMl) }
+    var servingMl by remember(drink) { mutableIntStateOf(drink.volumeMl) }
+
+    val originalCaffeineMg = drink.caffeineMg
+    val originalVolumeMl = drink.volumeMl
 
     // Pre-resolve strings for accessibility (semantics blocks are not @Composable)
     val caffeineDesc = stringResource(R.string.caffeine_amount)
-    val volumeDecDesc = stringResource(R.string.volume_decrease)
-    val volumeIncDesc = stringResource(R.string.volume_increase)
+    val servingDecDesc = stringResource(R.string.serving_decrease)
+    val servingIncDesc = stringResource(R.string.serving_increase)
     val logDrinkDesc = stringResource(R.string.log_drink)
     val cancelDesc = stringResource(R.string.cancel)
 
@@ -145,37 +149,51 @@ fun AddDrinkConfirmationContent(
                 }
             }
 
-            // Volume display
+            // Serving size display
             item {
                 Text(
-                    text = "${stringResource(R.string.volume)}: ${volumeMl}ml",
+                    text = stringResource(R.string.serving_label, servingMl),
                     style = MaterialTheme.typography.bodySmall
                 )
             }
 
-            // Volume stepper +/- 10
+            // Serving size stepper +/- 10 (proportionally recalculates caffeine)
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     Button(
-                        onClick = { if (volumeMl >= 10) volumeMl -= 10 },
-                        enabled = !isLogging && volumeMl >= 10,
+                        onClick = {
+                            if (servingMl >= ServingStepMl) {
+                                servingMl -= ServingStepMl
+                                if (originalVolumeMl > 0) {
+                                    caffeineMg = (servingMl.toFloat() * originalCaffeineMg / originalVolumeMl)
+                                        .roundToInt()
+                                }
+                            }
+                        },
+                        enabled = !isLogging && servingMl >= ServingStepMl,
                         modifier = Modifier
                             .weight(1f)
                             .padding(end = 4.dp)
-                            .semantics { contentDescription = volumeDecDesc }
+                            .semantics { contentDescription = servingDecDesc }
                     ) {
                         Text("-10")
                     }
                     Button(
-                        onClick = { volumeMl += 10 },
+                        onClick = {
+                            servingMl += ServingStepMl
+                            if (originalVolumeMl > 0) {
+                                caffeineMg = (servingMl.toFloat() * originalCaffeineMg / originalVolumeMl)
+                                    .roundToInt()
+                            }
+                        },
                         enabled = !isLogging,
                         modifier = Modifier
                             .weight(1f)
                             .padding(start = 4.dp)
-                            .semantics { contentDescription = volumeIncDesc }
+                            .semantics { contentDescription = servingIncDesc }
                     ) {
                         Text("+10")
                     }
@@ -185,7 +203,7 @@ fun AddDrinkConfirmationContent(
             // Log drink button — primary action, disables during save
             item {
                 Button(
-                    onClick = { onLogDrink(caffeineMg, volumeMl) },
+                    onClick = { onLogDrink(caffeineMg, servingMl) },
                     enabled = !isLogging,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -222,3 +240,4 @@ fun AddDrinkConfirmationContent(
 
 private const val CaffeineCoarseStepMg = 5
 private const val CaffeineFineStepMg = 1
+private const val ServingStepMl = 10

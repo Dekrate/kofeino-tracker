@@ -94,7 +94,7 @@ class AddDrinkScreenTest {
         // Caffeine and volume labels should be visible
         composeTestRule.onNodeWithText(context.getString(R.string.caffeine_label, 63), substring = true).assertIsDisplayed()
         composeTestRule.onNodeWithText(
-            "${context.getString(R.string.volume)}: 30ml",
+            context.getString(R.string.serving_label, 30),
             substring = true
         ).assertIsDisplayed()
         // Log drink button should be visible
@@ -205,15 +205,15 @@ class AddDrinkScreenTest {
         ).assertIsDisplayed()
 
         // Tap +5
-        composeTestRule.onNodeWithText("+5").performClick()
+        composeTestRule.onNodeWithText(context.getString(R.string.caffeine_adjustment_increase, 5)).performClick()
         composeTestRule.onNodeWithText(
             context.getString(R.string.caffeine_label, 68),
             substring = true
         ).assertIsDisplayed()
 
         // Tap -5 twice (back to 63, then 58)
-        composeTestRule.onNodeWithText("-5").performClick()
-        composeTestRule.onNodeWithText("-5").performClick()
+        composeTestRule.onNodeWithText(context.getString(R.string.caffeine_adjustment_decrease, 5)).performClick()
+        composeTestRule.onNodeWithText(context.getString(R.string.caffeine_adjustment_decrease, 5)).performClick()
         composeTestRule.onNodeWithText(
             context.getString(R.string.caffeine_label, 58),
             substring = true
@@ -239,7 +239,7 @@ class AddDrinkScreenTest {
         composeTestRule.onNodeWithText("Espresso", substring = true).performClick()
 
         // Click -5 repeatedly: 63 -> 58 -> 53 -> ... -> 3 (12 clicks, 63-12*5=3)
-        repeat(12) { composeTestRule.onNodeWithText("-5").performClick() }
+        repeat(12) { composeTestRule.onNodeWithText(context.getString(R.string.caffeine_adjustment_decrease, 5)).performClick() }
 
         // Value should be 3 (minimum is 0, but it stops decreasing once < 5)
         composeTestRule.onNodeWithText(
@@ -248,18 +248,18 @@ class AddDrinkScreenTest {
         ).assertIsDisplayed()
 
         // -5 button should be disabled since 3 < 5
-        composeTestRule.onNodeWithText("-5").assertIsNotEnabled()
+        composeTestRule.onNodeWithText(context.getString(R.string.caffeine_adjustment_decrease, 5)).assertIsNotEnabled()
 
         // +5 should still work
-        composeTestRule.onNodeWithText("+5").performClick()
+        composeTestRule.onNodeWithText(context.getString(R.string.caffeine_adjustment_increase, 5)).performClick()
         composeTestRule.onNodeWithText(
             context.getString(R.string.caffeine_label, 8),
             substring = true
         ).assertIsDisplayed()
 
         // After going back above 5, -5 should be enabled again
-        composeTestRule.onNodeWithText("-5").assertIsEnabled()
-        composeTestRule.onNodeWithText("-5").performClick()
+        composeTestRule.onNodeWithText(context.getString(R.string.caffeine_adjustment_decrease, 5)).assertIsEnabled()
+        composeTestRule.onNodeWithText(context.getString(R.string.caffeine_adjustment_decrease, 5)).performClick()
         composeTestRule.onNodeWithText(
             context.getString(R.string.caffeine_label, 3),
             substring = true
@@ -267,7 +267,7 @@ class AddDrinkScreenTest {
     }
 
     @Test
-    fun addDrinkScreen_confirmation_volumeStepper_adjustsValue() {
+    fun addDrinkScreen_confirmation_servingStepper_adjustsCaffeineProportionally() {
         val drinks = listOf(
             DrinkEntity(1, "Tea", 30, 200, true)
         )
@@ -284,27 +284,37 @@ class AddDrinkScreenTest {
         // Tap the drink -> confirmation shown
         composeTestRule.onNodeWithText("Tea", substring = true).performClick()
 
-        // Default volume displayed
+        // Default serving displayed
         composeTestRule.onNodeWithText(
-            "${context.getString(R.string.volume)}: 200ml", substring = true
+            context.getString(R.string.serving_label, 200), substring = true
+        ).assertIsDisplayed()
+        // Default caffeine is 30
+        composeTestRule.onNodeWithText(
+            context.getString(R.string.caffeine_label, 30), substring = true
         ).assertIsDisplayed()
 
-        // Tap +10
+        // Tap +10 -> serving=210, caffeine = round(210*30/200) = 32
         composeTestRule.onNodeWithText("+10").performClick()
         composeTestRule.onNodeWithText(
-            "${context.getString(R.string.volume)}: 210ml", substring = true
+            context.getString(R.string.serving_label, 210), substring = true
+        ).assertIsDisplayed()
+        composeTestRule.onNodeWithText(
+            context.getString(R.string.caffeine_label, 32), substring = true
         ).assertIsDisplayed()
 
-        // Tap -10 twice (back to 200, then 190)
+        // Tap -10 twice (back to 200, then 190) -> serving=190, caffeine = round(190*30/200) = 29
         composeTestRule.onNodeWithText("-10").performClick()
         composeTestRule.onNodeWithText("-10").performClick()
         composeTestRule.onNodeWithText(
-            "${context.getString(R.string.volume)}: 190ml", substring = true
+            context.getString(R.string.serving_label, 190), substring = true
+        ).assertIsDisplayed()
+        composeTestRule.onNodeWithText(
+            context.getString(R.string.caffeine_label, 29), substring = true
         ).assertIsDisplayed()
     }
 
     @Test
-    fun addDrinkScreen_confirmation_volumeStepper_minimumGuard() {
+    fun addDrinkScreen_confirmation_servingStepper_minimumGuard() {
         val drinks = listOf(
             DrinkEntity(1, "Espresso", 63, 30, true)
         )
@@ -326,9 +336,9 @@ class AddDrinkScreenTest {
         composeTestRule.onNodeWithText("-10").performClick()
         composeTestRule.onNodeWithText("-10").performClick()
 
-        // Value should be 0 (minimum guard stops at 0)
+        // Serving should be 0ml (minimum guard stops at 0)
         composeTestRule.onNodeWithText(
-            "${context.getString(R.string.volume)}: 0ml", substring = true
+            context.getString(R.string.serving_label, 0), substring = true
         ).assertIsDisplayed()
 
         // -10 button should be disabled since 0 < 10
@@ -337,14 +347,14 @@ class AddDrinkScreenTest {
         // +10 should still work
         composeTestRule.onNodeWithText("+10").performClick()
         composeTestRule.onNodeWithText(
-            "${context.getString(R.string.volume)}: 10ml", substring = true
+            context.getString(R.string.serving_label, 10), substring = true
         ).assertIsDisplayed()
 
         // After going back above 10, -10 should be enabled again
         composeTestRule.onNodeWithText("-10").assertIsEnabled()
         composeTestRule.onNodeWithText("-10").performClick()
         composeTestRule.onNodeWithText(
-            "${context.getString(R.string.volume)}: 0ml", substring = true
+            context.getString(R.string.serving_label, 0), substring = true
         ).assertIsDisplayed()
     }
 
@@ -377,18 +387,18 @@ class AddDrinkScreenTest {
         // Tap the drink
         composeTestRule.onNodeWithText("Espresso", substring = true).performClick()
 
-        // Adjust caffeine +5 and volume +10
-        composeTestRule.onNodeWithText("+5").performClick()
-        composeTestRule.onNodeWithText("+10").performClick()
+        // Adjust serving +10 and caffeine +5
+        composeTestRule.onNodeWithText("+10").performClick() // serving 30→40, caffeine = (40*63)/30 = 84
+        composeTestRule.onNodeWithText(context.getString(R.string.caffeine_adjustment_increase, 5)).performClick()  // caffeine 84→89
 
         // Tap Log drink
         composeTestRule.onNodeWithText(context.getString(R.string.log_drink)).performClick()
 
-        // Verify addDrink was called with adjusted values (68 mg, 40 ml)
+        // Verify addDrink was called with adjusted values (89 mg, 40 ml)
         val drinkSlot = slot<DrinkEntity>()
         verify { fakeViewModel.addDrink(capture(drinkSlot), any(), any()) }
         assertEquals("Espresso", drinkSlot.captured.name)
-        assertEquals(68, drinkSlot.captured.caffeineMg)
+        assertEquals(89, drinkSlot.captured.caffeineMg)
         assertEquals(40, drinkSlot.captured.volumeMl)
 
         // Navigation callback should have fired
@@ -473,6 +483,84 @@ class AddDrinkScreenTest {
         composeTestRule.onNodeWithText(context.getString(R.string.cancel)).assertIsDisplayed()
         // Log drink button should be enabled for retry
         composeTestRule.onNodeWithText(context.getString(R.string.log_drink)).assertIsEnabled()
+    }
+
+    @Test
+    fun addDrinkScreen_confirmation_servingChange_recalculatesCaffeine() {
+        val drinks = listOf(
+            DrinkEntity(1, "Cappuccino", 75, 200, true)
+        )
+        val fakeViewModel = createFakeViewModel(drinks)
+        composeTestRule.setContent {
+            KofeinoTrackerTheme {
+                AddDrinkScreen(
+                    onDrinkAdded = {},
+                    viewModel = fakeViewModel
+                )
+            }
+        }
+
+        // Tap the drink
+        composeTestRule.onNodeWithText("Cappuccino", substring = true).performClick()
+
+        // Default: caffeine=75, serving=200
+        composeTestRule.onNodeWithText(
+            context.getString(R.string.caffeine_label, 75), substring = true
+        ).assertIsDisplayed()
+        composeTestRule.onNodeWithText(
+            context.getString(R.string.serving_label, 200), substring = true
+        ).assertIsDisplayed()
+
+        // +10 serving → 210, caffeine = round(210*75/200) = 79
+        composeTestRule.onNodeWithText("+10").performClick()
+        composeTestRule.onNodeWithText(
+            context.getString(R.string.caffeine_label, 79), substring = true
+        ).assertIsDisplayed()
+
+        // Fine-tune: +5 → 84
+        composeTestRule.onNodeWithText(context.getString(R.string.caffeine_adjustment_increase, 5)).performClick()
+        composeTestRule.onNodeWithText(
+            context.getString(R.string.caffeine_label, 84), substring = true
+        ).assertIsDisplayed()
+
+        // Change serving back to 200 → caffeine recalculates: round(200*75/200) = 75 (fine-tune lost)
+        composeTestRule.onNodeWithText("-10").performClick()
+        composeTestRule.onNodeWithText(
+            context.getString(R.string.caffeine_label, 75), substring = true
+        ).assertIsDisplayed()
+    }
+
+    @Test
+    fun addDrinkScreen_confirmation_servingStepper_zeroVolumeDrink() {
+        val drinks = listOf(
+            DrinkEntity(1, "Custom", 50, 0, false)
+        )
+        val fakeViewModel = createFakeViewModel(drinks)
+        composeTestRule.setContent {
+            KofeinoTrackerTheme {
+                AddDrinkScreen(
+                    onDrinkAdded = {},
+                    viewModel = fakeViewModel
+                )
+            }
+        }
+
+        // Tap the drink
+        composeTestRule.onNodeWithText("Custom", substring = true).performClick()
+
+        // With zero volume, caffeine should remain at original value when serving changes
+        composeTestRule.onNodeWithText(
+            context.getString(R.string.caffeine_label, 50), substring = true
+        ).assertIsDisplayed()
+
+        // +10 should still work but caffeine stays at 50 (since originalVolume=0)
+        composeTestRule.onNodeWithText("+10").performClick()
+        composeTestRule.onNodeWithText(
+            context.getString(R.string.caffeine_label, 50), substring = true
+        ).assertIsDisplayed()
+        composeTestRule.onNodeWithText(
+            context.getString(R.string.serving_label, 10), substring = true
+        ).assertIsDisplayed()
     }
 
     @Test
