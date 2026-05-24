@@ -38,6 +38,7 @@ dependencies {
     detektPlugins(libs.detekt.compose.rules)
     api(libs.kotlinx.coroutines.core)
     api(libs.kotlinx.datetime)
+    api(libs.dagger)
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
 }

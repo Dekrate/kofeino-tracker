@@ -14,8 +14,6 @@ import pl.dekrate.kofeino.data.remote.CaffeineApiService
 import pl.dekrate.kofeino.data.remote.ConnectivityObserver
 import pl.dekrate.kofeino.data.remote.CustomDns
 import pl.dekrate.kofeino.data.remote.OpenFoodFactsConfig
-import pl.dekrate.kofeino.common.domain.repository.OfficialDrinkRepository
-import pl.dekrate.kofeino.data.repository.OfficialDrinkRepositoryImpl
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
@@ -71,11 +69,5 @@ object NetworkModule {
     @Singleton
     fun provideConnectivityObserver(@ApplicationContext context: Context): ConnectivityObserver {
         return ConnectivityObserver(context)
-    }
-
-    @Provides
-    @Singleton
-    fun provideOfficialDrinkRepository(impl: OfficialDrinkRepositoryImpl): OfficialDrinkRepository {
-        return impl
     }
 }

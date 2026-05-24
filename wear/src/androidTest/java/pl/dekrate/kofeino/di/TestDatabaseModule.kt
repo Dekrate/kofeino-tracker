@@ -6,8 +6,6 @@ import pl.dekrate.kofeino.data.local.CaffeineDatabase
 import pl.dekrate.kofeino.data.local.CaffeineIntakeDao
 import pl.dekrate.kofeino.data.local.DrinkDao
 import pl.dekrate.kofeino.data.local.OfficialDrinkCacheDao
-import pl.dekrate.kofeino.common.domain.repository.CaffeineRepository
-import pl.dekrate.kofeino.data.repository.CaffeineRepositoryImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -43,11 +41,5 @@ object TestDatabaseModule {
     @Provides
     fun provideOfficialDrinkCacheDao(database: CaffeineDatabase): OfficialDrinkCacheDao {
         return database.officialDrinkCacheDao()
-    }
-
-    @Provides
-    @Singleton
-    fun provideCaffeineRepository(impl: CaffeineRepositoryImpl): CaffeineRepository {
-        return impl
     }
 }

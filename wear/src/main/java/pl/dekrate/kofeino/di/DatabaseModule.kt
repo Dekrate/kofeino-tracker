@@ -6,13 +6,9 @@ import pl.dekrate.kofeino.data.local.CaffeineDatabase
 import pl.dekrate.kofeino.data.local.CaffeineIntakeDao
 import pl.dekrate.kofeino.data.local.DrinkDao
 import pl.dekrate.kofeino.data.local.OfficialDrinkCacheDao
-import pl.dekrate.kofeino.common.domain.repository.CaffeineRepository
-import pl.dekrate.kofeino.data.repository.CaffeineRepositoryImpl
 import pl.dekrate.kofeino.data.sync.ConflictLogDao
 import pl.dekrate.kofeino.data.sync.PendingChangeDao
 import pl.dekrate.kofeino.data.sync.PendingSyncQueue
-import pl.dekrate.kofeino.data.sync.RealTimeSyncService
-import pl.dekrate.kofeino.domain.model.DrinkEntity
 import com.google.android.gms.wearable.MessageClient
 import dagger.Module
 import dagger.Provides
@@ -71,22 +67,6 @@ object DatabaseModule {
         messageClient: MessageClient
     ): PendingSyncQueue {
         return PendingSyncQueue(dao, messageClient, nodeId = "")
-    }
-
-    @Provides
-    @Singleton
-    fun provideCaffeineRepositoryImpl(
-        intakeDao: CaffeineIntakeDao,
-        drinkDao: DrinkDao,
-        realTimeSyncService: RealTimeSyncService
-    ): CaffeineRepositoryImpl {
-        return CaffeineRepositoryImpl(intakeDao, drinkDao, realTimeSyncService, sourceDeviceId = "watch")
-    }
-
-    @Provides
-    @Singleton
-    fun provideCaffeineRepository(impl: CaffeineRepositoryImpl): CaffeineRepository {
-        return impl
     }
 
     private fun seedDatabaseCallback(context: Context) = object : androidx.room.RoomDatabase.Callback() {
