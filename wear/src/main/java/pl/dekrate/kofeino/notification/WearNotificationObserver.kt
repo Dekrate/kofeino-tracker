@@ -12,7 +12,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -35,6 +34,7 @@ class WearNotificationObserver @Inject constructor(
     private val reminderManager: CaffeineReminderManager
 ) {
     @Volatile
+    @Suppress("InjectDispatcher")
     internal var scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     private var observeJob: Job? = null
