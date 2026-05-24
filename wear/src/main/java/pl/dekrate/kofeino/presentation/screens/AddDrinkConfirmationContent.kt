@@ -168,7 +168,8 @@ fun AddDrinkConfirmationContent(
                             if (servingMl >= ServingStepMl) {
                                 servingMl -= ServingStepMl
                                 if (originalVolumeMl > 0) {
-                                    caffeineMg = ((servingMl.toFloat() * originalCaffeineMg) / originalVolumeMl).roundToInt()
+                                    caffeineMg = (servingMl.toFloat() * originalCaffeineMg / originalVolumeMl)
+                                        .roundToInt()
                                 }
                             }
                         },
@@ -184,7 +185,8 @@ fun AddDrinkConfirmationContent(
                         onClick = {
                             servingMl += ServingStepMl
                             if (originalVolumeMl > 0) {
-                                caffeineMg = ((servingMl.toFloat() * originalCaffeineMg) / originalVolumeMl).roundToInt()
+                                caffeineMg = (servingMl.toFloat() * originalCaffeineMg / originalVolumeMl)
+                                    .roundToInt()
                             }
                         },
                         enabled = !isLogging,
