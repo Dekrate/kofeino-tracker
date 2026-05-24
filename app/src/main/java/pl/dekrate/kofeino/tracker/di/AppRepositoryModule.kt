@@ -13,17 +13,17 @@ import javax.inject.Singleton
 
 @Module(includes = [CommonModule::class])
 @InstallIn(SingletonComponent::class)
-abstract class AppRepositoryModule {
+interface AppRepositoryModule {
 
     @Binds
     @Singleton
-    abstract fun bindCaffeineRepository(
+    fun bindCaffeineRepository(
         impl: CaffeineRepositoryImpl
     ): CaffeineRepository
 
     @Binds
     @Singleton
-    abstract fun bindOfficialDrinkRepository(
+    fun bindOfficialDrinkRepository(
         impl: OfficialDrinkRepositoryImpl
     ): OfficialDrinkRepository
 }

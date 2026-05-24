@@ -19,4 +19,4 @@ import dagger.Module
  * in the respective app/wear modules.
  */
 @Module
-abstract class CommonModule
+interface CommonModule
