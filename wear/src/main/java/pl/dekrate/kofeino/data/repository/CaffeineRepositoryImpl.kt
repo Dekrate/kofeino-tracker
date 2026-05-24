@@ -24,8 +24,9 @@ class CaffeineRepositoryImpl @Inject constructor(
     private val intakeDao: CaffeineIntakeDao,
     private val drinkDao: DrinkDao,
     private val realTimeSyncService: RealTimeSyncService,
-    private val sourceDeviceId: String = "watch"
 ) : CaffeineRepository {
+
+    private val sourceDeviceId = "watch"
 
     // --- Intake operations ---
 

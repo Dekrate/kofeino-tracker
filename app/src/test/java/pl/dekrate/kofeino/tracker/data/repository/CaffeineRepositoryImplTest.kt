@@ -44,7 +44,7 @@ class CaffeineRepositoryImplTest {
 
     @Before
     fun setUp() {
-        repository = CaffeineRepositoryImpl(intakeDao, drinkDao, database, realTimeSyncService, sourceDeviceId = "phone")
+        repository = CaffeineRepositoryImpl(intakeDao, drinkDao, database, realTimeSyncService)
     }
 
     // --- Intake tests ---

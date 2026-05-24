@@ -6,14 +6,9 @@ import pl.dekrate.kofeino.tracker.data.local.CaffeineDatabase
 import pl.dekrate.kofeino.tracker.data.local.CaffeineIntakeDao
 import pl.dekrate.kofeino.tracker.data.local.DrinkDao
 import pl.dekrate.kofeino.tracker.data.local.OfficialDrinkCacheDao
-import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepository
-import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepositoryImpl
-import pl.dekrate.kofeino.common.domain.repository.OfficialDrinkRepository
-import pl.dekrate.kofeino.tracker.data.repository.OfficialDrinkRepositoryImpl
 import pl.dekrate.kofeino.tracker.data.sync.ConflictLogDao
 import pl.dekrate.kofeino.tracker.data.sync.PendingChangeDao
 import pl.dekrate.kofeino.tracker.data.sync.PendingSyncQueue
-import pl.dekrate.kofeino.tracker.data.sync.RealTimeSyncService
 import com.google.android.gms.wearable.MessageClient
 import dagger.Module
 import dagger.Provides
@@ -82,31 +77,6 @@ object DatabaseModule {
         // nodeId is a placeholder; the real node id is resolved at runtime
         // via CapabilityClient before flush() is called.
         return PendingSyncQueue(dao, messageClient, nodeId = "")
-    }
-
-    @Provides
-    @Singleton
-    fun provideCaffeineRepository(
-        impl: CaffeineRepositoryImpl
-    ): CaffeineRepository {
-        return impl
-    }
-
-    @Provides
-    @Singleton
-    fun provideCaffeineRepositoryImpl(
-        intakeDao: CaffeineIntakeDao,
-        drinkDao: DrinkDao,
-        database: CaffeineDatabase,
-        realTimeSyncService: RealTimeSyncService
-    ): CaffeineRepositoryImpl {
-        return CaffeineRepositoryImpl(intakeDao, drinkDao, database, realTimeSyncService, sourceDeviceId = "phone")
-    }
-
-    @Provides
-    @Singleton
-    fun provideOfficialDrinkRepository(impl: OfficialDrinkRepositoryImpl): OfficialDrinkRepository {
-        return impl
     }
 
     private fun seedDatabaseCallback(context: Context) = object : androidx.room.RoomDatabase.Callback() {
