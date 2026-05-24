@@ -32,4 +32,8 @@ interface CaffeineRepository {
     suspend fun addDrink(drink: DrinkEntity): Long
     suspend fun updateDrink(drink: DrinkEntity)
     suspend fun deleteDrink(drink: DrinkEntity)
+
+    // --- Search & Recent ---
+    fun searchDrinks(query: String): Flow<List<DrinkEntity>>
+    fun getRecentIntakes(limit: Int = 5): Flow<List<CaffeineIntake>>
 }

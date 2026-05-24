@@ -11,8 +11,9 @@ import androidx.test.platform.app.InstrumentationRegistry
 import pl.dekrate.kofeino.R
 import pl.dekrate.kofeino.common.domain.model.DrinkEntity
 import pl.dekrate.kofeino.presentation.theme.KofeinoTrackerTheme
-import pl.dekrate.kofeino.presentation.viewmodel.CaffeineUiState
-import pl.dekrate.kofeino.presentation.viewmodel.CaffeineViewModel
+import pl.dekrate.kofeino.common.domain.model.CaffeineIntake
+import pl.dekrate.kofeino.presentation.viewmodel.AddDrinkUiState
+import pl.dekrate.kofeino.presentation.viewmodel.AddDrinkViewModel
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -352,10 +353,10 @@ class AddDrinkScreenTest {
         val drinks = listOf(
             DrinkEntity(1, "Espresso", 63, 30, true)
         )
-        val fakeViewModel = mockk<CaffeineViewModel>(relaxed = true)
+        val fakeViewModel = mockk<AddDrinkViewModel>(relaxed = true)
         every { fakeViewModel.uiState } returns MutableStateFlow(
-            CaffeineUiState(drinks = drinks)
-        ) as StateFlow<CaffeineUiState>
+            AddDrinkUiState(drinks = drinks)
+        ) as StateFlow<AddDrinkUiState>
 
         // Make addDrink call onComplete immediately (simulates successful save)
         every { fakeViewModel.addDrink(any(), any(), any()) } answers {
@@ -399,10 +400,10 @@ class AddDrinkScreenTest {
         val drinks = listOf(
             DrinkEntity(1, "Latte", 63, 250, true)
         )
-        val fakeViewModel = mockk<CaffeineViewModel>(relaxed = true)
+        val fakeViewModel = mockk<AddDrinkViewModel>(relaxed = true)
         every { fakeViewModel.uiState } returns MutableStateFlow(
-            CaffeineUiState(drinks = drinks)
-        ) as StateFlow<CaffeineUiState>
+            AddDrinkUiState(drinks = drinks)
+        ) as StateFlow<AddDrinkUiState>
 
         every { fakeViewModel.addDrink(any(), any(), any()) } answers {
             val onComplete = thirdArg<() -> Unit>()
@@ -439,10 +440,10 @@ class AddDrinkScreenTest {
         val drinks = listOf(
             DrinkEntity(1, "Espresso", 63, 30, true)
         )
-        val fakeViewModel = mockk<CaffeineViewModel>(relaxed = true)
+        val fakeViewModel = mockk<AddDrinkViewModel>(relaxed = true)
         every { fakeViewModel.uiState } returns MutableStateFlow(
-            CaffeineUiState(drinks = drinks)
-        ) as StateFlow<CaffeineUiState>
+            AddDrinkUiState(drinks = drinks)
+        ) as StateFlow<AddDrinkUiState>
 
         // Make addDrink call onError (simulates DB failure)
         every { fakeViewModel.addDrink(any(), any(), any()) } answers {
@@ -509,11 +510,117 @@ class AddDrinkScreenTest {
         composeTestRule.onNodeWithText(context.getString(R.string.no_drinks_defined)).assertIsDisplayed()
     }
 
-    private fun createFakeViewModel(drinks: List<DrinkEntity>): CaffeineViewModel {
-        val vm = mockk<CaffeineViewModel>(relaxed = true)
+    @Test
+    fun addDrinkScreen_displaysSearchBar() {
+        val fakeViewModel = createFakeViewModel(emptyList())
+        composeTestRule.setContent {
+            KofeinoTrackerTheme {
+                AddDrinkScreen(
+                    onDrinkAdded = {},
+                    viewModel = fakeViewModel
+                )
+            }
+        }
+        composeTestRule.onNodeWithText(context.getString(R.string.search_drinks_hint)).assertIsDisplayed()
+    }
+
+    @Test
+    fun addDrinkScreen_showsRecentLabel_whenRecentIntakesNotEmpty() {
+        val recentIntakes = listOf(
+            CaffeineIntake(1, 1, "Espresso", 63, 30, System.currentTimeMillis() - 3600000),
+            CaffeineIntake(2, 3, "Czarna kawa", 95, 250, System.currentTimeMillis() - 1800000)
+        )
+        val fakeViewModel = mockk<AddDrinkViewModel>(relaxed = true)
+        every { fakeViewModel.uiState } returns MutableStateFlow(
+            AddDrinkUiState(recentIntakes = recentIntakes)
+        ) as StateFlow<AddDrinkUiState>
+
+        composeTestRule.setContent {
+            KofeinoTrackerTheme {
+                AddDrinkScreen(
+                    onDrinkAdded = {},
+                    viewModel = fakeViewModel
+                )
+            }
+        }
+        composeTestRule.onNodeWithText(context.getString(R.string.recent_intakes)).assertIsDisplayed()
+        composeTestRule.onNodeWithText("Espresso").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Czarna kawa").assertIsDisplayed()
+    }
+
+    @Test
+    fun addDrinkScreen_showsNoRecentLabel_whenRecentIntakesEmpty() {
+        val fakeViewModel = mockk<AddDrinkViewModel>(relaxed = true)
+        every { fakeViewModel.uiState } returns MutableStateFlow(
+            AddDrinkUiState()
+        ) as StateFlow<AddDrinkUiState>
+
+        composeTestRule.setContent {
+            KofeinoTrackerTheme {
+                AddDrinkScreen(
+                    onDrinkAdded = {},
+                    viewModel = fakeViewModel
+                )
+            }
+        }
+        composeTestRule.onNodeWithText(context.getString(R.string.recent_intakes)).assertIsNotDisplayed()
+    }
+
+    @Test
+    fun addDrinkScreen_showsNoSearchResultsMessage_whenNoFilteredDrinks() {
+        val fakeViewModel = mockk<AddDrinkViewModel>(relaxed = true)
+        every { fakeViewModel.uiState } returns MutableStateFlow(
+            AddDrinkUiState(
+                searchQuery = "XYZ",
+                drinks = emptyList()
+            )
+        ) as StateFlow<AddDrinkUiState>
+
+        composeTestRule.setContent {
+            KofeinoTrackerTheme {
+                AddDrinkScreen(
+                    onDrinkAdded = {},
+                    viewModel = fakeViewModel
+                )
+            }
+        }
+        composeTestRule.onNodeWithText(context.getString(R.string.no_search_results)).assertIsDisplayed()
+    }
+
+    @Test
+    fun addDrinkScreen_recentIntakeTap_showsConfirmation() {
+        val recentIntakes = listOf(
+            CaffeineIntake(1, 1, "Espresso", 63, 30, System.currentTimeMillis())
+        )
+        val fakeViewModel = mockk<AddDrinkViewModel>(relaxed = true)
+        every { fakeViewModel.uiState } returns MutableStateFlow(
+            AddDrinkUiState(recentIntakes = recentIntakes)
+        ) as StateFlow<AddDrinkUiState>
+
+        composeTestRule.setContent {
+            KofeinoTrackerTheme {
+                AddDrinkScreen(
+                    onDrinkAdded = {},
+                    viewModel = fakeViewModel
+                )
+            }
+        }
+
+        // Recent chip should show the drink name
+        composeTestRule.onNodeWithText("Espresso").assertIsDisplayed()
+
+        // Tap the recent chip
+        composeTestRule.onNodeWithText("Espresso").performClick()
+
+        // Confirmation dialog should appear
+        composeTestRule.onNodeWithText(context.getString(R.string.adjust_serving)).assertIsDisplayed()
+    }
+
+    private fun createFakeViewModel(drinks: List<DrinkEntity>): AddDrinkViewModel {
+        val vm = mockk<AddDrinkViewModel>(relaxed = true)
         every { vm.uiState } returns MutableStateFlow(
-            CaffeineUiState(drinks = drinks)
-        ) as StateFlow<CaffeineUiState>
+            AddDrinkUiState(drinks = drinks)
+        ) as StateFlow<AddDrinkUiState>
         return vm
     }
 }

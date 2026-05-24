@@ -375,4 +375,12 @@ class InMemoryCaffeineRepository : CaffeineRepository {
     override suspend fun deleteDrink(drink: DrinkEntity) {
         drinks.removeAll { it.id == drink.id }
     }
+
+    override fun searchDrinks(query: String): Flow<List<DrinkEntity>> {
+        return flowOf(drinks.filter { it.name.contains(query, ignoreCase = true) })
+    }
+
+    override fun getRecentIntakes(limit: Int): Flow<List<CaffeineIntake>> {
+        return flowOf(intakes.sortedByDescending { it.timestamp }.take(limit))
+    }
 }

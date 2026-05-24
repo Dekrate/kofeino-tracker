@@ -156,6 +156,20 @@ class CaffeineRepositoryImpl @Inject constructor(
         )
     }
 
+    // --- Search & Recent ---
+
+    override fun searchDrinks(query: String): Flow<List<CommonDrinkEntity>> {
+        return drinkDao.searchDrinks(query).map { list ->
+            list.map { it.toCommon() }
+        }
+    }
+
+    override fun getRecentIntakes(limit: Int): Flow<List<CommonCaffeineIntake>> {
+        return intakeDao.getRecentIntakes(limit).map { list ->
+            list.map { it.toCommon() }
+        }
+    }
+
     /**
      * Propagate a mutation to the paired phone via real-time sync.
      *

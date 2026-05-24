@@ -54,6 +54,11 @@
     <string name="adjust_serving">Dostosuj porcję</string>
     <string name="log_drink">Dodaj napój</string>
 
+    <!-- AddDrink search & recent -->
+    <string name="search_drinks_hint">Szukaj napojów…</string>
+    <string name="recent_intakes">Ostatnie</string>
+    <string name="no_search_results">Brak napojów spełniających kryteria</string>
+
     <!-- Record management -->
     <string name="edit_intake">Edytuj wpis</string>
     <string name="delete_intake">Usuń wpis</string>

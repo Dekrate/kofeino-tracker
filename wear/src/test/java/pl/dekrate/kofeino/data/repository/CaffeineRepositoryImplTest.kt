@@ -434,4 +434,138 @@ class CaffeineRepositoryImplTest {
             cancelAndIgnoreRemainingEvents()
         }
     }
+
+    // ===== searchDrinks tests =====
+
+    @Test
+    fun `searchDrinks returns matching drinks by name`() = runTest {
+        repository.addDrink(DrinkEntity(name = "Espresso", caffeineMg = 63, volumeMl = 30))
+        repository.addDrink(DrinkEntity(name = "Cappuccino", caffeineMg = 75, volumeMl = 200))
+        repository.addDrink(DrinkEntity(name = "Czarna kawa", caffeineMg = 95, volumeMl = 250))
+
+        repository.searchDrinks("Espresso").test {
+            val results = awaitItem()
+            assertEquals(1, results.size)
+            assertEquals("Espresso", results[0].name)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `searchDrinks returns multiple matching results`() = runTest {
+        repository.addDrink(DrinkEntity(name = "Espresso", caffeineMg = 63, volumeMl = 30))
+        repository.addDrink(DrinkEntity(name = "Double Espresso", caffeineMg = 126, volumeMl = 60))
+        repository.addDrink(DrinkEntity(name = "Cappuccino", caffeineMg = 75, volumeMl = 200))
+        repository.addDrink(DrinkEntity(name = "Espresso Macchiato", caffeineMg = 80, volumeMl = 60))
+
+        repository.searchDrinks("Espresso").test {
+            val results = awaitItem()
+            assertEquals(3, results.size)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `searchDrinks returns empty for non-matching query`() = runTest {
+        repository.addDrink(DrinkEntity(name = "Espresso", caffeineMg = 63, volumeMl = 30))
+        repository.addDrink(DrinkEntity(name = "Cappuccino", caffeineMg = 75, volumeMl = 200))
+
+        repository.searchDrinks("XYZNonExistent").test {
+            val results = awaitItem()
+            assertTrue("Should be empty for non-matching query", results.isEmpty())
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `searchDrinks with empty query returns all drinks`() = runTest {
+        repository.addDrink(DrinkEntity(name = "Espresso", caffeineMg = 63, volumeMl = 30))
+        repository.addDrink(DrinkEntity(name = "Tea", caffeineMg = 30, volumeMl = 200))
+
+        repository.searchDrinks("").test {
+            val results = awaitItem()
+            // Room LIKE '%' || '' || '%' matches everything
+            assertTrue("Empty query should return all drinks", results.size >= 2)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `searchDrinks is case-insensitive`() = runTest {
+        repository.addDrink(DrinkEntity(name = "Espresso", caffeineMg = 63, volumeMl = 30))
+        repository.addDrink(DrinkEntity(name = "espresso", caffeineMg = 63, volumeMl = 30))
+
+        repository.searchDrinks("espresso").test {
+            val results = awaitItem()
+            assertEquals("Should match both Espresso and espresso", 2, results.size)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    // ===== getRecentIntakes tests =====
+
+    @Test
+    fun `getRecentIntakes returns last N intakes`() = runTest {
+        val now = System.currentTimeMillis()
+        repository.addIntake(createIntake(caffeineMg = 10, timestamp = now - 30000))
+        repository.addIntake(createIntake(caffeineMg = 20, timestamp = now - 20000))
+        repository.addIntake(createIntake(caffeineMg = 30, timestamp = now - 10000))
+
+        repository.getRecentIntakes(2).test {
+            val results = awaitItem()
+            assertEquals(2, results.size)
+            assertEquals(30, results[0].caffeineMg)
+            assertEquals(20, results[1].caffeineMg)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `getRecentIntakes returns less than limit when fewer entries`() = runTest {
+        repository.addIntake(createIntake(caffeineMg = 50, timestamp = System.currentTimeMillis()))
+
+        repository.getRecentIntakes(10).test {
+            val results = awaitItem()
+            assertEquals(1, results.size)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `getRecentIntakes returns empty when no intakes`() = runTest {
+        repository.getRecentIntakes(5).test {
+            val results = awaitItem()
+            assertTrue("Should be empty when no intakes", results.isEmpty())
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `getRecentIntakes orders by timestamp descending`() = runTest {
+        val now = System.currentTimeMillis()
+        repository.addIntake(createIntake(caffeineMg = 10, timestamp = now - 10000))
+        repository.addIntake(createIntake(caffeineMg = 20, timestamp = now))
+
+        repository.getRecentIntakes(5).test {
+            val results = awaitItem()
+            assertEquals(2, results.size)
+            assertEquals(20, results[0].caffeineMg) // newest first
+            assertEquals(10, results[1].caffeineMg) // older second
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `getRecentIntakes respects limit exactly`() = runTest {
+        val now = System.currentTimeMillis()
+        repeat(20) { i ->
+            repository.addIntake(createIntake(caffeineMg = i, timestamp = now + i * 1000L))
+        }
+
+        repository.getRecentIntakes(5).test {
+            val results = awaitItem()
+            assertEquals(5, results.size)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
 }
