@@ -20,6 +20,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
+@Suppress("TooManyFunctions")
 class CaffeineRepositoryImpl @Inject constructor(
     private val intakeDao: CaffeineIntakeDao,
     private val drinkDao: DrinkDao,
@@ -154,6 +155,20 @@ class CaffeineRepositoryImpl @Inject constructor(
             operationType = PendingChangeEntity.OPERATION_DELETE,
             payload = SyncPayloadSerializer.serializeDrink(stamped)
         )
+    }
+
+    // --- Search & Recent ---
+
+    override fun searchDrinks(query: String): Flow<List<CommonDrinkEntity>> {
+        return drinkDao.searchDrinks(query).map { list ->
+            list.map { it.toCommon() }
+        }
+    }
+
+    override fun getRecentIntakes(limit: Int): Flow<List<CommonCaffeineIntake>> {
+        return intakeDao.getRecentIntakes(limit).map { list ->
+            list.map { it.toCommon() }
+        }
     }
 
     /**

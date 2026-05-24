@@ -54,6 +54,11 @@
     <string name="adjust_serving">Adjust serving</string>
     <string name="log_drink">Log drink</string>
 
+    <!-- AddDrink search & recent -->
+    <string name="search_drinks_hint">Search drinks…</string>
+    <string name="recent_intakes">Recent</string>
+    <string name="no_search_results">No drinks match your search</string>
+
     <!-- Record management -->
     <string name="edit_intake">Edit entry</string>
     <string name="delete_intake">Delete entry</string>

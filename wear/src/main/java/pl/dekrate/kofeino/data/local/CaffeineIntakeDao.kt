@@ -31,4 +31,7 @@ interface CaffeineIntakeDao {
 
     @Query("SELECT COALESCE(SUM(caffeineMg), 0) FROM caffeine_intakes WHERE timestamp >= :startOfDay AND timestamp < :endOfDay")
     fun getTotalCaffeineByDate(startOfDay: Long, endOfDay: Long): Flow<Int>
+
+    @Query("SELECT * FROM caffeine_intakes ORDER BY timestamp DESC LIMIT :limit")
+    fun getRecentIntakes(limit: Int): Flow<List<CaffeineIntake>>
 }
