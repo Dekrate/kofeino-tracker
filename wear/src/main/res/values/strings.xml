@@ -151,4 +151,29 @@
     <string name="health_disclaimer_text">This app provides informational tracking only and does not constitute medical advice. Caffeine tolerance varies by individual. Consult a healthcare professional before making significant changes to your caffeine intake. The creator of this app assumes no responsibility for any health consequences arising from its use. Sources: EFSA (2015), FDA (2024), WHO (2023).</string>
     <string name="health_references_title">Sources</string>
     <string name="health_references_text">• EFSA (2015): efsa.europa.eu/en/efsajournal/pub/4102\n• FDA (2024): fda.gov/consumers/consumer-updates/spilling-beans-how-much-caffeine-too-much\n• WHO (2023): who.int/tools/elena/interventions/caffeine-pregnancy</string>
+
+    <!-- Notification scheduling -->
+    <string name="reminder_channel_name">Caffeine Reminders</string>
+    <string name="reminder_channel_description">Morning, regular, and evening reminders</string>
+
+    <string name="reminder_morning_title_1">☕ Good morning!</string>
+    <string name="reminder_morning_body_1">Time for your first coffee! Log your intake to start tracking today.</string>
+    <string name="reminder_morning_title_2">🌅 Rise and shine!</string>
+    <string name="reminder_morning_body_2">A new day — time to log your first caffeine boost.</string>
+    <string name="reminder_morning_title_3">☀️ Morning brew time</string>
+    <string name="reminder_morning_body_3">Don\'t forget to log your first cup. Let\'s start tracking!</string>
+
+    <string name="reminder_regular_title_1">⏰ Coffee check-in</string>
+    <string name="reminder_regular_body_1">Haven\'t logged caffeine in a while. Had any coffee recently?</string>
+    <string name="reminder_regular_title_2">🤔 Time for a top-up?</string>
+    <string name="reminder_regular_body_2">It\'s been a few hours — did you have another drink?</string>
+    <string name="reminder_regular_title_3">☕ Break reminder</string>
+    <string name="reminder_regular_body_3">Quick check-in! Any caffeine since we last asked?</string>
+
+    <string name="reminder_evening_title_1">📊 Daily Summary</string>
+    <string name="reminder_evening_body_1">Check your total caffeine intake for today in the app.</string>
+    <string name="reminder_evening_title_2">🌙 Evening wrap-up</string>
+    <string name="reminder_evening_body_2">How was your caffeine today? Open the app to see the full picture.</string>
+    <string name="reminder_evening_title_3">📋 Today\'s report</string>
+    <string name="reminder_evening_body_3">Time to review your daily caffeine intake. Tap to check.</string>
 </resources>
