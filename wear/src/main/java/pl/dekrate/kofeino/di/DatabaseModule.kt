@@ -16,8 +16,15 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import timber.log.Timber
+import javax.inject.Qualifier
+import javax.inject.Singleton
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class IoDispatcher
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -78,6 +85,12 @@ object DatabaseModule {
             insertDefaults(db, context)
         }
     }
+
+    @Suppress("InjectDispatcher")
+    @Provides
+    @Singleton
+    @IoDispatcher
+    fun provideIoDispatcher(): CoroutineDispatcher = Dispatchers.IO
 
     private fun insertDefaults(db: androidx.sqlite.db.SupportSQLiteDatabase, context: Context) {
         val defaults = listOf(

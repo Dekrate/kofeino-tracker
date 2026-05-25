@@ -13,6 +13,10 @@ import pl.dekrate.kofeino.data.remote.dto.OpenFoodFactsSearchResponse
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -35,6 +39,7 @@ class OfficialDrinkRepositoryImplTest {
     private lateinit var apiService: CaffeineApiService
     private lateinit var connectivityObserver: ConnectivityObserver
     private lateinit var repository: OfficialDrinkRepositoryImpl
+    private lateinit var testScope: CoroutineScope
 
     @Before
     fun setup() {
@@ -46,11 +51,13 @@ class OfficialDrinkRepositoryImplTest {
         apiService = mockk(relaxed = true)
         connectivityObserver = mockk(relaxed = true)
         every { connectivityObserver.isOnline } returns true
-        repository = OfficialDrinkRepositoryImpl(apiService, cacheDao, connectivityObserver)
+        testScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        repository = OfficialDrinkRepositoryImpl(apiService, cacheDao, connectivityObserver, testScope)
     }
 
     @After
     fun teardown() {
+        testScope.cancel()
         database.close()
     }
 
