@@ -6,13 +6,13 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import pl.dekrate.kofeino.data.local.NotificationPreferences
@@ -33,17 +33,21 @@ class WearNotificationObserver @Inject constructor(
     private val preferences: NotificationPreferences,
     private val reminderManager: CaffeineReminderManager
 ) {
-    @Volatile
     @Suppress("InjectDispatcher")
-    internal var scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val defaultDispatcher = Dispatchers.Default
 
-    private var observeJob: Job? = null
+    @Volatile
+    internal var scope: CoroutineScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
 
     fun start() {
         if (isRunning) return
         isRunning = true
         Timber.tag(TAG).i("Starting notification observer")
         CaffeineReminderManager.instance = reminderManager
+
+        // Defensive: cancel any lingering scope from a previous incomplete stop()
+        scope.cancel()
+        scope = CoroutineScope(SupervisorJob() + defaultDispatcher)
 
         observeReminderToggles()
         scheduleMidnightReset()
@@ -52,15 +56,14 @@ class WearNotificationObserver @Inject constructor(
     fun stop() {
         if (!isRunning) return
         isRunning = false
-        observeJob?.cancel()
-        observeJob = null
+        scope.cancel()
+        scope = CoroutineScope(SupervisorJob() + defaultDispatcher)
         Timber.tag(TAG).i("Observer stopped")
     }
 
     private fun observeReminderToggles() {
-        observeJob = scope.launch {
-            // Observe all three toggle flows — re-schedule when any changes
-            kotlinx.coroutines.flow.combine(
+        scope.launch {
+            combine(
                 preferences.morningFlow,
                 preferences.regularFlow,
                 preferences.eveningFlow
@@ -105,7 +108,7 @@ class WearNotificationObserver @Inject constructor(
     class MidnightReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             Timber.tag(TAG).i("Midnight — resetting reminder state")
-            Log.i(TAG, "MidnightReceiver fired")
+            Timber.tag(TAG).i("MidnightReceiver fired")
         }
     }
 
