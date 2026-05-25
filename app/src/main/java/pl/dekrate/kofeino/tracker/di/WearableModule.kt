@@ -10,6 +10,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import pl.dekrate.kofeino.tracker.data.sync.SyncStatusTracker
 import javax.inject.Singleton
 
 @Module
@@ -33,4 +34,8 @@ object WearableModule {
     fun provideCapabilityClient(@ApplicationContext context: Context): CapabilityClient {
         return Wearable.getCapabilityClient(context)
     }
+
+    @Provides
+    @Singleton
+    fun provideSyncStatusTracker(): SyncStatusTracker = SyncStatusTracker()
 }

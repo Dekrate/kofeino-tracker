@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import pl.dekrate.kofeino.tracker.R
+import pl.dekrate.kofeino.tracker.data.sync.SyncStatusTracker
 import pl.dekrate.kofeino.common.domain.model.DrinkEntity
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.DrinkError
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.DrinkViewModel
@@ -58,6 +59,7 @@ import pl.dekrate.kofeino.tracker.presentation.viewmodel.DrinkViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddDrinkScreen(
+    syncStatusTracker: SyncStatusTracker,
     onNavigateBack: () -> Unit,
     viewModel: DrinkViewModel = hiltViewModel()
 ) {
@@ -108,6 +110,9 @@ fun AddDrinkScreen(
                             contentDescription = stringResource(R.string.back)
                         )
                     }
+                },
+                actions = {
+                    SyncStatusChip(syncStatusTracker = syncStatusTracker)
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface

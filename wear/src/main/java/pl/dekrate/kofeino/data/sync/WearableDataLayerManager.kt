@@ -32,7 +32,8 @@ class WearableDataLayerManager @Inject constructor(
     private val dataClient: DataClient,
     private val messageClient: MessageClient,
     private val capabilityClient: CapabilityClient,
-    private val incomingSyncProcessor: IncomingSyncProcessor
+    private val incomingSyncProcessor: IncomingSyncProcessor,
+    private val syncStatusTracker: SyncStatusTracker
 ) {
     companion object {
         const val SYNC_CAPABILITY_NAME = "caffeine_sync"
@@ -45,7 +46,7 @@ class WearableDataLayerManager @Inject constructor(
 
     /** Background scope for processing incoming sync messages on binder threads. */
     @Suppress("InjectDispatcher")
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private var scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     /** Tracks whether listeners are currently registered (idempotency guard). */
     private var isRegistered: Boolean = false
@@ -94,11 +95,13 @@ class WearableDataLayerManager @Inject constructor(
         val nodeCount = capabilityInfo.nodes.size
         val nodeIds = capabilityInfo.nodes.map { it.id }
         Timber.d("Capability '${capabilityInfo.name}': $nodeCount node(s) available — $nodeIds")
+        syncStatusTracker.onDeviceConnectionChanged(nodeCount > 0)
     }
 
-    @Suppress("TooGenericExceptionCaught")
+    @Suppress("InjectDispatcher", "TooGenericExceptionCaught")
     fun register() {
         if (isRegistered) return
+        scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
         var successCount = 0
         var failureCount = 0

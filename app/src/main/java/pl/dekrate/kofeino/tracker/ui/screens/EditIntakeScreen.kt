@@ -45,6 +45,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import pl.dekrate.kofeino.tracker.R
+import pl.dekrate.kofeino.tracker.data.sync.SyncStatusTracker
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.EditIntakeError
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.EditIntakeViewModel
 
@@ -52,6 +53,7 @@ import pl.dekrate.kofeino.tracker.presentation.viewmodel.EditIntakeViewModel
 @Composable
 fun EditIntakeScreen(
     intakeId: Long,
+    syncStatusTracker: SyncStatusTracker,
     onNavigateBack: () -> Unit,
     viewModel: EditIntakeViewModel = hiltViewModel()
 ) {
@@ -102,6 +104,9 @@ fun EditIntakeScreen(
                             contentDescription = stringResource(R.string.back)
                         )
                     }
+                },
+                actions = {
+                    SyncStatusChip(syncStatusTracker = syncStatusTracker)
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface

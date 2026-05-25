@@ -188,6 +188,12 @@
     <string name="backup_import_settings_desc">Przywróć język, motyw, limit kofeiny i preferencje powiadomień</string>
     <string name="backup_file_name">KofeinoTracker_kopia_%1$s.json</string>
 
+    <!-- Sync status -->
+    <string name="sync_status_synced">Zsynchronizowano</string>
+    <string name="sync_status_awaiting_device">Oczekiwanie na urządzenie</string>
+    <string name="sync_status_syncing">Synchronizacja…</string>
+    <string name="sync_status_error">Błąd synchronizacji: %s</string>
+
     <!-- OfficialDrinksScreen -->
     <string name="search_hint">Szukaj napojów…</string>
     <string name="search_clear">Wyczyść wyszukiwanie</string>

@@ -20,6 +20,8 @@ import pl.dekrate.kofeino.tracker.R
 import pl.dekrate.kofeino.common.domain.model.CaffeineIntake
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.HistoryUiState
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.HistoryViewModel
+import pl.dekrate.kofeino.common.sync.SyncStatus
+import pl.dekrate.kofeino.tracker.data.sync.SyncStatusTracker
 import pl.dekrate.kofeino.tracker.ui.theme.KofeinoTrackerPhoneTheme
 
 class HistoryScreenTest {
@@ -35,6 +37,7 @@ class HistoryScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HistoryScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onEditIntake = {},
                     viewModel = fakeViewModel
                 )
@@ -56,6 +59,7 @@ class HistoryScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HistoryScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onEditIntake = {},
                     viewModel = fakeViewModel
                 )
@@ -75,6 +79,7 @@ class HistoryScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HistoryScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onEditIntake = {},
                     viewModel = fakeViewModel
                 )
@@ -100,6 +105,7 @@ class HistoryScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HistoryScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onEditIntake = {},
                     viewModel = fakeViewModel
                 )
@@ -117,6 +123,7 @@ class HistoryScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HistoryScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onEditIntake = {},
                     viewModel = fakeViewModel
                 )
@@ -135,6 +142,7 @@ class HistoryScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HistoryScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onEditIntake = {},
                     viewModel = fakeViewModel
                 )
@@ -154,6 +162,7 @@ class HistoryScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HistoryScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onEditIntake = {},
                     viewModel = fakeViewModel
                 )
@@ -175,6 +184,7 @@ class HistoryScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HistoryScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onEditIntake = {},
                     viewModel = fakeViewModel
                 )
@@ -196,6 +206,7 @@ class HistoryScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HistoryScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onEditIntake = {},
                     viewModel = fakeViewModel
                 )
@@ -216,6 +227,7 @@ class HistoryScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HistoryScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onEditIntake = {},
                     viewModel = fakeViewModel
                 )
@@ -236,6 +248,7 @@ class HistoryScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HistoryScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onEditIntake = {},
                     viewModel = fakeViewModel
                 )
@@ -258,6 +271,7 @@ class HistoryScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HistoryScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onEditIntake = { editedId = it },
                     viewModel = fakeViewModel
                 )
@@ -273,6 +287,7 @@ class HistoryScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HistoryScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onEditIntake = {},
                     viewModel = fakeViewModel
                 )
@@ -295,6 +310,7 @@ class HistoryScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HistoryScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onEditIntake = {},
                     viewModel = fakeViewModel
                 )
@@ -315,6 +331,7 @@ class HistoryScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HistoryScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onEditIntake = {},
                     viewModel = fakeViewModel
                 )
@@ -335,6 +352,7 @@ class HistoryScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HistoryScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onEditIntake = {},
                     viewModel = fakeViewModel
                 )
@@ -364,6 +382,7 @@ class HistoryScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HistoryScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onEditIntake = {},
                     viewModel = fakeViewModel
                 )
@@ -383,5 +402,12 @@ class HistoryScreenTest {
         every { vm.isToday() } returns isToday
         every { vm.isYesterday() } returns isYesterday
         return vm
+    }
+
+    private fun createFakeSyncStatusTracker(): SyncStatusTracker {
+        val tracker = mockk<SyncStatusTracker>(relaxed = true)
+        val statusFlow = MutableStateFlow<SyncStatus>(SyncStatus.AwaitingDevice)
+        every { tracker.status } returns statusFlow
+        return tracker
     }
 }

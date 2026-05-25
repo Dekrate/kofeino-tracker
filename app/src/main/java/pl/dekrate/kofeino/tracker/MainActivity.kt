@@ -16,13 +16,18 @@ import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
+import pl.dekrate.kofeino.tracker.data.sync.SyncStatusTracker
 import pl.dekrate.kofeino.tracker.navigation.AppNavHost
+import javax.inject.Inject
 import pl.dekrate.kofeino.tracker.data.local.DataStorePreferences
 import pl.dekrate.kofeino.tracker.ui.theme.KofeinoTrackerPhoneTheme
 import pl.dekrate.kofeino.tracker.util.LocaleHelper
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var syncStatusTracker: SyncStatusTracker
 
     override fun attachBaseContext(newBase: Context) {
         super.attachBaseContext(LocaleHelper.applyLocale(newBase))
@@ -40,7 +45,7 @@ class MainActivity : ComponentActivity() {
             KofeinoTrackerPhoneTheme(themeMode = themeMode) {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     val navController = rememberNavController()
-                    AppNavHost(navController = navController)
+                    AppNavHost(navController = navController, syncStatusTracker = syncStatusTracker)
                 }
             }
         }

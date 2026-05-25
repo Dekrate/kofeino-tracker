@@ -188,6 +188,12 @@
     <string name="reminder_evening_title_3">📋 Today\'s report</string>
     <string name="reminder_evening_body_3">Time to review your daily caffeine intake. Tap to check.</string>
 
+    <!-- Sync status -->
+    <string name="sync_status_synced">Synced</string>
+    <string name="sync_status_awaiting_device">Waiting for device</string>
+    <string name="sync_status_syncing">Syncing…</string>
+    <string name="sync_status_error">Sync error: %s</string>
+
     <!-- OfficialDrinksScreen -->
     <string name="search_hint">Search drinks…</string>
     <string name="search_clear">Clear search</string>

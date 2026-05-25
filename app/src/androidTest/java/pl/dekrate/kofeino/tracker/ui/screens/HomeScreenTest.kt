@@ -18,6 +18,8 @@ import pl.dekrate.kofeino.tracker.R
 import pl.dekrate.kofeino.common.domain.model.CaffeineIntake
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.HomeUiState
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.HomeViewModel
+import pl.dekrate.kofeino.common.sync.SyncStatus
+import pl.dekrate.kofeino.tracker.data.sync.SyncStatusTracker
 import pl.dekrate.kofeino.tracker.ui.theme.KofeinoTrackerPhoneTheme
 
 class HomeScreenTest {
@@ -37,6 +39,7 @@ class HomeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HomeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateToAddDrink = {},
                     onNavigateToHistory = {},
                     onNavigateToManageDrinks = {},
@@ -57,6 +60,7 @@ class HomeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HomeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateToAddDrink = {},
                     onNavigateToHistory = {},
                     onNavigateToManageDrinks = {},
@@ -77,6 +81,7 @@ class HomeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HomeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateToAddDrink = {},
                     onNavigateToHistory = {},
                     onNavigateToManageDrinks = {},
@@ -98,6 +103,7 @@ class HomeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HomeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateToAddDrink = {},
                     onNavigateToHistory = {},
                     onNavigateToManageDrinks = {},
@@ -125,6 +131,7 @@ class HomeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HomeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateToAddDrink = {},
                     onNavigateToHistory = {},
                     onNavigateToManageDrinks = {},
@@ -146,6 +153,7 @@ class HomeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HomeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateToAddDrink = {},
                     onNavigateToHistory = {},
                     onNavigateToManageDrinks = {},
@@ -172,6 +180,7 @@ class HomeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HomeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateToAddDrink = { navigated = true },
                     onNavigateToHistory = {},
                     onNavigateToManageDrinks = {},
@@ -195,6 +204,7 @@ class HomeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HomeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateToAddDrink = {},
                     onNavigateToHistory = { navigated = true },
                     onNavigateToManageDrinks = {},
@@ -218,6 +228,7 @@ class HomeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HomeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateToAddDrink = {},
                     onNavigateToHistory = {},
                     onNavigateToManageDrinks = { navigated = true },
@@ -241,6 +252,7 @@ class HomeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HomeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateToAddDrink = {},
                     onNavigateToHistory = {},
                     onNavigateToManageDrinks = {},
@@ -267,6 +279,7 @@ class HomeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HomeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateToAddDrink = {},
                     onNavigateToHistory = {},
                     onNavigateToManageDrinks = {},
@@ -290,6 +303,7 @@ class HomeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HomeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateToAddDrink = {},
                     onNavigateToHistory = {},
                     onNavigateToManageDrinks = {},
@@ -315,6 +329,7 @@ class HomeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HomeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateToAddDrink = {},
                     onNavigateToHistory = {},
                     onNavigateToManageDrinks = {},
@@ -336,6 +351,7 @@ class HomeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HomeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateToAddDrink = {},
                     onNavigateToHistory = {},
                     onNavigateToManageDrinks = {},
@@ -357,6 +373,7 @@ class HomeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HomeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateToAddDrink = {},
                     onNavigateToHistory = {},
                     onNavigateToManageDrinks = {},
@@ -378,6 +395,7 @@ class HomeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HomeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateToAddDrink = {},
                     onNavigateToHistory = {},
                     onNavigateToManageDrinks = {},
@@ -402,6 +420,7 @@ class HomeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HomeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateToAddDrink = {},
                     onNavigateToHistory = {},
                     onNavigateToManageDrinks = {},
@@ -423,6 +442,7 @@ class HomeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 HomeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateToAddDrink = {},
                     onNavigateToHistory = {},
                     onNavigateToManageDrinks = {},
@@ -446,5 +466,12 @@ class HomeScreenTest {
         val vm = mockk<HomeViewModel>(relaxed = true)
         every { vm.uiState } returns MutableStateFlow(state) as StateFlow<HomeUiState>
         return vm
+    }
+
+    private fun createFakeSyncStatusTracker(): SyncStatusTracker {
+        val tracker = mockk<SyncStatusTracker>(relaxed = true)
+        val statusFlow = MutableStateFlow<SyncStatus>(SyncStatus.AwaitingDevice)
+        every { tracker.status } returns statusFlow
+        return tracker
     }
 }
