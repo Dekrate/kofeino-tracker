@@ -9,6 +9,7 @@ import pl.dekrate.kofeino.data.local.OfficialDrinkCacheDao
 import pl.dekrate.kofeino.data.sync.ConflictLogDao
 import pl.dekrate.kofeino.data.sync.PendingChangeDao
 import pl.dekrate.kofeino.data.sync.PendingSyncQueue
+import com.google.android.gms.wearable.CapabilityClient
 import com.google.android.gms.wearable.MessageClient
 import dagger.Module
 import dagger.Provides
@@ -64,16 +65,16 @@ object DatabaseModule {
     @Singleton
     fun providePendingSyncQueue(
         dao: PendingChangeDao,
-        messageClient: MessageClient
+        messageClient: MessageClient,
+        capabilityClient: CapabilityClient
     ): PendingSyncQueue {
-        return PendingSyncQueue(dao, messageClient, nodeId = "")
+        return PendingSyncQueue(dao, messageClient, capabilityClient)
     }
 
     private fun seedDatabaseCallback(context: Context) = object : androidx.room.RoomDatabase.Callback() {
         override fun onCreate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
             super.onCreate(db)
             Timber.i("Database created – seeding default drinks")
-            androidx.sqlite.db.SupportSQLiteDatabase::class.java
             insertDefaults(db, context)
         }
     }
