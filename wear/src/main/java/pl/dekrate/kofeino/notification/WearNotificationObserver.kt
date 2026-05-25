@@ -11,7 +11,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -40,8 +41,7 @@ class WearNotificationObserver @Inject constructor(
     internal var scope: CoroutineScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
 
     fun start() {
-        if (isRunning) return
-        isRunning = true
+        if (!isRunning.compareAndSet(false, true)) return
         Timber.tag(TAG).i("Starting notification observer")
         CaffeineReminderManager.instance = reminderManager
 
@@ -54,8 +54,7 @@ class WearNotificationObserver @Inject constructor(
     }
 
     fun stop() {
-        if (!isRunning) return
-        isRunning = false
+        if (!isRunning.compareAndSet(true, false)) return
         scope.cancel()
         scope = CoroutineScope(SupervisorJob() + defaultDispatcher)
         Timber.tag(TAG).i("Observer stopped")
@@ -70,7 +69,11 @@ class WearNotificationObserver @Inject constructor(
             ) { morning, regular, evening ->
                 Triple(morning, regular, evening)
             }.distinctUntilChanged()
-                .catch { e -> Timber.tag(TAG).e(e, "Error observing reminder toggles") }
+                .retry { cause ->
+                    Timber.tag(TAG).e(cause, "Error observing reminder toggles, retrying")
+                    delay(RETRY_DELAY_MS)
+                    true
+                }
                 .collect { (morning, regular, evening) ->
                 Timber.tag(TAG).d(
                     "Reminder toggles — morning=%b regular=%b evening=%b",
@@ -112,11 +115,11 @@ class WearNotificationObserver @Inject constructor(
         }
     }
 
-    @Volatile
-    private var isRunning: Boolean = false
+    private val isRunning = java.util.concurrent.atomic.AtomicBoolean(false)
 
     private companion object {
         private const val TAG = "WearNotifObs"
         private const val MIDNIGHT_SCHEDULE_API_LEVEL = 31
+        private const val RETRY_DELAY_MS = 1000L
     }
 }
