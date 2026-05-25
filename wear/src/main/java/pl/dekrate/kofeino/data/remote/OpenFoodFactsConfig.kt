@@ -2,6 +2,19 @@ package pl.dekrate.kofeino.data.remote
 
 import pl.dekrate.kofeino.common.util.OpenFoodFactsConfig as CommonConfig
 
+/**
+ * @deprecated Moved to [pl.dekrate.kofeino.common.util.OpenFoodFactsConfig].
+ *   Use the common version directly. Wear-specific constants
+ *   (PATH_SEARCH_V1, DEFAULT_PAGE_SIZE) remain in this object
+ *   and should be migrated separately.
+ */
+@Deprecated(
+    message = "Moved to pl.dekrate.kofeino.common.util.OpenFoodFactsConfig",
+    replaceWith = ReplaceWith(
+        expression = "OpenFoodFactsConfig",
+        imports = ["pl.dekrate.kofeino.common.util.OpenFoodFactsConfig"]
+    )
+)
 object OpenFoodFactsConfig {
     const val HOST: String = CommonConfig.HOST
     const val V2_BASE_URL: String = CommonConfig.V2_BASE_URL

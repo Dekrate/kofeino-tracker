@@ -1,0 +1,119 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>AbstractClassCanBeConcreteClass:BaseViewModel.kt:BaseViewModel$BaseViewModel</ID>
+    <ID>CognitiveComplexMethod:EditIntakeScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun EditIntakeScreen</ID>
+    <ID>CognitiveComplexMethod:OfficialDrinksScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun OfficialDrinksScreen</ID>
+    <ID>ComposableParamOrder:CoffeeCupIndicator.kt:@Composable fun CoffeeCupIndicator</ID>
+    <ID>CyclomaticComplexMethod:EditIntakeScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun EditIntakeScreen</ID>
+    <ID>CyclomaticComplexMethod:OfficialDrinksScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun OfficialDrinksScreen</ID>
+    <ID>Deprecation:ModelConverters.kt:OfficialDrink</ID>
+    <ID>Deprecation:ModelConverters.kt:import pl.dekrate.kofeino.tracker.domain.model.OfficialDrink</ID>
+    <ID>Deprecation:NetworkModule.kt:NetworkModule$OpenFoodFactsConfig</ID>
+    <ID>Deprecation:NetworkModule.kt:import pl.dekrate.kofeino.tracker.data.remote.OpenFoodFactsConfig</ID>
+    <ID>Deprecation:OfficialDrinkRepositoryImpl.kt:OfficialDrinkRepositoryImpl$OfficialDrink</ID>
+    <ID>Deprecation:OfficialDrinkRepositoryImpl.kt:import pl.dekrate.kofeino.tracker.domain.model.OfficialDrink</ID>
+    <ID>Deprecation:OpenFoodFactsApi.kt:OpenFoodFactsApi$OpenFoodFactsConfig</ID>
+    <ID>InjectDispatcher:CaffeineLiveNotificationObserver.kt:CaffeineLiveNotificationObserver$Default</ID>
+    <ID>InjectDispatcher:DataStorePreferences.kt:DataStorePreferences$IO</ID>
+    <ID>InjectDispatcher:SyncTaskExtensions.kt:IO</ID>
+    <ID>LongMethod:AddDrinkScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun AddDrinkScreen</ID>
+    <ID>LongMethod:CoffeeCupIndicator.kt:@Composable fun CoffeeCupIndicator</ID>
+    <ID>LongMethod:CoffeeCupIndicator.kt:private fun DrawScope.drawCoffeeCup</ID>
+    <ID>LongMethod:EditIntakeScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun EditIntakeScreen</ID>
+    <ID>LongMethod:HistoryScreen.kt:@Composable private fun DateNavigationRow</ID>
+    <ID>LongMethod:HomeScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun HomeScreen</ID>
+    <ID>LongMethod:ManageDrinksScreen.kt:@Composable private fun AddEditDrinkDialog</ID>
+    <ID>LongMethod:ManageDrinksScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun ManageDrinksScreen</ID>
+    <ID>LongMethod:OfficialDrinksScreen.kt:@Composable private fun OfficialDrinkItem</ID>
+    <ID>LongMethod:OfficialDrinksScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun OfficialDrinksScreen</ID>
+    <ID>LongMethod:SettingsScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun SettingsScreen</ID>
+    <ID>LongParameterList:HistoryScreen.kt:@Composable private fun DateNavigationRow</ID>
+    <ID>LongParameterList:HistoryScreen.kt:@Composable private fun HistoryContent</ID>
+    <ID>MagicNumber:CaffeineLiveNotificationManager.kt:CaffeineLiveNotificationManager$36</ID>
+    <ID>MagicNumber:CaffeineLiveNotificationObserver.kt:CaffeineLiveNotificationObserver$31</ID>
+    <ID>MagicNumber:CaffeineReminderManager.kt:CaffeineReminderManager$1000L</ID>
+    <ID>MagicNumber:CaffeineReminderManager.kt:CaffeineReminderManager$20</ID>
+    <ID>MagicNumber:CaffeineReminderManager.kt:CaffeineReminderManager$3</ID>
+    <ID>MagicNumber:CaffeineReminderManager.kt:CaffeineReminderManager$60</ID>
+    <ID>MagicNumber:CaffeineReminderManager.kt:CaffeineReminderManager$8</ID>
+    <ID>MagicNumber:CoffeeCupIndicator.kt:0.04f</ID>
+    <ID>MagicNumber:CoffeeCupIndicator.kt:0.05f</ID>
+    <ID>MagicNumber:CoffeeCupIndicator.kt:0.08f</ID>
+    <ID>MagicNumber:CoffeeCupIndicator.kt:1.1f</ID>
+    <ID>MagicNumber:CoffeeCupIndicator.kt:2.2f</ID>
+    <ID>MagicNumber:CoffeeCupIndicator.kt:3</ID>
+    <ID>MagicNumber:DatabaseModule.kt:DatabaseModule$3</ID>
+    <ID>MagicNumber:DatabaseModule.kt:DatabaseModule$4</ID>
+    <ID>MagicNumber:DatabaseModule.kt:DatabaseModule$5</ID>
+    <ID>MagicNumber:DatabaseModule.kt:DatabaseModule$6</ID>
+    <ID>MagicNumber:DatabaseModule.kt:DatabaseModule$7</ID>
+    <ID>MagicNumber:EditIntakeScreen.kt:10</ID>
+    <ID>MagicNumber:EditIntakeScreen.kt:5</ID>
+    <ID>MagicNumber:MainActivity.kt:MainActivity$33</ID>
+    <ID>MagicNumber:ManageDrinksScreen.kt:10</ID>
+    <ID>MagicNumber:ManageDrinksScreen.kt:5</ID>
+    <ID>MagicNumber:NetworkModule.kt:NetworkModule$1024</ID>
+    <ID>MaxLineLength:CaffeineIntakeDao.kt:CaffeineIntakeDao$@Query("SELECT * FROM caffeine_intakes WHERE timestamp &gt;= :startOfDay AND timestamp &lt; :endOfDay ORDER BY timestamp DESC")</ID>
+    <ID>MaxLineLength:CaffeineIntakeDao.kt:CaffeineIntakeDao$@Query("SELECT COALESCE(SUM(caffeineMg), 0) FROM caffeine_intakes WHERE timestamp &gt;= :startOfDay AND timestamp &lt; :endOfDay")</ID>
+    <ID>MaxLineLength:SettingsScreen.kt:Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = backDesc, tint = MaterialTheme.colorScheme.onSurfaceVariant)</ID>
+    <ID>MaxLineLength:SettingsScreen.kt:IconButton</ID>
+    <ID>MaxLineLength:SettingsScreen.kt:Row</ID>
+    <ID>MaxLineLength:SettingsScreen.kt:SectionHeader(stringResource(R.string.notification_section), Modifier.padding(horizontal = 16.dp, vertical = 12.dp))</ID>
+    <ID>MaxLineLength:SettingsScreen.kt:Text(description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)</ID>
+    <ID>MaxLineLength:SettingsScreen.kt:Text(label, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))</ID>
+    <ID>MaxLineLength:SettingsScreen.kt:Text(text, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, modifier = modifier)</ID>
+    <ID>MaxLineLength:SettingsScreen.kt:colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface, titleContentColor = MaterialTheme.colorScheme.onSurface)</ID>
+    <ID>MaxLineLength:SettingsScreen.kt:private</ID>
+    <ID>MaxLineLength:SettingsScreen.kt:stringResource(R.string.version_format, versionName)</ID>
+    <ID>ModifierMissing:AddDrinkScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun AddDrinkScreen</ID>
+    <ID>ModifierMissing:EditIntakeScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun EditIntakeScreen</ID>
+    <ID>ModifierMissing:HistoryScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun HistoryScreen</ID>
+    <ID>ModifierMissing:HomeScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun HomeScreen</ID>
+    <ID>ModifierMissing:ManageDrinksScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun ManageDrinksScreen</ID>
+    <ID>ModifierMissing:OfficialDrinksScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun OfficialDrinksScreen</ID>
+    <ID>ModifierMissing:SettingsScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun SettingsScreen</ID>
+    <ID>NullableToStringCall:OfficialDrinksViewModel.kt:OfficialDrinksViewModel$${error.message}</ID>
+    <ID>SuspendFunSwallowedCancellation:BaseViewModel.kt:BaseViewModel$catch (e: Exception) { emitError(e.message ?: "Unknown error") }</ID>
+    <ID>SuspendFunSwallowedCancellation:DataStorePreferences.kt:DataStorePreferences$catch (e: Exception) { // Fallback to SharedPreferences cachedLanguage = LanguagePreferences.getLanguage(context) cachedThemeMode = ThemePreferences.getThemeMode(context) initialized = true Timber.w(e, "DataStore init failed, using SharedPreferences fallback") }</ID>
+    <ID>SuspendFunSwallowedCancellation:DrinkViewModel.kt:DrinkViewModel$catch (e: Exception) { Timber.e(e, "Failed to log drink") _uiState.update { it.copy(error = DrinkError.AddIntakeFailed) } onError() }</ID>
+    <ID>SuspendFunSwallowedCancellation:EditIntakeViewModel.kt:EditIntakeViewModel$catch (e: Exception) { Timber.e(e, "Failed to delete intake") _uiState.update { it.copy(error = EditIntakeError.DeleteFailed) } onError() }</ID>
+    <ID>SuspendFunSwallowedCancellation:EditIntakeViewModel.kt:EditIntakeViewModel$catch (e: Exception) { Timber.e(e, "Failed to load intake $intakeId") _uiState.update { EditIntakeUiState(isLoading = false, error = EditIntakeError.LoadFailed) } }</ID>
+    <ID>SuspendFunSwallowedCancellation:EditIntakeViewModel.kt:EditIntakeViewModel$catch (e: Exception) { Timber.e(e, "Failed to save intake") _uiState.update { it.copy(error = EditIntakeError.SaveFailed) } onError() }</ID>
+    <ID>SuspendFunSwallowedCancellation:ManageDrinksViewModel.kt:ManageDrinksViewModel$catch (e: Exception) { Timber.e(e, "Failed to delete drink") _uiState.update { it.copy(deleteConfirmation = null, error = ManageDrinksError.DeleteFailed) } }</ID>
+    <ID>SuspendFunSwallowedCancellation:ManageDrinksViewModel.kt:ManageDrinksViewModel$catch (e: Exception) { Timber.e(e, "Failed to save drink") _uiState.update { it.copy(error = ManageDrinksError.SaveFailed) } }</ID>
+    <ID>SuspendFunSwallowedCancellation:OfficialDrinkRepositoryImpl.kt:OfficialDrinkRepositoryImpl$catch (e: Exception) { Timber.w(e, "API load failed, falling back to stale cache") loadStaleFromCache() }</ID>
+    <ID>SuspendFunSwallowedCancellation:OfficialDrinkRepositoryImpl.kt:OfficialDrinkRepositoryImpl$catch (e: Exception) { Timber.w(e, "API search failed for '%s', searching local cache", query) searchLocalCache(query) }</ID>
+    <ID>SuspendFunSwallowedCancellation:OfficialDrinksViewModel.kt:OfficialDrinksViewModel$catch (e: Exception) { Timber.e(e, "Failed to import drink: ${official.name}") _uiState.update { it.copy(importingBarcode = null, error = OfficialDrinksError.ImportFailed) } }</ID>
+    <ID>SuspendFunSwallowedCancellation:OfficialDrinksViewModel.kt:OfficialDrinksViewModel$catch (e: Exception) { Timber.e(e, "Search crashed for: $query") _uiState.update { it.copy(isLoading = false, error = OfficialDrinksError.SearchFailed) } }</ID>
+    <ID>SuspendFunSwallowedCancellation:OfficialDrinksViewModel.kt:OfficialDrinksViewModel$catch (e: Exception) { Timber.e(e, "Unexpected error loading official drinks") _uiState.update { it.copy(isLoading = false, drinks = emptyList()) } }</ID>
+    <ID>SwallowedException:CaffeineLiveNotificationManager.kt:CaffeineLiveNotificationManager$e: IllegalArgumentException</ID>
+    <ID>TooGenericExceptionCaught:BaseViewModel.kt:BaseViewModel$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:DataStorePreferences.kt:DataStorePreferences$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:DatabaseModule.kt:DatabaseModule$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:DrinkViewModel.kt:DrinkViewModel$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:EditIntakeViewModel.kt:EditIntakeViewModel$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:ManageDrinksViewModel.kt:ManageDrinksViewModel$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:OfficialDrinkRepositoryImpl.kt:OfficialDrinkRepositoryImpl$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:OfficialDrinksViewModel.kt:OfficialDrinksViewModel$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:PendingSyncQueue.kt:PendingSyncQueue$e: Exception</ID>
+    <ID>TooManyFunctions:DataStorePreferences.kt:DataStorePreferences</ID>
+    <ID>TopLevelPropertyNaming:OfficialDrinksViewModel.kt:private const val SEARCH_DEBOUNCE_MS = 500L</ID>
+    <ID>UnnecessaryLet:OfficialDrinksScreen.kt:let { snackbarHostState.showSnackbar(message = importedText) viewModel.clearSuccessMessage() }</ID>
+    <ID>UnnecessaryParentheses:OfficialDrinkRepositoryImpl.kt:OfficialDrinkRepositoryImpl$(it.brand?.lowercase()?.contains(lower) == true)</ID>
+    <ID>UnnecessaryParentheses:OfficialDrinksViewModel.kt:OfficialDrinksViewModel$(official.caffeineMgPer100ml)</ID>
+    <ID>UnusedImport:CaffeineLiveNotificationObserver.kt:import kotlinx.coroutines.cancel</ID>
+    <ID>UnusedImport:CaffeineReminderManager.kt:import android.os.Build</ID>
+    <ID>UnusedImport:HomeScreen.kt:import androidx.compose.foundation.layout.size</ID>
+    <ID>UnusedImport:MainActivity.kt:import androidx.compose.runtime.LaunchedEffect</ID>
+    <ID>UnusedImport:ManageDrinksScreen.kt:import androidx.compose.foundation.clickable</ID>
+    <ID>UnusedImport:ManageDrinksScreen.kt:import androidx.compose.material3.Button</ID>
+    <ID>UnusedImport:ManageDrinksScreen.kt:import androidx.compose.material3.ButtonDefaults</ID>
+    <ID>UnusedParameter:DatabaseModule.kt:DatabaseModule$context: Context</ID>
+    <ID>UnusedParameter:OfficialDrinksScreen.kt:searchQuery: String</ID>
+    <ID>UseOrEmpty:ManageDrinksScreen.kt:editDrink?.name ?: ""</ID>
+    <ID>UseOrEmpty:SettingsScreen.kt:context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: ""</ID>
+    <ID>VariableNaming:BaseViewModel.kt:BaseViewModel$protected val _uiState = MutableStateFlow&lt;UiState&lt;T&gt;&gt;(UiState.Loading)</ID>
+  </CurrentIssues>
+</SmellBaseline>
