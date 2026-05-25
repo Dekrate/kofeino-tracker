@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
+import pl.dekrate.kofeino.common.util.OpenFoodFactsConfig as CommonOpenFoodFactsConfig
 
 /**
  * Open Food Facts API interface.
@@ -23,19 +24,19 @@ interface OpenFoodFactsApi {
      * @param pageSize Results per page (max 50)
      * @param fields Comma-separated field names to include in response
      */
-    @GET(OpenFoodFactsConfig.PATH_SEARCH_V1)
+    @GET(CommonOpenFoodFactsConfig.PATH_SEARCH_V1)
     suspend fun searchProducts(
         @Query("search_terms") query: String,
         @Query("page_size") pageSize: Int = 25,
         @Query("action") action: String = "process",
         @Query("json") json: Int = 1,
-        @Query("fields") fields: String = OpenFoodFactsConfig.CGI_FIELDS
+        @Query("fields") fields: String = CommonOpenFoodFactsConfig.CGI_FIELDS
     ): OpenFoodFactsSearchResponse
 
     /**
      * Get product details by barcode.
      */
-    @GET(OpenFoodFactsConfig.PATH_PRODUCT_V0)
+    @GET(CommonOpenFoodFactsConfig.PATH_PRODUCT_V0)
     suspend fun getProduct(
         @Path("barcode") barcode: String
     ): OpenFoodFactsProductResponse

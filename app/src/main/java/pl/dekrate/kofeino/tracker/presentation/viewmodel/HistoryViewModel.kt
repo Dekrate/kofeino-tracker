@@ -25,7 +25,7 @@ import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import pl.dekrate.kofeino.common.domain.model.CaffeineIntake
 import timber.log.Timber
-import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepository
+import pl.dekrate.kofeino.common.domain.repository.CaffeineRepository
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import javax.inject.Inject

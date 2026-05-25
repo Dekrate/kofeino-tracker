@@ -6,7 +6,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import pl.dekrate.kofeino.common.di.CommonModule
 import pl.dekrate.kofeino.common.domain.repository.OfficialDrinkRepository
-import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepository
+import pl.dekrate.kofeino.common.domain.repository.CaffeineRepository
 import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepositoryImpl
 import pl.dekrate.kofeino.tracker.data.repository.OfficialDrinkRepositoryImpl
 import javax.inject.Singleton
