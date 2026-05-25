@@ -9,7 +9,6 @@
     <ID>CognitiveComplexMethod:OfficialDrinksScreen.kt:@Composable fun OfficialDrinksScreen</ID>
     <ID>ComposableParamOrder:HomeScreen.kt:@Composable fun HomeScreen</ID>
     <ID>CouldBeSequence:OfficialDrinkRepositoryImpl.kt:OfficialDrinkRepositoryImpl$filter { it.hasValidCaffeineData() }</ID>
-    <ID>Deprecation:CaffeineApiService.kt:CaffeineApiService$OpenFoodFactsConfig</ID>
     <ID>ImplicitDefaultLocale:OfficialDrinksScreen.kt:"%.0f".format(drink.caffeineMgPer100ml)</ID>
     <ID>InjectDispatcher:OfficialDrinkRepositoryImpl.kt:OfficialDrinkRepositoryImpl$IO</ID>
     <ID>InjectDispatcher:SyncTaskExtensions.kt:IO</ID>
