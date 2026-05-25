@@ -13,7 +13,7 @@ import pl.dekrate.kofeino.data.local.OfficialDrinkCacheDao
 import pl.dekrate.kofeino.data.remote.CaffeineApiService
 import pl.dekrate.kofeino.data.remote.ConnectivityObserver
 import pl.dekrate.kofeino.data.remote.CustomDns
-import pl.dekrate.kofeino.data.remote.OpenFoodFactsConfig
+import pl.dekrate.kofeino.common.util.OpenFoodFactsConfig
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit

@@ -2,7 +2,7 @@ package pl.dekrate.kofeino.data.repository
 
 import pl.dekrate.kofeino.data.local.OfficialDrinkCacheEntity
 import pl.dekrate.kofeino.data.remote.dto.OpenFoodFactsProductDto
-import pl.dekrate.kofeino.domain.model.OfficialDrink
+import pl.dekrate.kofeino.common.domain.model.OfficialDrink
 
 /**
  * Mapper functions between Open Food Facts DTOs and domain models.

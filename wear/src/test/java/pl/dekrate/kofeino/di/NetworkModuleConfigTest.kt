@@ -5,7 +5,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Test
 import pl.dekrate.kofeino.data.remote.CustomDns
-import pl.dekrate.kofeino.data.remote.OpenFoodFactsConfig
+import pl.dekrate.kofeino.common.util.OpenFoodFactsConfig
 
 /**
  * Tests verifying that [NetworkModule] provisions instances using

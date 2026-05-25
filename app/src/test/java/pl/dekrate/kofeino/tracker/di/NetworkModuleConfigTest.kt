@@ -4,7 +4,7 @@ import okhttp3.OkHttpClient
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Test
-import pl.dekrate.kofeino.tracker.data.remote.OpenFoodFactsConfig
+import pl.dekrate.kofeino.common.util.OpenFoodFactsConfig
 
 /**
  * Tests verifying that [:app] module's [NetworkModule] provisions
