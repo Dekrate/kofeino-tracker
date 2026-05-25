@@ -7,7 +7,6 @@ import pl.dekrate.kofeino.tracker.data.local.OfficialDrinkCacheEntity
 import pl.dekrate.kofeino.tracker.data.remote.ConnectivityObserver
 import pl.dekrate.kofeino.tracker.data.remote.OpenFoodFactsApi
 import pl.dekrate.kofeino.tracker.data.remote.OpenFoodFactsProduct
-import pl.dekrate.kofeino.tracker.domain.model.OfficialDrink
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -62,7 +61,7 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
         // 3. Online — try API with multiple broad queries to seed variety
         return try {
             val queries = listOf("coffee", "tea", "energy drink", "cola")
-            val allDrinks = mutableListOf<OfficialDrink>()
+            val allDrinks = mutableListOf<CommonOfficialDrink>()
 
             for (query in queries) {
                 val response = api.searchProducts(query = query, pageSize = 15)
@@ -77,7 +76,7 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
                 val unique = allDrinks.distinctBy { it.barcode }
                 cacheDao.insertAll(unique.map { it.toCacheEntity() })
                 Timber.d("Loaded ${unique.size} drinks from API (${allDrinks.size} raw)")
-                return Result.success(unique.map { it.toCommon() })
+                return Result.success(unique)
             }
 
             // 4. API returned nothing — last resort: stale cache
@@ -108,7 +107,7 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
                 cacheDao.insertAll(drinks.map { it.toCacheEntity() })
             }
             Timber.d("API search for '%s' returned %d total, %d with caffeine", query, response.count, drinks.size)
-            Result.success(drinks.map { it.toCommon() })
+            Result.success(drinks)
         } catch (e: Exception) {
             Timber.w(e, "API search failed for '%s', searching local cache", query)
             searchLocalCache(query)
@@ -138,7 +137,7 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
             return Result.failure(Exception("No fresh cached data available"))
         }
         Timber.d("Loaded ${fresh.size} fresh drinks from local cache")
-        return Result.success(fresh.map { it.toOfficialDrink().toCommon() })
+        return Result.success(fresh.map { it.toOfficialDrink() })
     }
 
     /** Returns ALL cached entries even if stale — last resort fallback. */
@@ -148,7 +147,7 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
             return Result.failure(Exception("No cached data available"))
         }
         Timber.d("Loaded ${all.size} drinks from stale cache")
-        return Result.success(all.map { it.toOfficialDrink().toCommon() })
+        return Result.success(all.map { it.toOfficialDrink() })
     }
 
     /** Searches only TTL-fresh cached entries, or returns empty list. */
@@ -164,16 +163,16 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
             it.name.lowercase().contains(lower) ||
                 (it.brand?.lowercase()?.contains(lower) == true)
         }
-        return Result.success(filtered.map { it.toOfficialDrink().toCommon() })
+        return Result.success(filtered.map { it.toOfficialDrink() })
     }
 
     // --- Mapping ---
 
     /** Convert from Open Food Facts product to domain model.
      *  API returns caffeine in grams per 100g — convert to mg per 100ml. */
-    private fun OpenFoodFactsProduct.toOfficialDrink(): OfficialDrink {
+    private fun OpenFoodFactsProduct.toOfficialDrink(): CommonOfficialDrink {
         val caffeineMg = (nutriments?.caffeine100g ?: 0.0) * CAFFEINE_G_TO_MG
-        return OfficialDrink(
+        return CommonOfficialDrink(
             barcode = code,
             name = productName,
             brand = brands,
@@ -184,7 +183,7 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
         )
     }
 
-    private fun OfficialDrink.toCacheEntity(): OfficialDrinkCacheEntity {
+    private fun CommonOfficialDrink.toCacheEntity(): OfficialDrinkCacheEntity {
         return OfficialDrinkCacheEntity(
             barcode = barcode,
             name = name,
@@ -196,8 +195,8 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
         )
     }
 
-    private fun OfficialDrinkCacheEntity.toOfficialDrink(): OfficialDrink {
-        return OfficialDrink(
+    private fun OfficialDrinkCacheEntity.toOfficialDrink(): CommonOfficialDrink {
+        return CommonOfficialDrink(
             barcode = barcode,
             name = name,
             brand = brand,

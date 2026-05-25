@@ -9,17 +9,6 @@
     <ID>CognitiveComplexMethod:OfficialDrinksScreen.kt:@Composable fun OfficialDrinksScreen</ID>
     <ID>ComposableParamOrder:HomeScreen.kt:@Composable fun HomeScreen</ID>
     <ID>CouldBeSequence:OfficialDrinkRepositoryImpl.kt:OfficialDrinkRepositoryImpl$filter { it.hasValidCaffeineData() }</ID>
-    <ID>Deprecation:CaffeineApiService.kt:CaffeineApiService$OpenFoodFactsConfig</ID>
-    <ID>Deprecation:ModelConverters.kt:OfficialDrink</ID>
-    <ID>Deprecation:ModelConverters.kt:import pl.dekrate.kofeino.domain.model.OfficialDrink</ID>
-    <ID>Deprecation:NetworkModule.kt:NetworkModule$OpenFoodFactsConfig</ID>
-    <ID>Deprecation:NetworkModule.kt:import pl.dekrate.kofeino.data.remote.OpenFoodFactsConfig</ID>
-    <ID>Deprecation:OfficialDrinkMapper.kt:OfficialDrinkMapper$OfficialDrink</ID>
-    <ID>Deprecation:OfficialDrinkMapper.kt:import pl.dekrate.kofeino.domain.model.OfficialDrink</ID>
-    <ID>Deprecation:OfficialDrinkRepositoryImpl.kt:OfficialDrinkRepositoryImpl$OpenFoodFactsConfig</ID>
-    <ID>Deprecation:OfficialDrinkRepositoryImpl.kt:OfficialDrinkRepositoryImpl$WearOfficialDrink</ID>
-    <ID>Deprecation:OfficialDrinkRepositoryImpl.kt:import pl.dekrate.kofeino.data.remote.OpenFoodFactsConfig</ID>
-    <ID>Deprecation:OfficialDrinkRepositoryImpl.kt:import pl.dekrate.kofeino.domain.model.OfficialDrink as WearOfficialDrink</ID>
     <ID>ImplicitDefaultLocale:OfficialDrinksScreen.kt:"%.0f".format(drink.caffeineMgPer100ml)</ID>
     <ID>InjectDispatcher:OfficialDrinkRepositoryImpl.kt:OfficialDrinkRepositoryImpl$IO</ID>
     <ID>InjectDispatcher:SyncTaskExtensions.kt:IO</ID>

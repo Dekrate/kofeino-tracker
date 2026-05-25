@@ -2,10 +2,8 @@ package pl.dekrate.kofeino.data.repository
 
 import pl.dekrate.kofeino.common.domain.model.CaffeineIntake as CommonCaffeineIntake
 import pl.dekrate.kofeino.common.domain.model.DrinkEntity as CommonDrinkEntity
-import pl.dekrate.kofeino.common.domain.model.OfficialDrink as CommonOfficialDrink
 import pl.dekrate.kofeino.domain.model.CaffeineIntake
 import pl.dekrate.kofeino.domain.model.DrinkEntity
-import pl.dekrate.kofeino.domain.model.OfficialDrink
 
 // Wear → Common
 
@@ -28,16 +26,6 @@ fun DrinkEntity.toCommon(): CommonDrinkEntity = CommonDrinkEntity(
     isDefault = isDefault,
     lastModifiedTimestamp = lastModifiedTimestamp,
     sourceDeviceId = sourceDeviceId
-)
-
-fun OfficialDrink.toCommon(): CommonOfficialDrink = CommonOfficialDrink(
-    barcode = barcode,
-    name = name,
-    brand = brand,
-    caffeineMgPer100ml = caffeineMgPer100ml,
-    energyKcalPer100ml = energyKcalPer100ml,
-    quantity = quantity,
-    source = source
 )
 
 // Common → Wear
@@ -63,12 +51,4 @@ fun CommonDrinkEntity.toEntity(): DrinkEntity = DrinkEntity(
     sourceDeviceId = sourceDeviceId
 )
 
-fun CommonOfficialDrink.toEntity(): OfficialDrink = OfficialDrink(
-    barcode = barcode,
-    name = name,
-    brand = brand,
-    caffeineMgPer100ml = caffeineMgPer100ml,
-    energyKcalPer100ml = energyKcalPer100ml,
-    quantity = quantity,
-    source = source
-)
+

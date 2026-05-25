@@ -10,7 +10,7 @@ import okhttp3.Cache
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import pl.dekrate.kofeino.tracker.data.remote.OpenFoodFactsApi
-import pl.dekrate.kofeino.tracker.data.remote.OpenFoodFactsConfig
+import pl.dekrate.kofeino.common.util.OpenFoodFactsConfig
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import timber.log.Timber

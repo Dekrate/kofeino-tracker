@@ -8,13 +8,6 @@
     <ID>ComposableParamOrder:CoffeeCupIndicator.kt:@Composable fun CoffeeCupIndicator</ID>
     <ID>CyclomaticComplexMethod:EditIntakeScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun EditIntakeScreen</ID>
     <ID>CyclomaticComplexMethod:OfficialDrinksScreen.kt:@OptIn(ExperimentalMaterial3Api::class) @Composable fun OfficialDrinksScreen</ID>
-    <ID>Deprecation:ModelConverters.kt:OfficialDrink</ID>
-    <ID>Deprecation:ModelConverters.kt:import pl.dekrate.kofeino.tracker.domain.model.OfficialDrink</ID>
-    <ID>Deprecation:NetworkModule.kt:NetworkModule$OpenFoodFactsConfig</ID>
-    <ID>Deprecation:NetworkModule.kt:import pl.dekrate.kofeino.tracker.data.remote.OpenFoodFactsConfig</ID>
-    <ID>Deprecation:OfficialDrinkRepositoryImpl.kt:OfficialDrinkRepositoryImpl$OfficialDrink</ID>
-    <ID>Deprecation:OfficialDrinkRepositoryImpl.kt:import pl.dekrate.kofeino.tracker.domain.model.OfficialDrink</ID>
-    <ID>Deprecation:OpenFoodFactsApi.kt:OpenFoodFactsApi$OpenFoodFactsConfig</ID>
     <ID>InjectDispatcher:CaffeineLiveNotificationObserver.kt:CaffeineLiveNotificationObserver$Default</ID>
     <ID>InjectDispatcher:DataStorePreferences.kt:DataStorePreferences$IO</ID>
     <ID>InjectDispatcher:SyncTaskExtensions.kt:IO</ID>

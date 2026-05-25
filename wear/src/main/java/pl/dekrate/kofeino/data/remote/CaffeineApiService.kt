@@ -1,5 +1,6 @@
 package pl.dekrate.kofeino.data.remote
 
+import pl.dekrate.kofeino.common.util.OpenFoodFactsConfig as CommonOpenFoodFactsConfig
 import pl.dekrate.kofeino.data.remote.dto.OpenFoodFactsSearchResponse
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -20,25 +21,25 @@ interface CaffeineApiService {
     /**
      * Searches beverages with caffeine data (v2 search).
      */
-    @GET(OpenFoodFactsConfig.PATH_SEARCH_V2)
+    @GET(CommonOpenFoodFactsConfig.PATH_SEARCH_V2)
     suspend fun searchBeveragesWithCaffeine(
         @Query("categories_tags_en") categories: String = "en:beverages",
         @Query("caffeine_100g") caffeineFilter: String = ">0",
         @Query("page_size") pageSize: Int = OpenFoodFactsConfig.DEFAULT_PAGE_SIZE,
         @Query("page") page: Int = 1,
-        @Query("fields") fields: String = OpenFoodFactsConfig.V2_FIELDS
+        @Query("fields") fields: String = CommonOpenFoodFactsConfig.V2_FIELDS
     ): OpenFoodFactsSearchResponse
 
     /**
      * Searches in a specific subcategory (coffees, teas, energy drinks).
      */
-    @GET(OpenFoodFactsConfig.PATH_CATEGORY_SEARCH)
+    @GET(CommonOpenFoodFactsConfig.PATH_CATEGORY_SEARCH)
     suspend fun searchByCategory(
         @Query("categories_tags_en") category: String,
         @Query("caffeine_100g") caffeineFilter: String = ">0",
         @Query("page_size") pageSize: Int = 20,
         @Query("page") page: Int = 1,
-        @Query("fields") fields: String = OpenFoodFactsConfig.V2_FIELDS
+        @Query("fields") fields: String = CommonOpenFoodFactsConfig.V2_FIELDS
     ): OpenFoodFactsSearchResponse
 
     /**
@@ -63,7 +64,7 @@ interface CaffeineApiService {
     /**
      * Fetches product details by barcode.
      */
-    @GET(OpenFoodFactsConfig.PATH_PRODUCT_V2)
+    @GET(CommonOpenFoodFactsConfig.PATH_PRODUCT_V2)
     suspend fun getProductByBarcode(
         @Path("barcode") barcode: String,
         @Query("fields") fields: String = "code,product_name,brands,nutriments,quantity"

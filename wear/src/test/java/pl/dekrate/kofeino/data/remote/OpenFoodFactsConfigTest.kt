@@ -4,6 +4,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import pl.dekrate.kofeino.common.util.OpenFoodFactsConfig
 
 /**
  * Unit tests for [OpenFoodFactsConfig].
@@ -62,29 +63,10 @@ class OpenFoodFactsConfigTest {
     }
 
     @Test
-    fun `PATH_SEARCH_V1 should resolve correctly against V2_BASE_URL`() {
-        val resolved = OpenFoodFactsConfig.V2_BASE_URL + OpenFoodFactsConfig.PATH_SEARCH_V1
-        // The relative path goes up from /api/v2/ to root, then to /cgi/search.pl
-        // With ../.. the resolved URL should still work
-        assertTrue(
-            "Resolved URL should be valid",
-            resolved.startsWith("https://")
-        )
-    }
-
-    @Test
     fun `PATH_SEARCH_V2 should resolve via V2_BASE_URL`() {
         val resolvedUrl = "${OpenFoodFactsConfig.V2_BASE_URL}${OpenFoodFactsConfig.PATH_SEARCH_V2}"
         assertTrue(resolvedUrl.startsWith("https://"))
         assertTrue(resolvedUrl.contains("/api/v2/search"))
-    }
-
-    @Test
-    fun `DEFAULT_PAGE_SIZE should be positive`() {
-        assertTrue(
-            "DEFAULT_PAGE_SIZE must be positive",
-            OpenFoodFactsConfig.DEFAULT_PAGE_SIZE > 0
-        )
     }
 
     @Test

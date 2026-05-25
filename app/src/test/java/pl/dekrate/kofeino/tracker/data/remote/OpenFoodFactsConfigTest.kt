@@ -3,6 +3,7 @@ package pl.dekrate.kofeino.tracker.data.remote
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import pl.dekrate.kofeino.common.util.OpenFoodFactsConfig
 
 /**
  * Unit tests for [OpenFoodFactsConfig] in the [:app] module.
@@ -55,24 +56,6 @@ class OpenFoodFactsConfigTest {
     }
 
     @Test
-    fun `PATH_SEARCH_V1 should be cgi search pl`() {
-        assertEquals("cgi/search.pl", OpenFoodFactsConfig.PATH_SEARCH_V1)
-    }
-
-    @Test
-    fun `PATH_PRODUCT_V0 should be product barcode path`() {
-        assertTrue(
-            "PATH_PRODUCT_V0 should contain {barcode}",
-            OpenFoodFactsConfig.PATH_PRODUCT_V0.contains("{barcode}")
-        )
-    }
-
-    @Test
-    fun `DEFAULT_PAGE_SIZE should be positive`() {
-        assertTrue(OpenFoodFactsConfig.DEFAULT_PAGE_SIZE > 0)
-    }
-
-    @Test
     fun `MAX_RESULTS should be positive`() {
         assertTrue(OpenFoodFactsConfig.MAX_RESULTS > 0)
     }
@@ -80,14 +63,6 @@ class OpenFoodFactsConfigTest {
     @Test
     fun `CACHE_TTL_MILLIS should be positive`() {
         assertTrue(OpenFoodFactsConfig.CACHE_TTL_MILLIS > 0)
-    }
-
-    @Test
-    fun `CGI_FIELDS should contain nutriments`() {
-        assertTrue(
-            "CGI_FIELDS must include nutriments for caffeine filtering",
-            OpenFoodFactsConfig.CGI_FIELDS.contains("nutriments")
-        )
     }
 
     @Test
