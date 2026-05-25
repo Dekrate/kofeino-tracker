@@ -6,7 +6,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -34,9 +33,11 @@ class WearNotificationObserver @Inject constructor(
     private val preferences: NotificationPreferences,
     private val reminderManager: CaffeineReminderManager
 ) {
-    @Volatile
     @Suppress("InjectDispatcher")
-    internal var scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val defaultDispatcher = Dispatchers.Default
+
+    @Volatile
+    internal var scope: CoroutineScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
 
     fun start() {
         if (isRunning) return
@@ -46,8 +47,7 @@ class WearNotificationObserver @Inject constructor(
 
         // Defensive: cancel any lingering scope from a previous incomplete stop()
         scope.cancel()
-        @Suppress("InjectDispatcher")
-        scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        scope = CoroutineScope(SupervisorJob() + defaultDispatcher)
 
         observeReminderToggles()
         scheduleMidnightReset()
@@ -57,8 +57,7 @@ class WearNotificationObserver @Inject constructor(
         if (!isRunning) return
         isRunning = false
         scope.cancel()
-        @Suppress("InjectDispatcher")
-        scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        scope = CoroutineScope(SupervisorJob() + defaultDispatcher)
         Timber.tag(TAG).i("Observer stopped")
     }
 
@@ -109,7 +108,7 @@ class WearNotificationObserver @Inject constructor(
     class MidnightReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             Timber.tag(TAG).i("Midnight — resetting reminder state")
-            Log.i(TAG, "MidnightReceiver fired")
+            Timber.tag(TAG).i("MidnightReceiver fired")
         }
     }
 
