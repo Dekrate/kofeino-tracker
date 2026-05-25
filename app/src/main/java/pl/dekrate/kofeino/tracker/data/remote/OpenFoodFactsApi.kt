@@ -9,7 +9,7 @@ import pl.dekrate.kofeino.common.util.OpenFoodFactsConfig as CommonOpenFoodFacts
 /**
  * Open Food Facts API interface.
  *
- * Base URL is configured in [OpenFoodFactsConfig.ROOT_BASE_URL].
+ * Base URL is configured in [CommonOpenFoodFactsConfig.ROOT_BASE_URL].
  * All endpoint paths resolve against that canonical base URL.
  *
  * Search returns products with caffeine data. We filter by [nutriments.caffeine_100g]

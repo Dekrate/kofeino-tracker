@@ -141,7 +141,6 @@
     <ID>TooGenericExceptionCaught:OfficialDrinkRepositoryImpl.kt:OfficialDrinkRepositoryImpl$e: Exception</ID>
     <ID>TooGenericExceptionCaught:OfficialDrinksViewModel.kt:OfficialDrinksViewModel$e: Exception</ID>
     <ID>TooGenericExceptionCaught:PendingSyncQueue.kt:PendingSyncQueue$e: Exception</ID>
-    <ID>TooManyFunctions:CaffeineRepository.kt:CaffeineRepository</ID>
     <ID>TooManyFunctions:DataStorePreferences.kt:DataStorePreferences</ID>
     <ID>TopLevelPropertyNaming:OfficialDrinksViewModel.kt:private const val SEARCH_DEBOUNCE_MS = 500L</ID>
     <ID>UnnecessaryLet:OfficialDrinksScreen.kt:let { snackbarHostState.showSnackbar(message = importedText) viewModel.clearSuccessMessage() }</ID>

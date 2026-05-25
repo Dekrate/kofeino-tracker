@@ -9,7 +9,7 @@ import retrofit2.http.Query
 /**
  * Retrofit service for Open Food Facts API.
  *
- * Base URL is configured in [OpenFoodFactsConfig.V2_BASE_URL].
+ * Base URL is configured in [CommonOpenFoodFactsConfig.V2_BASE_URL].
  * All endpoint paths resolve against that canonical base URL.
  *
  * Documentation: https://openfoodfacts.github.io/openfoodfacts-server/api/

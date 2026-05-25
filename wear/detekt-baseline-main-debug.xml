@@ -119,7 +119,6 @@
     <ID>TooGenericExceptionCaught:OfficialDrinkRepositoryImpl.kt:OfficialDrinkRepositoryImpl$e: Exception</ID>
     <ID>TooGenericExceptionCaught:OfficialDrinkViewModel.kt:OfficialDrinkViewModel$e: Exception</ID>
     <ID>TooGenericExceptionCaught:PendingSyncQueue.kt:PendingSyncQueue$e: Exception</ID>
-    <ID>TooManyFunctions:CaffeineRepository.kt:CaffeineRepository</ID>
     <ID>UnnecessaryParentheses:CustomDns.kt:CustomDns$((data[2].toInt() shl 8) or (data[3].toInt() and 0xFF))</ID>
     <ID>UnnecessaryParentheses:CustomDns.kt:CustomDns$((data[4].toInt() shl 8) or (data[5].toInt() and 0xFF))</ID>
     <ID>UnnecessaryParentheses:CustomDns.kt:CustomDns$((data[6].toInt() shl 8) or (data[7].toInt() and 0xFF))</ID>
