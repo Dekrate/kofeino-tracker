@@ -2,10 +2,9 @@ package pl.dekrate.kofeino.data.repository
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import pl.dekrate.kofeino.di.ApplicationScope
 import pl.dekrate.kofeino.common.domain.repository.OfficialDrinkRepository
 import pl.dekrate.kofeino.common.domain.model.OfficialDrink as CommonOfficialDrink
 import pl.dekrate.kofeino.data.local.OfficialDrinkCacheDao
@@ -43,7 +42,8 @@ import javax.inject.Singleton
 class OfficialDrinkRepositoryImpl @Inject constructor(
     private val apiService: CaffeineApiService,
     private val cacheDao: OfficialDrinkCacheDao,
-    private val connectivityObserver: ConnectivityObserver
+    private val connectivityObserver: ConnectivityObserver,
+    @ApplicationScope private val applicationScope: CoroutineScope
 ) : OfficialDrinkRepository {
 
     companion object {
@@ -54,16 +54,8 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
         private val consecutiveRateLimits = AtomicInteger(0)
     }
 
-    /** Dedicated scope for background refresh tasks. */
-    private val backgroundScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-
-    /**
-     * Releases the background scope when this repository is no longer needed.
-     * Called by the DI container on component destroy.
-     */
-    fun onDestroy() {
-        backgroundScope.cancel()
-    }
+    /** Tracks in-flight background refresh to prevent concurrent accumulation. */
+    private var refreshJob: Job? = null
 
     override suspend fun getOfficialDrinks(): Result<List<CommonOfficialDrink>> {
         val result: Result<List<CommonOfficialDrink>> = if (connectivityObserver.isOnline && !isCircuitBroken()) {
@@ -133,7 +125,8 @@ class OfficialDrinkRepositoryImpl @Inject constructor(
     // ── Background Refresh ──────────────────────────────────
 
     private fun launchBackgroundRefresh() {
-        backgroundScope.launch {
+        refreshJob?.cancel()
+        refreshJob = applicationScope.launch {
             try {
                 Timber.d("Background refresh starting")
                 val response = apiService.searchBeveragesWithCaffeine(
