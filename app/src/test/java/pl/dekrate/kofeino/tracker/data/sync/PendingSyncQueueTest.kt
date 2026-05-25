@@ -1,19 +1,18 @@
 package pl.dekrate.kofeino.tracker.data.sync
 
-import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
+import com.google.android.gms.wearable.CapabilityClient
+import com.google.android.gms.wearable.CapabilityInfo
+import com.google.android.gms.wearable.MessageClient
+import com.google.android.gms.wearable.Node
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
 import io.mockk.slot
-import io.mockk.unmockkStatic
-import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runTest
-import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import pl.dekrate.kofeino.tracker.data.sync.PendingChangeEntity.Companion.STATUS_FAILED
@@ -27,30 +26,56 @@ import pl.dekrate.kofeino.tracker.data.sync.PendingSyncQueue.Companion.SYNC_PATH
  * Tests cover the full lifecycle:
  * enqueue → flush → dedup → retry → persist.
  *
- * Uses mockk for [PendingChangeDao] and [com.google.android.gms.wearable.MessageClient].
- * The [Tasks.await] blocking call is mocked via [mockkStatic].
+ * Uses mockk for [PendingChangeDao] and [MessageClient].
+ * Node resolution is mocked via [CapabilityClient] using [Tasks.forResult].
  */
 class PendingSyncQueueTest {
 
     private val dao: PendingChangeDao = mockk()
-    private val messageClient: com.google.android.gms.wearable.MessageClient = mockk()
+    private val messageClient: MessageClient = mockk()
+    private val capabilityClient: CapabilityClient = mockk()
     private lateinit var queue: PendingSyncQueue
 
     private val nodeId = "test-node"
 
     @Before
     fun setUp() {
-        queue = PendingSyncQueue(dao, messageClient, nodeId)
-
-        // Stub Tasks.await() so unit tests don't need a real Task runtime.
-        // The Task returned by messageClient.sendMessage is mocked; Tasks.await()
-        // returns our value or throws as configured per test.
-        mockkStatic(Tasks::class)
+        queue = PendingSyncQueue(dao, messageClient, capabilityClient)
     }
 
-    @After
-    fun tearDown() {
-        unmockkStatic(Tasks::class)
+    // ------------------------------------------------------------------
+    // Helpers
+    // ------------------------------------------------------------------
+
+    /** Simulate a reachable paired device with the given [nodeId]. */
+    private fun setupReachableNode(nodeId: String) {
+        val node = mockk<Node> {
+            every { id } returns nodeId
+            every { isNearby } returns true
+        }
+        val capabilityInfo = mockk<CapabilityInfo> {
+            every { nodes } returns setOf(node)
+        }
+        every { capabilityClient.getCapability(any(), any()) } returns Tasks.forResult(capabilityInfo)
+    }
+
+    /** Simulate failure during node resolution (no reachable device). */
+    private fun setupUnreachableNode() {
+        every {
+            capabilityClient.getCapability(any(), any())
+        } returns Tasks.forException<CapabilityInfo>(RuntimeException("Network error"))
+    }
+
+    /** Make [MessageClient.sendMessage] succeed (return 0). */
+    private fun setupSuccessfulMessage() {
+        every { messageClient.sendMessage(any(), any(), any()) } returns Tasks.forResult(0)
+    }
+
+    /** Make [MessageClient.sendMessage] throw on every call. */
+    private fun setupFailingMessage() {
+        every {
+            messageClient.sendMessage(any(), any(), any())
+        } returns Tasks.forException<Int>(RuntimeException("Send failed"))
     }
 
     // ------------------------------------------------------------------
@@ -138,9 +163,8 @@ class PendingSyncQueueTest {
         coEvery { dao.getPendingChanges(any()) } returns listOf(change)
         coEvery { dao.update(any()) } returns Unit
         coEvery { dao.delete(any()) } returns Unit
-
-        every { messageClient.sendMessage(nodeId, any(), any()) } returns mockSendTask(42)
-        every { Tasks.await(any<Task<Int>>()) } returns 42
+        setupReachableNode(nodeId)
+        setupSuccessfulMessage()
 
         val result = queue.flush()
 
@@ -148,7 +172,7 @@ class PendingSyncQueueTest {
         assert(result.failed == 0) { "Expected 0 failed, got ${result.failed}" }
 
         // Verify correct path
-        verify { messageClient.sendMessage(nodeId, "/sync/intake/update", any()) }
+        coVerify { messageClient.sendMessage(nodeId, "/sync/intake/update", any()) }
 
         // Verify status transition to SENDING then delete
         coVerify {
@@ -160,6 +184,7 @@ class PendingSyncQueueTest {
     @Test
     fun `flush with empty queue returns zero counts`() = runTest {
         coEvery { dao.getPendingChanges(any()) } returns emptyList()
+        setupReachableNode(nodeId)
 
         val result = queue.flush()
 
@@ -176,9 +201,8 @@ class PendingSyncQueueTest {
         coEvery { dao.getPendingChanges(any()) } returns listOf(change1, change2)
         coEvery { dao.update(any()) } returns Unit
         coEvery { dao.delete(any()) } returns Unit
-
-        every { messageClient.sendMessage(nodeId, any(), any()) } returns mockSendTask(1)
-        every { Tasks.await(any<Task<Int>>()) } returns 1
+        setupReachableNode(nodeId)
+        setupSuccessfulMessage()
 
         val result = queue.flush()
 
@@ -193,13 +217,12 @@ class PendingSyncQueueTest {
         coEvery { dao.getPendingChanges(any()) } returns listOf(change)
         coEvery { dao.update(any()) } returns Unit
         coEvery { dao.delete(any()) } returns Unit
-
-        every { messageClient.sendMessage(nodeId, any(), any()) } returns mockSendTask(1)
-        every { Tasks.await(any<Task<Int>>()) } returns 1
+        setupReachableNode(nodeId)
+        setupSuccessfulMessage()
 
         queue.flush()
 
-        verify { messageClient.sendMessage(nodeId, "/sync/intake/delete", any()) }
+        coVerify { messageClient.sendMessage(nodeId, "/sync/intake/delete", any()) }
     }
 
     // ------------------------------------------------------------------
@@ -213,9 +236,8 @@ class PendingSyncQueueTest {
             retryCount = 0)
         coEvery { dao.getPendingChanges(any()) } returns listOf(change)
         coEvery { dao.update(any()) } returns Unit
-
-        every { messageClient.sendMessage(nodeId, any(), any()) } returns mockSendTask(0)
-        every { Tasks.await(any<Task<Int>>()) } throws RuntimeException("Send failed")
+        setupReachableNode(nodeId)
+        setupFailingMessage()
 
         val result = queue.flush()
 
@@ -239,9 +261,8 @@ class PendingSyncQueueTest {
             retryCount = 4) // one more failure → hits max 5
         coEvery { dao.getPendingChanges(any()) } returns listOf(change)
         coEvery { dao.update(any()) } returns Unit
-
-        every { messageClient.sendMessage(nodeId, any(), any()) } returns mockSendTask(0)
-        every { Tasks.await(any<Task<Int>>()) } throws RuntimeException("Send failed")
+        setupReachableNode(nodeId)
+        setupFailingMessage()
 
         queue.flush()
 
@@ -256,6 +277,9 @@ class PendingSyncQueueTest {
 
     @Test
     fun `retry counts 0 through 4 stay PENDING, 5th goes FAILED`() = runTest {
+        setupReachableNode(nodeId)
+        setupFailingMessage()
+
         // Test all boundary retry counts
         for (initialRetry in 0..4) {
             val change = PendingChangeEntity(id = 1, entityType = "intake", entityId = "x",
@@ -263,9 +287,6 @@ class PendingSyncQueueTest {
                 retryCount = initialRetry)
             coEvery { dao.getPendingChanges(any()) } returns listOf(change)
             coEvery { dao.update(any()) } returns Unit
-
-            every { messageClient.sendMessage(nodeId, any(), any()) } returns mockSendTask(0)
-            every { Tasks.await(any<Task<Int>>()) } throws RuntimeException("Fail")
 
             queue.flush()
 
@@ -299,10 +320,10 @@ class PendingSyncQueueTest {
         coEvery { dao.getPendingChanges(any()) } returns persisted
         coEvery { dao.update(any()) } returns Unit
         coEvery { dao.delete(any()) } returns Unit
-        every { messageClient.sendMessage(nodeId, any(), any()) } returns mockSendTask(1)
-        every { Tasks.await(any<Task<Int>>()) } returns 1
+        setupReachableNode(nodeId)
+        setupSuccessfulMessage()
 
-        val restartedQueue = PendingSyncQueue(dao, messageClient, nodeId)
+        val restartedQueue = PendingSyncQueue(dao, messageClient, capabilityClient)
         val result = restartedQueue.flush()
 
         assert(result.sent == 2) { "Expected 2 items flushed after restart, got ${result.sent}" }
@@ -346,11 +367,15 @@ class PendingSyncQueueTest {
         coEvery { dao.getPendingChanges(any()) } returns listOf(good, bad)
         coEvery { dao.update(any()) } returns Unit
         coEvery { dao.delete(any()) } returns Unit
+        setupReachableNode(nodeId)
 
         // First send succeeds, second fails
-        every { messageClient.sendMessage(nodeId, "/sync/intake/insert", any()) } returns mockSendTask(1)
-        every { messageClient.sendMessage(nodeId, "/sync/intake/update", any()) } returns mockSendTask(0)
-        every { Tasks.await(any<Task<Int>>()) } returnsMany listOf(1) andThenThrows RuntimeException("Fail")
+        every {
+            messageClient.sendMessage(nodeId, "/sync/intake/insert", any())
+        } returns Tasks.forResult(1)
+        every {
+            messageClient.sendMessage(nodeId, "/sync/intake/update", any())
+        } returns Tasks.forException<Int>(RuntimeException("Fail"))
 
         val result = queue.flush()
 
@@ -376,10 +401,11 @@ class PendingSyncQueueTest {
         coEvery { dao.getPendingChanges(any()) } returns listOf(change)
         coEvery { dao.update(any()) } returns Unit
         coEvery { dao.delete(any()) } returns Unit
+        setupReachableNode(nodeId)
+        setupSuccessfulMessage()
 
         val payloadSlot = slot<ByteArray>()
-        every { messageClient.sendMessage(nodeId, any(), capture(payloadSlot)) } returns mockSendTask(1)
-        every { Tasks.await(any<Task<Int>>()) } returns 1
+        every { messageClient.sendMessage(nodeId, any(), capture(payloadSlot)) } returns Tasks.forResult(1)
 
         queue.flush()
 
@@ -402,8 +428,8 @@ class PendingSyncQueueTest {
         coEvery { dao.getPendingChanges(any()) } returns listOf(change)
         coEvery { dao.update(any()) } returns Unit
         coEvery { dao.delete(any()) } returns Unit
-        every { messageClient.sendMessage(nodeId, any(), any()) } returns mockSendTask(1)
-        every { Tasks.await(any<Task<Int>>()) } returns 1
+        setupReachableNode(nodeId)
+        setupSuccessfulMessage()
 
         val start = currentTime
         val result = queue.flush()
@@ -423,8 +449,8 @@ class PendingSyncQueueTest {
         coEvery { dao.getPendingChanges(any()) } returns listOf(change)
         coEvery { dao.update(any()) } returns Unit
         coEvery { dao.delete(any()) } returns Unit
-        every { messageClient.sendMessage(nodeId, any(), any()) } returns mockSendTask(1)
-        every { Tasks.await(any<Task<Int>>()) } returns 1
+        setupReachableNode(nodeId)
+        setupSuccessfulMessage()
 
         val start = currentTime
         queue.flush()
@@ -450,8 +476,8 @@ class PendingSyncQueueTest {
         coEvery { dao.getRetryableFailed() } returns retryable
         coEvery { dao.update(any()) } returns Unit
         coEvery { dao.delete(any()) } returns Unit
-        every { messageClient.sendMessage(nodeId, any(), any()) } returns mockSendTask(1)
-        every { Tasks.await(any<Task<Int>>()) } returns 1
+        setupReachableNode(nodeId)
+        setupSuccessfulMessage()
 
         val result = queue.flushAllPending()
 
@@ -463,6 +489,7 @@ class PendingSyncQueueTest {
     fun `flushAllPending does not fail when no retryable items exist`() = runTest {
         coEvery { dao.getPendingChanges(any()) } returns emptyList()
         coEvery { dao.getRetryableFailed() } returns emptyList()
+        setupReachableNode(nodeId)
 
         val result = queue.flushAllPending()
 
@@ -483,10 +510,11 @@ class PendingSyncQueueTest {
         coEvery { dao.getRetryableFailed() } returns retryable
         coEvery { dao.update(any()) } returns Unit
         coEvery { dao.delete(any()) } returns Unit
+        setupReachableNode(nodeId)
+
         // Pending succeeds, retryable fails again
-        every { messageClient.sendMessage(nodeId, "/sync/intake/insert", any()) } returns mockSendTask(1)
-        every { messageClient.sendMessage(nodeId, "/sync/intake/update", any()) } returns mockSendTask(0)
-        every { Tasks.await(any<Task<Int>>()) } returnsMany listOf(1) andThenThrows RuntimeException("Fail again")
+        every { messageClient.sendMessage(nodeId, "/sync/intake/insert", any()) } returns Tasks.forResult(1)
+        every { messageClient.sendMessage(nodeId, "/sync/intake/update", any()) } returns Tasks.forException<Int>(RuntimeException("Fail again"))
 
         val result = queue.flushAllPending()
 
@@ -495,7 +523,45 @@ class PendingSyncQueueTest {
     }
 
     // ------------------------------------------------------------------
-    // 11. Dedup also matches SENDING status
+    // 11. No reachable node edge cases
+    // ------------------------------------------------------------------
+
+    @Test
+    fun `flush returns zero when no reachable node`() = runTest {
+        coEvery { dao.getPendingChanges(any()) } returns listOf(
+            PendingChangeEntity(id = 1, entityType = "intake", entityId = "1",
+                operationType = "INSERT", payload = """{}""", timestamp = 1L)
+        )
+        setupUnreachableNode()
+
+        val result = queue.flush()
+
+        assert(result.sent == 0) { "Expected 0 sent" }
+        assert(result.failed == 0) { "Expected 0 failed" }
+        coVerify(exactly = 0) { messageClient.sendMessage(any(), any(), any()) }
+    }
+
+    @Test
+    fun `flushAllPending returns correct counts when no reachable node`() = runTest {
+        coEvery { dao.getPendingChanges(any()) } returns listOf(
+            PendingChangeEntity(id = 1, entityType = "intake", entityId = "1",
+                operationType = "INSERT", payload = """{}""", timestamp = 1L)
+        )
+        coEvery { dao.getRetryableFailed() } returns listOf(
+            PendingChangeEntity(id = 2, entityType = "intake", entityId = "2",
+                operationType = "UPDATE", payload = """{}""", timestamp = 2L,
+                retryCount = 3, status = STATUS_FAILED)
+        )
+        setupUnreachableNode()
+
+        val result = queue.flushAllPending()
+
+        assert(result.sent == 0)
+        assert(result.failed == 1) // retryable items count as failed when no node
+    }
+
+    // ------------------------------------------------------------------
+    // 12. Dedup also matches SENDING status
     // ------------------------------------------------------------------
 
     @Test
@@ -515,22 +581,5 @@ class PendingSyncQueueTest {
                     it.status == STATUS_PENDING
             })
         }
-    }
-
-    // ------------------------------------------------------------------
-    // Helpers
-    // ------------------------------------------------------------------
-
-    /**
-     * Creates a mock [Task] that [Tasks.await] can work with.
-     * The mock is a simple [Int] task; the actual result value used by
-     * [Tasks.await] is controlled by the [Tasks.await] stub in each test.
-     */
-    private fun mockSendTask(taskResult: Int): Task<Int> {
-        val task = mockk<Task<Int>>()
-        every { task.isComplete } returns true
-        every { task.isSuccessful } returns true
-        every { task.result } returns taskResult
-        return task
     }
 }
