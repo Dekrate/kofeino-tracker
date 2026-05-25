@@ -47,7 +47,7 @@ class ConflictResolverTest {
             incomingTimestamp = now
         )
         assertTrue(result.localWins)
-        assertEquals(ConflictResolver.REASON_PHONE_WINS_TIE, result.reason)
+        assertEquals(ConflictResolver.REASON_LOCAL_PHONE_WINS, result.reason)
     }
 
     @Test
@@ -265,6 +265,21 @@ class ConflictResolverTest {
         assertEquals(incoming, result.winner)
     }
 
+    @Test
+    fun `equal timestamps local phone wins intake tiebreaker`() {
+        val now = System.currentTimeMillis()
+        val local = makeIntake(id = 1, timestamp = now, sourceId = ConflictResolver.PHONE_DEVICE_ID)
+        val incoming = makeIntake(id = 1, timestamp = now, sourceId = ConflictResolver.WATCH_DEVICE_ID)
+        val result = ConflictResolver.resolveIntakeConflict(
+            local = local,
+            incoming = incoming,
+            operationType = PendingChangeEntity.OPERATION_UPDATE
+        )
+        assertEquals(ConflictResolver.REASON_LOCAL_PHONE_WINS, result.reason)
+        assertTrue(result.wasConflict)
+        assertEquals(local, result.winner)
+    }
+
     // ======================================================================
     // resolveDrinkConflict
     // ======================================================================
@@ -339,6 +354,21 @@ class ConflictResolverTest {
         assertEquals(ConflictResolver.REASON_PHONE_WINS_TIE, result.reason)
         assertTrue(result.wasConflict)
         assertEquals(incoming, result.winner)
+    }
+
+    @Test
+    fun `equal timestamps local phone wins drink tiebreaker`() {
+        val now = System.currentTimeMillis()
+        val local = makeDrink(id = 1, timestamp = now, sourceId = ConflictResolver.PHONE_DEVICE_ID)
+        val incoming = makeDrink(id = 1, timestamp = now, sourceId = ConflictResolver.WATCH_DEVICE_ID)
+        val result = ConflictResolver.resolveDrinkConflict(
+            local = local,
+            incoming = incoming,
+            operationType = PendingChangeEntity.OPERATION_UPDATE
+        )
+        assertEquals(ConflictResolver.REASON_LOCAL_PHONE_WINS, result.reason)
+        assertTrue(result.wasConflict)
+        assertEquals(local, result.winner)
     }
 
     // ======================================================================

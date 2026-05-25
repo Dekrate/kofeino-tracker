@@ -28,6 +28,7 @@ object ConflictResolver {
     const val REASON_LOCAL_NEWER = "local_timestamp_newer"
     const val REASON_INCOMING_NEWER = "incoming_timestamp_newer"
     const val REASON_PHONE_WINS_TIE = "phone_wins_tiebreaker"
+    const val REASON_LOCAL_PHONE_WINS = "local_phone_wins_tiebreaker"
     const val REASON_DELETE_WINS = "delete_wins"
     const val REASON_EQUAL_NO_CONFLICT = "no_conflict_equal"
 
@@ -172,7 +173,7 @@ object ConflictResolver {
             else -> {
                 if (localSourceId == PHONE_DEVICE_ID) {
                     TimestampComparison(
-                        reason = REASON_PHONE_WINS_TIE,
+                        reason = REASON_LOCAL_PHONE_WINS,
                         localWins = true,
                         clockSkewWarning = clockSkewWarning
                     )
