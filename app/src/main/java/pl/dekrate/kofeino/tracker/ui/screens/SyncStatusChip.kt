@@ -24,7 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -53,7 +53,6 @@ fun SyncStatusChip(
     modifier: Modifier = Modifier
 ) {
     val state by syncStatusTracker.status.collectAsState()
-    val context = LocalContext.current
 
     // Auto-hide Synced after 3s — timer resets on each new Synced emission
     var isVisible by remember { mutableStateOf(true) }
@@ -69,25 +68,25 @@ fun SyncStatusChip(
     val config: Config = when (val status = state) {
         SyncStatus.Synced -> Config(
             icon = Icons.Filled.Done,
-            contentDescription = context.getString(R.string.sync_status_synced),
+            contentDescription = stringResource(R.string.sync_status_synced),
             tint = Color(0xFF4CAF50),
             showProgress = false
         )
         SyncStatus.AwaitingDevice -> Config(
             icon = Icons.Filled.Close,
-            contentDescription = context.getString(R.string.sync_status_awaiting_device),
+            contentDescription = stringResource(R.string.sync_status_awaiting_device),
             tint = Color(0xFF9E9E9E),
             showProgress = false
         )
         SyncStatus.Syncing -> Config(
             icon = null,
-            contentDescription = context.getString(R.string.sync_status_syncing),
+            contentDescription = stringResource(R.string.sync_status_syncing),
             tint = MaterialTheme.colorScheme.primary,
             showProgress = true
         )
         is SyncStatus.Error -> Config(
             icon = Icons.Filled.Warning,
-            contentDescription = context.getString(R.string.sync_status_error, status.message),
+            contentDescription = stringResource(R.string.sync_status_error, status.message),
             tint = Color(0xFFE53935),
             showProgress = false,
             isError = true,
