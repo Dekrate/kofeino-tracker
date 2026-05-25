@@ -1,5 +1,6 @@
 package pl.dekrate.kofeino.tracker.data.sync
 
+import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
 import com.google.android.gms.wearable.CapabilityClient
 import com.google.android.gms.wearable.CapabilityInfo
@@ -9,16 +10,20 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import io.mockk.slot
+import io.mockk.unmockkStatic
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import pl.dekrate.kofeino.tracker.data.sync.PendingChangeEntity.Companion.STATUS_FAILED
 import pl.dekrate.kofeino.tracker.data.sync.PendingChangeEntity.Companion.STATUS_PENDING
 import pl.dekrate.kofeino.tracker.data.sync.PendingChangeEntity.Companion.STATUS_SENDING
 import pl.dekrate.kofeino.tracker.data.sync.PendingSyncQueue.Companion.SYNC_PATH_FORMAT
+import java.util.concurrent.ExecutionException
 
 /**
  * Unit tests for [PendingSyncQueue].
@@ -27,7 +32,12 @@ import pl.dekrate.kofeino.tracker.data.sync.PendingSyncQueue.Companion.SYNC_PATH
  * enqueue → flush → dedup → retry → persist.
  *
  * Uses mockk for [PendingChangeDao] and [MessageClient].
- * Node resolution is mocked via [CapabilityClient] using [Tasks.forResult].
+ * [Tasks.await] is mocked via [mockkStatic] because the real implementation
+ * requires an Android Looper (not available in JVM unit tests).
+ *
+ * The custom [Task.await] extension (defined in [SyncTaskExtensionsKt]) calls
+ * [Tasks.await] inside [kotlinx.coroutines.Dispatchers.IO], so we mock
+ * [Tasks.await] statically to avoid Looper crashes and return synthetic results.
  */
 class PendingSyncQueueTest {
 
@@ -41,6 +51,29 @@ class PendingSyncQueueTest {
     @Before
     fun setUp() {
         queue = PendingSyncQueue(dao, messageClient, capabilityClient)
+        mockkStatic(Tasks::class)
+        // Stub Tasks.await for ALL Task types in one generic handler.
+        // The real implementation requires a Looper, which is unavailable in JVM tests.
+        // This stub reads isSuccessful / result / exception directly from the mock Task,
+        // matching the semantics Tasks.await would provide.
+        @Suppress("UNCHECKED_CAST")
+        every { Tasks.await(any<Task<*>>()) } answers {
+            val task = firstArg<Task<*>>()
+            if (task.isSuccessful) {
+                task.result
+            } else {
+                // Tasks.await wraps the task's exception in an ExecutionException.
+                throw ExecutionException(
+                    "Task failed",
+                    task.exception ?: RuntimeException("Unknown error")
+                )
+            }
+        }
+    }
+
+    @After
+    fun tearDown() {
+        unmockkStatic(Tasks::class)
     }
 
     // ------------------------------------------------------------------
@@ -56,26 +89,38 @@ class PendingSyncQueueTest {
         val capabilityInfo = mockk<CapabilityInfo> {
             every { nodes } returns setOf(node)
         }
-        every { capabilityClient.getCapability(any(), any()) } returns Tasks.forResult(capabilityInfo)
+        val task = mockk<Task<CapabilityInfo>>()
+        every { task.isComplete } returns true
+        every { task.isSuccessful } returns true
+        every { task.result } returns capabilityInfo
+        every { capabilityClient.getCapability(any(), any()) } returns task
     }
 
     /** Simulate failure during node resolution (no reachable device). */
     private fun setupUnreachableNode() {
-        every {
-            capabilityClient.getCapability(any(), any())
-        } returns Tasks.forException<CapabilityInfo>(RuntimeException("Network error"))
+        val task = mockk<Task<CapabilityInfo>>()
+        every { task.isComplete } returns true
+        every { task.isSuccessful } returns false
+        every { task.exception } returns RuntimeException("Network error")
+        every { capabilityClient.getCapability(any(), any()) } returns task
     }
 
     /** Make [MessageClient.sendMessage] succeed (return 0). */
     private fun setupSuccessfulMessage() {
-        every { messageClient.sendMessage(any(), any(), any()) } returns Tasks.forResult(0)
+        val task = mockk<Task<Int>>()
+        every { task.isComplete } returns true
+        every { task.isSuccessful } returns true
+        every { task.result } returns 0
+        every { messageClient.sendMessage(any(), any(), any()) } returns task
     }
 
     /** Make [MessageClient.sendMessage] throw on every call. */
     private fun setupFailingMessage() {
-        every {
-            messageClient.sendMessage(any(), any(), any())
-        } returns Tasks.forException<Int>(RuntimeException("Send failed"))
+        val task = mockk<Task<Int>>()
+        every { task.isComplete } returns true
+        every { task.isSuccessful } returns false
+        every { task.exception } returns RuntimeException("Send failed")
+        every { messageClient.sendMessage(any(), any(), any()) } returns task
     }
 
     // ------------------------------------------------------------------
@@ -370,12 +415,17 @@ class PendingSyncQueueTest {
         setupReachableNode(nodeId)
 
         // First send succeeds, second fails
-        every {
-            messageClient.sendMessage(nodeId, "/sync/intake/insert", any())
-        } returns Tasks.forResult(1)
-        every {
-            messageClient.sendMessage(nodeId, "/sync/intake/update", any())
-        } returns Tasks.forException<Int>(RuntimeException("Fail"))
+        val goodTask = mockk<Task<Int>>()
+        every { goodTask.isComplete } returns true
+        every { goodTask.isSuccessful } returns true
+        every { goodTask.result } returns 1
+        every { messageClient.sendMessage(nodeId, "/sync/intake/insert", any()) } returns goodTask
+
+        val badTask = mockk<Task<Int>>()
+        every { badTask.isComplete } returns true
+        every { badTask.isSuccessful } returns false
+        every { badTask.exception } returns RuntimeException("Fail")
+        every { messageClient.sendMessage(nodeId, "/sync/intake/update", any()) } returns badTask
 
         val result = queue.flush()
 
@@ -405,7 +455,7 @@ class PendingSyncQueueTest {
         setupSuccessfulMessage()
 
         val payloadSlot = slot<ByteArray>()
-        every { messageClient.sendMessage(nodeId, any(), capture(payloadSlot)) } returns Tasks.forResult(1)
+        every { messageClient.sendMessage(nodeId, any(), capture(payloadSlot)) } returns mockk()
 
         queue.flush()
 
@@ -513,8 +563,17 @@ class PendingSyncQueueTest {
         setupReachableNode(nodeId)
 
         // Pending succeeds, retryable fails again
-        every { messageClient.sendMessage(nodeId, "/sync/intake/insert", any()) } returns Tasks.forResult(1)
-        every { messageClient.sendMessage(nodeId, "/sync/intake/update", any()) } returns Tasks.forException<Int>(RuntimeException("Fail again"))
+        val goodTask = mockk<Task<Int>>()
+        every { goodTask.isComplete } returns true
+        every { goodTask.isSuccessful } returns true
+        every { goodTask.result } returns 1
+        every { messageClient.sendMessage(nodeId, "/sync/intake/insert", any()) } returns goodTask
+
+        val badTask = mockk<Task<Int>>()
+        every { badTask.isComplete } returns true
+        every { badTask.isSuccessful } returns false
+        every { badTask.exception } returns RuntimeException("Fail again")
+        every { messageClient.sendMessage(nodeId, "/sync/intake/update", any()) } returns badTask
 
         val result = queue.flushAllPending()
 
