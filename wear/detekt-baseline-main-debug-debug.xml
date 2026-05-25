@@ -9,6 +9,17 @@
     <ID>CognitiveComplexMethod:OfficialDrinksScreen.kt:@Composable fun OfficialDrinksScreen</ID>
     <ID>ComposableParamOrder:HomeScreen.kt:@Composable fun HomeScreen</ID>
     <ID>CouldBeSequence:OfficialDrinkRepositoryImpl.kt:OfficialDrinkRepositoryImpl$filter { it.hasValidCaffeineData() }</ID>
+    <ID>Deprecation:CaffeineApiService.kt:CaffeineApiService$OpenFoodFactsConfig</ID>
+    <ID>Deprecation:ModelConverters.kt:OfficialDrink</ID>
+    <ID>Deprecation:ModelConverters.kt:import pl.dekrate.kofeino.domain.model.OfficialDrink</ID>
+    <ID>Deprecation:NetworkModule.kt:NetworkModule$OpenFoodFactsConfig</ID>
+    <ID>Deprecation:NetworkModule.kt:import pl.dekrate.kofeino.data.remote.OpenFoodFactsConfig</ID>
+    <ID>Deprecation:OfficialDrinkMapper.kt:OfficialDrinkMapper$OfficialDrink</ID>
+    <ID>Deprecation:OfficialDrinkMapper.kt:import pl.dekrate.kofeino.domain.model.OfficialDrink</ID>
+    <ID>Deprecation:OfficialDrinkRepositoryImpl.kt:OfficialDrinkRepositoryImpl$OpenFoodFactsConfig</ID>
+    <ID>Deprecation:OfficialDrinkRepositoryImpl.kt:OfficialDrinkRepositoryImpl$WearOfficialDrink</ID>
+    <ID>Deprecation:OfficialDrinkRepositoryImpl.kt:import pl.dekrate.kofeino.data.remote.OpenFoodFactsConfig</ID>
+    <ID>Deprecation:OfficialDrinkRepositoryImpl.kt:import pl.dekrate.kofeino.domain.model.OfficialDrink as WearOfficialDrink</ID>
     <ID>ImplicitDefaultLocale:OfficialDrinksScreen.kt:"%.0f".format(drink.caffeineMgPer100ml)</ID>
     <ID>InjectDispatcher:OfficialDrinkRepositoryImpl.kt:OfficialDrinkRepositoryImpl$IO</ID>
     <ID>InjectDispatcher:SyncTaskExtensions.kt:IO</ID>
@@ -76,7 +87,6 @@
     <ID>TooGenericExceptionCaught:OfficialDrinkRepositoryImpl.kt:OfficialDrinkRepositoryImpl$e: Exception</ID>
     <ID>TooGenericExceptionCaught:OfficialDrinkViewModel.kt:OfficialDrinkViewModel$e: Exception</ID>
     <ID>TooGenericExceptionCaught:PendingSyncQueue.kt:PendingSyncQueue$e: Exception</ID>
-    <ID>TooManyFunctions:CaffeineRepository.kt:CaffeineRepository</ID>
     <ID>UnnecessaryParentheses:CustomDns.kt:CustomDns$((data[2].toInt() shl 8) or (data[3].toInt() and 0xFF))</ID>
     <ID>UnnecessaryParentheses:CustomDns.kt:CustomDns$((data[4].toInt() shl 8) or (data[5].toInt() and 0xFF))</ID>
     <ID>UnnecessaryParentheses:CustomDns.kt:CustomDns$((data[6].toInt() shl 8) or (data[7].toInt() and 0xFF))</ID>
@@ -91,7 +101,6 @@
     <ID>UnnecessaryParentheses:OfficialDrinkRepositoryImpl.kt:OfficialDrinkRepositoryImpl$(it.brand?.lowercase()?.contains(lower) == true)</ID>
     <ID>UnsafeCallOnNullableType:AddDrinkScreen.kt:selectedDrink!!</ID>
     <ID>UnsafeCallOnNullableType:EditIntakeScreen.kt:intake!!</ID>
-    <ID>UnusedImport:DatabaseModule.kt:import pl.dekrate.kofeino.domain.model.DrinkEntity</ID>
     <ID>UnusedImport:NetworkModule.kt:import pl.dekrate.kofeino.data.local.OfficialDrinkCacheDao</ID>
     <ID>UnusedImport:OfficialDrinkCacheDao.kt:import pl.dekrate.kofeino.data.local.OfficialDrinkCacheEntity</ID>
     <ID>UnusedImport:OfficialDrinksScreen.kt:import androidx.compose.ui.graphics.Color</ID>
