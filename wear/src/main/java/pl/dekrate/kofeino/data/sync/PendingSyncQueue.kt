@@ -26,7 +26,6 @@ class PendingSyncQueue @Inject constructor(
         const val SYNC_PATH_PREFIX = "/sync"
         const val SYNC_PATH_FORMAT = "$SYNC_PATH_PREFIX/%s/%s"
         const val SYNC_CAPABILITY_NAME = "caffeine_sync"
-        private const val MAX_RETRIES = 5
         private const val FLUSH_BATCH_SIZE = 100
         private const val BACKOFF_BASE_MS = 1000L
     }
@@ -211,7 +210,7 @@ class PendingSyncQueue @Inject constructor(
 
     private suspend fun handleFailure(change: PendingChangeEntity) {
         val nextRetry = change.retryCount + 1
-        if (nextRetry >= MAX_RETRIES) {
+        if (nextRetry >= PendingChangeEntity.MAX_RETRIES) {
             Timber.w("Change %s/%s exceeded max retries – marking FAILED",
                 change.entityType, change.entityId)
             dao.update(
