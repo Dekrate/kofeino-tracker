@@ -115,7 +115,7 @@ object TestNetworkModule {
 
     @Provides
     @Singleton
-    fun provideCustomDns(): CustomDns = CustomDns
+    fun provideCustomDns(): CustomDns = CustomDns()
 
     @Provides
     @Singleton

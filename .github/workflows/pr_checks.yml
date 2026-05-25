@@ -17,6 +17,9 @@ jobs:
     name: Build & Unit Tests
     runs-on: ubuntu-latest
 
+    env:
+      ORG_GRADLE_PROJECT_androidUseBuildIdentifiers: true
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,21 +38,11 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Cache Android SDK
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.android/sdk
-            ~/.android/cache
-          key: android-sdk-${{ runner.os }}-${{ hashFiles('**/build.gradle.kts', '**/libs.versions.toml') }}
-          restore-keys: |
-            android-sdk-${{ runner.os }}-
-
       - name: Make gradlew executable
         run: chmod +x gradlew
 
       - name: Build & Test
-        run: ./gradlew assembleDebug testDebugUnitTest
+        run: ./gradlew assembleDebug testDebugUnitTest --parallel
 
       - name: Upload test report (HTML)
         if: always()
@@ -57,8 +50,7 @@ jobs:
         with:
           name: test-results-html
           path: |
-            app/build/reports/tests/testDebugUnitTest/
-            wear/build/reports/tests/testDebugUnitTest/
+            **/build/reports/tests/testDebugUnitTest/
           retention-days: 14
 
       - name: Publish unit test results
@@ -82,6 +74,17 @@ jobs:
           java-version: 21
           distribution: temurin
       - uses: gradle/actions/setup-gradle@v4
+
+      - name: Cache Android SDK
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.android/sdk
+            ~/.android/cache
+          key: android-sdk-${{ runner.os }}-${{ hashFiles('**/build.gradle.kts', '**/libs.versions.toml') }}
+          restore-keys: |
+            android-sdk-${{ runner.os }}-
+
       - name: Make gradlew executable
         run: chmod +x gradlew
       - name: Path filter (changed modules)
@@ -126,6 +129,17 @@ jobs:
           java-version: 21
           distribution: temurin
       - uses: gradle/actions/setup-gradle@v4
+
+      - name: Cache Android SDK
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.android/sdk
+            ~/.android/cache
+          key: android-sdk-${{ runner.os }}-${{ hashFiles('**/build.gradle.kts', '**/libs.versions.toml') }}
+          restore-keys: |
+            android-sdk-${{ runner.os }}-
+
       - name: Make gradlew executable
         run: chmod +x gradlew
       - name: Remove local machine config (CI safe)

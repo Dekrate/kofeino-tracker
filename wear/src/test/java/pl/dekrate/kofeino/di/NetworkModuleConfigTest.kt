@@ -35,7 +35,7 @@ class NetworkModuleConfigTest {
 
     @Test
     fun `provideOkHttpClient should return non-null instance`() {
-        val client = NetworkModule.provideOkHttpClient(CustomDns)
+        val client = NetworkModule.provideOkHttpClient(CustomDns())
         assertNotNull("OkHttpClient must not be null", client)
     }
 
@@ -48,10 +48,4 @@ class NetworkModuleConfigTest {
         assertNotNull("CaffeineApiService must not be null", api)
     }
 
-    @Test
-    fun `provideCustomDns should return CustomDns instance`() {
-        val dns = NetworkModule.provideCustomDns()
-        assertNotNull("CustomDns must not be null", dns)
-        assertEquals(CustomDns, dns)
-    }
 }

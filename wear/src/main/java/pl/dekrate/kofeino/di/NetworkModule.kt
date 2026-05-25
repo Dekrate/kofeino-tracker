@@ -25,10 +25,6 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideCustomDns(): CustomDns = CustomDns
-
-    @Provides
-    @Singleton
     fun provideOkHttpClient(customDns: CustomDns): OkHttpClient {
         val logging = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BASIC
