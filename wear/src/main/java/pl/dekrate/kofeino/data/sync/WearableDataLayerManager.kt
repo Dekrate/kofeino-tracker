@@ -101,6 +101,7 @@ class WearableDataLayerManager @Inject constructor(
     @Suppress("InjectDispatcher", "TooGenericExceptionCaught")
     fun register() {
         if (isRegistered) return
+        scope.cancel()
         scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
         var successCount = 0

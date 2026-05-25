@@ -89,15 +89,20 @@ jobs:
               - 'app/**'
             wear:
               - 'wear/**'
+            common:
+              - 'common/**'
       - name: Run detekt (app)
         if: steps.filter.outputs.app == 'true'
         run: ./gradlew :app:detektMain
       - name: Run detekt (wear)
         if: steps.filter.outputs.wear == 'true'
         run: ./gradlew :wear:detektMain
+      - name: Run detekt (common)
+        if: steps.filter.outputs.common == 'true'
+        run: ./gradlew :common:detektMain
       - name: Run detekt (fallback — other changes)
-        if: steps.filter.outputs.app != 'true' && steps.filter.outputs.wear != 'true'
-        run: ./gradlew :app:detektMain :wear:detektMain
+        if: steps.filter.outputs.app != 'true' && steps.filter.outputs.wear != 'true' && steps.filter.outputs.common != 'true'
+        run: ./gradlew :app:detektMain :wear:detektMain :common:detektMain
       - uses: actions/upload-artifact@v4
         if: always()
         with:

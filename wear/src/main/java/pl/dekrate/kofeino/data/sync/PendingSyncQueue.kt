@@ -1,5 +1,6 @@
 package pl.dekrate.kofeino.data.sync
 
+import com.google.android.gms.wearable.CapabilityClient
 import com.google.android.gms.wearable.MessageClient
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
@@ -13,18 +14,18 @@ import javax.inject.Singleton
  *
  * ⚠ Mirror of the phone module — keep in sync.
  *
- * @param nodeId target node to send messages to.
- *               In production this is obtained via [CapabilityClient].
+ * Node resolution happens via [CapabilityClient.resolveNodeId].
  */
 @Singleton
 class PendingSyncQueue @Inject constructor(
     private val dao: PendingChangeDao,
     private val messageClient: MessageClient,
-    private val nodeId: String
+    private val capabilityClient: CapabilityClient
 ) {
     companion object {
         const val SYNC_PATH_PREFIX = "/sync"
         const val SYNC_PATH_FORMAT = "$SYNC_PATH_PREFIX/%s/%s"
+        const val SYNC_CAPABILITY_NAME = "caffeine_sync"
         private const val MAX_RETRIES = 5
         private const val FLUSH_BATCH_SIZE = 100
         private const val BACKOFF_BASE_MS = 1000L
@@ -87,6 +88,12 @@ class PendingSyncQueue @Inject constructor(
      * @return [FlushResult] summarising sent / failed counts.
      */
     suspend fun flush(): FlushResult {
+        val targetNodeId = resolveNodeId()
+        if (targetNodeId == null) {
+            Timber.d("No reachable sync node – skipping flush")
+            return FlushResult(0, 0)
+        }
+
         val pending = dao.getPendingChanges(limit = FLUSH_BATCH_SIZE)
         if (pending.isEmpty()) return FlushResult(0, 0)
 
@@ -104,7 +111,7 @@ class PendingSyncQueue @Inject constructor(
             dao.update(change.copy(status = PendingChangeEntity.STATUS_SENDING))
             val path = pathFor(change)
             try {
-                messageClient.sendMessage(nodeId, path, change.payload.toByteArray()).await()
+                messageClient.sendMessage(targetNodeId, path, change.payload.toByteArray()).await()
                 dao.delete(change)
                 sent++
                 Timber.d("Flushed %s id=%s → %s", change.entityType, change.entityId, path)
@@ -130,6 +137,15 @@ class PendingSyncQueue @Inject constructor(
 
         if (retryable.isEmpty()) return pendingResult
 
+        val targetNodeId = resolveNodeId()
+        if (targetNodeId == null) {
+            Timber.d("No reachable sync node – skipping retries")
+            return FlushResult(
+                sent = pendingResult.sent,
+                failed = pendingResult.failed + retryable.size
+            )
+        }
+
         var recovered = 0
         var stillFailed = 0
 
@@ -140,7 +156,7 @@ class PendingSyncQueue @Inject constructor(
             dao.update(change.copy(status = PendingChangeEntity.STATUS_SENDING))
             val path = pathFor(change)
             try {
-                messageClient.sendMessage(nodeId, path, change.payload.toByteArray()).await()
+                messageClient.sendMessage(targetNodeId, path, change.payload.toByteArray()).await()
                 dao.delete(change)
                 recovered++
                 Timber.d("Recovered %s id=%s → %s", change.entityType, change.entityId, path)
@@ -172,6 +188,20 @@ class PendingSyncQueue @Inject constructor(
     // ------------------------------------------------------------------
     // Internal helpers
     // ------------------------------------------------------------------
+
+    private suspend fun resolveNodeId(): String? {
+        return try {
+            val capabilityInfo = capabilityClient
+                .getCapability(SYNC_CAPABILITY_NAME, CapabilityClient.FILTER_REACHABLE)
+                .await()
+            capabilityInfo.nodes.firstOrNull()?.id
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: java.util.concurrent.ExecutionException) {
+            Timber.w(e, "Failed to resolve sync node")
+            null
+        }
+    }
 
     private fun pathFor(change: PendingChangeEntity): String =
         SYNC_PATH_FORMAT.format(Locale.ROOT, change.entityType, change.operationType.lowercase(Locale.ROOT))
