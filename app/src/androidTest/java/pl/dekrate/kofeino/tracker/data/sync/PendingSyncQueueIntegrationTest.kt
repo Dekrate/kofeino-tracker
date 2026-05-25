@@ -4,7 +4,10 @@ import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.android.gms.tasks.Task
+import com.google.android.gms.tasks.Tasks
+import com.google.android.gms.wearable.CapabilityClient
+import com.google.android.gms.wearable.CapabilityInfo
+import com.google.android.gms.wearable.Node
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -30,6 +33,7 @@ class PendingSyncQueueIntegrationTest {
     private lateinit var database: CaffeineDatabase
     private lateinit var dao: PendingChangeDao
     private lateinit var messageClient: com.google.android.gms.wearable.MessageClient
+    private lateinit var capabilityClient: CapabilityClient
     private lateinit var queue: PendingSyncQueue
 
     private val nodeId = "test-node"
@@ -43,12 +47,42 @@ class PendingSyncQueueIntegrationTest {
         ).build()
         dao = database.pendingChangeDao()
         messageClient = mockk()
-        queue = PendingSyncQueue(dao, messageClient, nodeId)
+        capabilityClient = mockk()
+        setupReachableNode(nodeId)
+        queue = PendingSyncQueue(dao, messageClient, capabilityClient)
     }
 
     @After
     fun tearDown() {
         database.close()
+    }
+
+    // ------------------------------------------------------------------
+    // Helpers
+    // ------------------------------------------------------------------
+
+    /** Simulate a reachable paired device with the given [nodeId]. */
+    private fun setupReachableNode(nodeId: String) {
+        val node = mockk<Node> {
+            every { id } returns nodeId
+            every { isNearby } returns true
+        }
+        val capabilityInfo = mockk<CapabilityInfo> {
+            every { nodes } returns setOf(node)
+        }
+        every { capabilityClient.getCapability(any(), any()) } returns Tasks.forResult(capabilityInfo)
+    }
+
+    /** Make [MessageClient.sendMessage] succeed. */
+    private fun setupSuccessfulMessage() {
+        every { messageClient.sendMessage(any(), any(), any()) } returns Tasks.forResult(0)
+    }
+
+    /** Simulate no reachable devices for the sync capability. */
+    private fun setupUnreachableNode() {
+        every {
+            capabilityClient.getCapability(any(), any())
+        } returns Tasks.forException<CapabilityInfo>(RuntimeException("Network error"))
     }
 
     // ------------------------------------------------------------------
@@ -95,11 +129,7 @@ class PendingSyncQueueIntegrationTest {
 
     @Test
     fun flushClearsQueueOnSuccess() = runTest {
-        // Need to make sendMessage succeed — use a mock task
-        val mockTask = mockk<Task<Int>>()
-        every { mockTask.isComplete } returns true
-        every { mockTask.result } returns 1
-        every { messageClient.sendMessage(nodeId, any(), any()) } returns mockTask
+        setupSuccessfulMessage()
 
         queue.enqueue("intake", "1", "INSERT", """{}""")
         queue.enqueue("intake", "2", "INSERT", """{}""")
@@ -118,7 +148,7 @@ class PendingSyncQueueIntegrationTest {
         queue.enqueue("intake", "1", "INSERT", """{"v":1}""")
 
         // After restart: new queue reads existing DAO
-        val queue2 = PendingSyncQueue(dao, messageClient, nodeId)
+        val queue2 = PendingSyncQueue(dao, messageClient, capabilityClient)
         assert(queue2.size() == 1) { "Expected 1 item after resuming, got ${queue2.size()}" }
 
         // Add more items
@@ -180,5 +210,31 @@ class PendingSyncQueueIntegrationTest {
         assert(pending[0].operationType == "UPDATE") {
             "Expected UPDATE, got ${pending[0].operationType}"
         }
+    }
+
+    // ------------------------------------------------------------------
+    // No reachable node edge cases
+    // ------------------------------------------------------------------
+
+    @Test
+    fun flushSkipsWhenNoReachableNode() = runTest {
+        setupUnreachableNode()
+
+        queue.enqueue("intake", "1", "INSERT", """{"caffeineMg":63}""")
+        queue.enqueue("intake", "2", "UPDATE", """{"caffeineMg":95}""")
+
+        // Items should remain in the queue (not deleted)
+        assert(dao.count() == 2) { "Expected 2 items still in queue, got ${dao.count()}" }
+
+        val result = queue.flush()
+
+        assert(result.sent == 0) { "Expected 0 sent when no reachable node, got ${result.sent}" }
+        assert(result.failed == 0) { "Expected 0 failed when no reachable node, got ${result.failed}" }
+
+        // Items should still be in the queue after skipped flush
+        assert(dao.count() == 2) { "Expected 2 items still in queue after flush, got ${dao.count()}" }
+
+        // No messages should have been attempted
+        verify(exactly = 0) { messageClient.sendMessage(any(), any(), any()) }
     }
 }

@@ -9,6 +9,7 @@ import pl.dekrate.kofeino.tracker.data.local.OfficialDrinkCacheDao
 import pl.dekrate.kofeino.tracker.data.sync.ConflictLogDao
 import pl.dekrate.kofeino.tracker.data.sync.PendingChangeDao
 import pl.dekrate.kofeino.tracker.data.sync.PendingSyncQueue
+import com.google.android.gms.wearable.CapabilityClient
 import com.google.android.gms.wearable.MessageClient
 import dagger.Module
 import dagger.Provides
@@ -72,11 +73,10 @@ object DatabaseModule {
     @Singleton
     fun providePendingSyncQueue(
         dao: PendingChangeDao,
-        messageClient: MessageClient
+        messageClient: MessageClient,
+        capabilityClient: CapabilityClient
     ): PendingSyncQueue {
-        // nodeId is a placeholder; the real node id is resolved at runtime
-        // via CapabilityClient before flush() is called.
-        return PendingSyncQueue(dao, messageClient, nodeId = "")
+        return PendingSyncQueue(dao, messageClient, capabilityClient)
     }
 
     private fun seedDatabaseCallback(context: Context) = object : androidx.room.RoomDatabase.Callback() {

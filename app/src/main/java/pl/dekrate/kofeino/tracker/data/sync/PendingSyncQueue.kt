@@ -1,5 +1,6 @@
 package pl.dekrate.kofeino.tracker.data.sync
 
+import com.google.android.gms.wearable.CapabilityClient
 import com.google.android.gms.wearable.MessageClient
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
@@ -17,22 +18,19 @@ import javax.inject.Singleton
  * - **Retry** – exponential backoff (1s, 2s, 4s, 8s, 16s) then FAILED at max 5.
  * - **Persistence** – Room storage ensures the queue survives app restarts.
  *
- * @param nodeId target Wear OS node to send messages to.
- *               In production this is obtained via [CapabilityClient].
+ * Node resolution happens via [CapabilityClient.resolveNodeId] at flush time,
+ * ensuring the target node is always current and reachable.
  */
 @Singleton
 class PendingSyncQueue @Inject constructor(
     private val dao: PendingChangeDao,
     private val messageClient: MessageClient,
-    private val nodeId: String
+    private val capabilityClient: CapabilityClient
 ) {
-    /**
-     * Wire path prefix for sync messages.
-     * Each message is sent as   /sync/<entityType>/<operationType>
-     */
     companion object {
         const val SYNC_PATH_PREFIX = "/sync"
         const val SYNC_PATH_FORMAT = "$SYNC_PATH_PREFIX/%s/%s"
+        const val SYNC_CAPABILITY_NAME = "caffeine_sync"
 
         /** Maximum send attempts before a change is permanently marked FAILED. */
         private const val MAX_RETRIES = 5
@@ -99,9 +97,17 @@ class PendingSyncQueue @Inject constructor(
      *              (1s, 2s, 4s, 8s, 16s), and if it reaches [MAX_RETRIES] the
      *              change is marked FAILED and will not be retried again.
      *
+     * If no reachable sync node is found, the flush is skipped gracefully.
+     *
      * @return [FlushResult] summarising sent / failed counts.
      */
     suspend fun flush(): FlushResult {
+        val targetNodeId = resolveNodeId()
+        if (targetNodeId == null) {
+            Timber.d("No reachable sync node – skipping flush")
+            return FlushResult(0, 0)
+        }
+
         val pending = dao.getPendingChanges(limit = FLUSH_BATCH_SIZE)
         if (pending.isEmpty()) return FlushResult(0, 0)
 
@@ -120,7 +126,7 @@ class PendingSyncQueue @Inject constructor(
             dao.update(change.copy(status = PendingChangeEntity.STATUS_SENDING))
             val path = pathFor(change)
             try {
-                messageClient.sendMessage(nodeId, path, change.payload.toByteArray()).await()
+                messageClient.sendMessage(targetNodeId, path, change.payload.toByteArray()).await()
                 dao.delete(change)
                 sent++
                 Timber.d("Flushed %s id=%s → %s", change.entityType, change.entityId, path)
@@ -148,6 +154,15 @@ class PendingSyncQueue @Inject constructor(
 
         if (retryable.isEmpty()) return pendingResult
 
+        val targetNodeId = resolveNodeId()
+        if (targetNodeId == null) {
+            Timber.d("No reachable sync node – skipping retries")
+            return FlushResult(
+                sent = pendingResult.sent,
+                failed = pendingResult.failed + retryable.size
+            )
+        }
+
         var recovered = 0
         var stillFailed = 0
 
@@ -158,7 +173,7 @@ class PendingSyncQueue @Inject constructor(
             dao.update(change.copy(status = PendingChangeEntity.STATUS_SENDING))
             val path = pathFor(change)
             try {
-                messageClient.sendMessage(nodeId, path, change.payload.toByteArray()).await()
+                messageClient.sendMessage(targetNodeId, path, change.payload.toByteArray()).await()
                 dao.delete(change)
                 recovered++
                 Timber.d("Recovered %s id=%s → %s", change.entityType, change.entityId, path)
@@ -190,6 +205,26 @@ class PendingSyncQueue @Inject constructor(
     // ------------------------------------------------------------------
     // Internal helpers
     // ------------------------------------------------------------------
+
+    /**
+     * Resolve the target node ID by querying the [CapabilityClient] for
+     * reachable nodes that advertise the [SYNC_CAPABILITY_NAME] capability.
+     *
+     * @return the first reachable node ID, or `null` if none are available.
+     */
+    private suspend fun resolveNodeId(): String? {
+        return try {
+            val capabilityInfo = capabilityClient
+                .getCapability(SYNC_CAPABILITY_NAME, CapabilityClient.FILTER_REACHABLE)
+                .await()
+            capabilityInfo.nodes.firstOrNull()?.id
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: java.util.concurrent.ExecutionException) {
+            Timber.w(e, "Failed to resolve sync node")
+            null
+        }
+    }
 
     /**
      * Build the Wear message path from a change:
