@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 import pl.dekrate.kofeino.common.domain.model.DrinkEntity
 import pl.dekrate.kofeino.common.domain.model.OfficialDrink
 import pl.dekrate.kofeino.common.domain.repository.OfficialDrinkRepository
-import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepository
+import pl.dekrate.kofeino.common.domain.repository.CaffeineRepository
 import timber.log.Timber
 import javax.inject.Inject
 

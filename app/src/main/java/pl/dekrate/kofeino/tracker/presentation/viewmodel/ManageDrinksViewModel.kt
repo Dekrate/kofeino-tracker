@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepository
+import pl.dekrate.kofeino.common.domain.repository.CaffeineRepository
 import pl.dekrate.kofeino.common.domain.model.DrinkEntity
 import timber.log.Timber
 import javax.inject.Inject

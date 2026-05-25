@@ -57,4 +57,27 @@ class OpenFoodFactsConfigTest {
         assertTrue(OpenFoodFactsConfig.RATE_LIMIT_CIRCUIT_BREAKER_THRESHOLD > 0)
         assertTrue(OpenFoodFactsConfig.RATE_LIMIT_RETRY_DELAY_MS > 0)
     }
+    @Test fun `PATH_SEARCH_V1 should be correct`() {
+        assertEquals("cgi/search.pl", OpenFoodFactsConfig.PATH_SEARCH_V1)
+        assertTrue(OpenFoodFactsConfig.PATH_SEARCH_V1.isNotBlank())
+    }
+    @Test fun `PATH_SEARCH_V1_FROM_V2 should be relative path`() {
+        assertEquals("../../cgi/search.pl", OpenFoodFactsConfig.PATH_SEARCH_V1_FROM_V2)
+        assertTrue(OpenFoodFactsConfig.PATH_SEARCH_V1_FROM_V2.startsWith("../"))
+    }
+    @Test fun `PATH_PRODUCT_V0 should have barcode placeholder`() {
+        assertEquals("api/v0/product/{barcode}.json", OpenFoodFactsConfig.PATH_PRODUCT_V0)
+        assertTrue(OpenFoodFactsConfig.PATH_PRODUCT_V0.contains("{barcode}"))
+    }
+    @Test fun `CGI_FIELDS should contain required fields`() {
+        assertEquals("code,product_name,brands,product_quantity,nutriments", OpenFoodFactsConfig.CGI_FIELDS)
+        assertTrue(OpenFoodFactsConfig.CGI_FIELDS.contains("product_name"))
+        assertTrue(OpenFoodFactsConfig.CGI_FIELDS.contains("nutriments"))
+        assertTrue(OpenFoodFactsConfig.CGI_FIELDS.contains("code"))
+        assertTrue(OpenFoodFactsConfig.CGI_FIELDS.contains("product_quantity"))
+    }
+    @Test fun `CGI_PAGE_SIZE should be positive`() {
+        assertEquals(25, OpenFoodFactsConfig.CGI_PAGE_SIZE)
+        assertTrue(OpenFoodFactsConfig.CGI_PAGE_SIZE > 0)
+    }
 }

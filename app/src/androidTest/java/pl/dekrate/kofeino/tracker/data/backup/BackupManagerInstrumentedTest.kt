@@ -19,7 +19,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import pl.dekrate.kofeino.tracker.data.local.CaffeineDatabase
 import pl.dekrate.kofeino.tracker.data.local.DataStorePreferences
-import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepository
+import pl.dekrate.kofeino.common.domain.repository.CaffeineRepository
 import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepositoryImpl
 import pl.dekrate.kofeino.common.domain.model.CaffeineIntake
 import pl.dekrate.kofeino.common.domain.model.DrinkEntity

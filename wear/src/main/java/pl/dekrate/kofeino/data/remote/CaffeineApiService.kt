@@ -9,7 +9,7 @@ import retrofit2.http.Query
 /**
  * Retrofit service for Open Food Facts API.
  *
- * Base URL is configured in [OpenFoodFactsConfig.V2_BASE_URL].
+ * Base URL is configured in [CommonOpenFoodFactsConfig.V2_BASE_URL].
  * All endpoint paths resolve against that canonical base URL.
  *
  * Documentation: https://openfoodfacts.github.io/openfoodfacts-server/api/
@@ -25,7 +25,7 @@ interface CaffeineApiService {
     suspend fun searchBeveragesWithCaffeine(
         @Query("categories_tags_en") categories: String = "en:beverages",
         @Query("caffeine_100g") caffeineFilter: String = ">0",
-        @Query("page_size") pageSize: Int = OpenFoodFactsConfig.DEFAULT_PAGE_SIZE,
+        @Query("page_size") pageSize: Int = 30,
         @Query("page") page: Int = 1,
         @Query("fields") fields: String = CommonOpenFoodFactsConfig.V2_FIELDS
     ): OpenFoodFactsSearchResponse
@@ -51,7 +51,7 @@ interface CaffeineApiService {
      * @param locale Language (pl, en, fr, de...)
      * @param country Country (PL, US, FR, DE...)
      */
-    @GET(OpenFoodFactsConfig.PATH_SEARCH_V1)
+    @GET(CommonOpenFoodFactsConfig.PATH_SEARCH_V1_FROM_V2)
     suspend fun searchProducts(
         @Query("search_terms") query: String,
         @Query("json") json: Int = 1,

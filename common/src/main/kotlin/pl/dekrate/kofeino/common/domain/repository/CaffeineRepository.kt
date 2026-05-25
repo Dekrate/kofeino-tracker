@@ -36,4 +36,56 @@ interface CaffeineRepository {
     // --- Search & Recent ---
     fun searchDrinks(query: String): Flow<List<DrinkEntity>>
     fun getRecentIntakes(limit: Int = 5): Flow<List<CaffeineIntake>>
+
+    // --- Backup / Snapshot operations (phone-specific, default throws) ---
+    /**
+     * Returns all intakes as a non-observable snapshot.
+     * Used by backup/restore operations on phone.
+     * @throws UnsupportedOperationException on devices that don't support backup.
+     */
+    suspend fun getAllIntakesSnapshot(): List<CaffeineIntake> =
+        throw UnsupportedOperationException("Backup operations not supported on this device")
+
+    /**
+     * Returns all drinks as a non-observable snapshot.
+     * Used by backup/restore operations on phone.
+     * @throws UnsupportedOperationException on devices that don't support backup.
+     */
+    suspend fun getAllDrinksSnapshot(): List<DrinkEntity> =
+        throw UnsupportedOperationException("Backup operations not supported on this device")
+
+    /**
+     * Returns all intake IDs for conflict resolution during restore.
+     * @throws UnsupportedOperationException on devices that don't support backup.
+     */
+    suspend fun getAllIntakeIds(): List<Long> =
+        throw UnsupportedOperationException("Backup operations not supported on this device")
+
+    /**
+     * Returns all drink names for conflict resolution during restore.
+     * @throws UnsupportedOperationException on devices that don't support backup.
+     */
+    suspend fun getAllDrinkNames(): List<String> =
+        throw UnsupportedOperationException("Backup operations not supported on this device")
+
+    /**
+     * Bulk-insert intakes atomically (part of backup restore).
+     * @throws UnsupportedOperationException on devices that don't support backup.
+     */
+    suspend fun bulkInsertIntakes(intakes: List<CaffeineIntake>): Unit =
+        throw UnsupportedOperationException("Backup operations not supported on this device")
+
+    /**
+     * Bulk-insert drinks atomically (part of backup restore).
+     * @throws UnsupportedOperationException on devices that don't support backup.
+     */
+    suspend fun bulkInsertDrinks(drinks: List<DrinkEntity>): Unit =
+        throw UnsupportedOperationException("Backup operations not supported on this device")
+
+    /**
+     * Atomically import intakes and drinks in a single transaction (backup restore).
+     * @throws UnsupportedOperationException on devices that don't support backup.
+     */
+    suspend fun importAllAtomic(intakes: List<CaffeineIntake>, drinks: List<DrinkEntity>): Unit =
+        throw UnsupportedOperationException("Backup operations not supported on this device")
 }

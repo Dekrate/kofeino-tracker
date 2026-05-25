@@ -9,6 +9,7 @@ import pl.dekrate.kofeino.tracker.data.sync.RealTimeSyncService
 import pl.dekrate.kofeino.tracker.data.sync.SyncPayloadSerializer
 import pl.dekrate.kofeino.common.domain.model.CaffeineIntake as CommonCaffeineIntake
 import pl.dekrate.kofeino.common.domain.model.DrinkEntity as CommonDrinkEntity
+import pl.dekrate.kofeino.common.domain.repository.CaffeineRepository as CommonCaffeineRepository
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -27,7 +28,7 @@ class CaffeineRepositoryImpl @Inject constructor(
     private val drinkDao: DrinkDao,
     private val database: CaffeineDatabase,
     private val realTimeSyncService: RealTimeSyncService,
-) : CaffeineRepository {
+) : CommonCaffeineRepository {
 
     private val sourceDeviceId = "phone"
 

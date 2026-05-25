@@ -21,7 +21,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import pl.dekrate.kofeino.tracker.data.local.DataStorePreferences
-import pl.dekrate.kofeino.tracker.data.repository.CaffeineRepository
+import pl.dekrate.kofeino.common.domain.repository.CaffeineRepository
 import timber.log.Timber
 import java.util.Calendar
 import javax.inject.Inject
