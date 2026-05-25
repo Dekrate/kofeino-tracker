@@ -48,6 +48,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import pl.dekrate.kofeino.tracker.R
+import pl.dekrate.kofeino.tracker.data.sync.SyncStatusTracker
 import pl.dekrate.kofeino.tracker.data.local.CaffeineLimitProfile
 import pl.dekrate.kofeino.tracker.data.local.DataStorePreferences
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.BackupUiState
@@ -90,6 +91,7 @@ private fun SettingsViewModel.toSettingsActionHandler(): (SettingsAction) -> Uni
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
+    syncStatusTracker: SyncStatusTracker,
     onNavigateBack: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
@@ -160,6 +162,9 @@ fun SettingsScreen(
                     IconButton(onClick = onNavigateBack, modifier = Modifier.semantics { contentDescription = backDesc }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = backDesc, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
+                },
+                actions = {
+                    SyncStatusChip(syncStatusTracker = syncStatusTracker)
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface, titleContentColor = MaterialTheme.colorScheme.onSurface)
             )

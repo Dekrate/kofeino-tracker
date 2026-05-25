@@ -46,6 +46,9 @@ class WearableDataLayerManagerTest {
     @MockK
     private lateinit var incomingSyncProcessor: IncomingSyncProcessor
 
+    @MockK
+    private lateinit var syncStatusTracker: SyncStatusTracker
+
     private lateinit var manager: WearableDataLayerManager
 
     @Before
@@ -58,7 +61,7 @@ class WearableDataLayerManagerTest {
         every { capabilityClient.addListener(any<CapabilityClient.OnCapabilityChangedListener>(), any<String>()) } returns mockk()
         every { capabilityClient.removeListener(any<CapabilityClient.OnCapabilityChangedListener>()) } returns mockk()
 
-        manager = WearableDataLayerManager(dataClient, messageClient, capabilityClient, incomingSyncProcessor)
+        manager = WearableDataLayerManager(dataClient, messageClient, capabilityClient, incomingSyncProcessor, syncStatusTracker)
     }
 
     @After

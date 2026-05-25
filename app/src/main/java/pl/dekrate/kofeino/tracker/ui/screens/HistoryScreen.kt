@@ -41,6 +41,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import pl.dekrate.kofeino.tracker.R
+import pl.dekrate.kofeino.tracker.data.sync.SyncStatusTracker
 import pl.dekrate.kofeino.common.domain.model.CaffeineIntake
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.HistoryUiState
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.HistoryViewModel
@@ -51,6 +52,7 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryScreen(
+    syncStatusTracker: SyncStatusTracker,
     onEditIntake: (Long) -> Unit,
     viewModel: HistoryViewModel = hiltViewModel()
 ) {
@@ -81,6 +83,9 @@ fun HistoryScreen(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.history_title)) },
+                actions = {
+                    SyncStatusChip(syncStatusTracker = syncStatusTracker)
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
                     titleContentColor = MaterialTheme.colorScheme.onSurface

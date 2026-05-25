@@ -21,6 +21,8 @@ import pl.dekrate.kofeino.tracker.R
 import pl.dekrate.kofeino.common.domain.model.DrinkEntity
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.DrinkUiState
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.DrinkViewModel
+import pl.dekrate.kofeino.common.sync.SyncStatus
+import pl.dekrate.kofeino.tracker.data.sync.SyncStatusTracker
 import pl.dekrate.kofeino.tracker.ui.theme.KofeinoTrackerPhoneTheme
 
 class AddDrinkScreenTest {
@@ -36,6 +38,7 @@ class AddDrinkScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 AddDrinkScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeViewModel
                 )
@@ -56,6 +59,7 @@ class AddDrinkScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 AddDrinkScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeViewModel
                 )
@@ -76,6 +80,7 @@ class AddDrinkScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 AddDrinkScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeViewModel
                 )
@@ -106,6 +111,7 @@ class AddDrinkScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 AddDrinkScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeViewModel
                 )
@@ -133,6 +139,7 @@ class AddDrinkScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 AddDrinkScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeViewModel
                 )
@@ -176,6 +183,7 @@ class AddDrinkScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 AddDrinkScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeViewModel
                 )
@@ -213,6 +221,7 @@ class AddDrinkScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 AddDrinkScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeViewModel
                 )
@@ -250,6 +259,7 @@ class AddDrinkScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 AddDrinkScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeViewModel
                 )
@@ -296,6 +306,7 @@ class AddDrinkScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 AddDrinkScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeViewModel
                 )
@@ -337,6 +348,7 @@ class AddDrinkScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 AddDrinkScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeViewModel
                 )
@@ -374,6 +386,7 @@ class AddDrinkScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 AddDrinkScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeViewModel
                 )
@@ -404,6 +417,7 @@ class AddDrinkScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 AddDrinkScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeViewModel
                 )
@@ -420,6 +434,7 @@ class AddDrinkScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 AddDrinkScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeViewModel
                 )
@@ -433,5 +448,12 @@ class AddDrinkScreenTest {
         every { vm.allDrinks } returns MutableStateFlow(drinks) as StateFlow<List<DrinkEntity>>
         every { vm.uiState } returns MutableStateFlow(DrinkUiState()) as StateFlow<DrinkUiState>
         return vm
+    }
+
+    private fun createFakeSyncStatusTracker(): SyncStatusTracker {
+        val tracker = mockk<SyncStatusTracker>(relaxed = true)
+        val statusFlow = MutableStateFlow<SyncStatus>(SyncStatus.AwaitingDevice)
+        every { tracker.status } returns statusFlow
+        return tracker
     }
 }

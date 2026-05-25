@@ -18,6 +18,8 @@ import pl.dekrate.kofeino.tracker.R
 import pl.dekrate.kofeino.common.domain.model.OfficialDrink
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.OfficialDrinksUiState
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.OfficialDrinksViewModel
+import pl.dekrate.kofeino.common.sync.SyncStatus
+import pl.dekrate.kofeino.tracker.data.sync.SyncStatusTracker
 import pl.dekrate.kofeino.tracker.ui.theme.KofeinoTrackerPhoneTheme
 
 class OfficialDrinksScreenTest {
@@ -35,6 +37,7 @@ class OfficialDrinksScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 OfficialDrinksScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -49,6 +52,7 @@ class OfficialDrinksScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 OfficialDrinksScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -63,6 +67,7 @@ class OfficialDrinksScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 OfficialDrinksScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -77,6 +82,7 @@ class OfficialDrinksScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 OfficialDrinksScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -93,6 +99,7 @@ class OfficialDrinksScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 OfficialDrinksScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -110,6 +117,7 @@ class OfficialDrinksScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 OfficialDrinksScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -129,6 +137,7 @@ class OfficialDrinksScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 OfficialDrinksScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -143,6 +152,7 @@ class OfficialDrinksScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 OfficialDrinksScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -165,6 +175,7 @@ class OfficialDrinksScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 OfficialDrinksScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -185,6 +196,7 @@ class OfficialDrinksScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 OfficialDrinksScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -206,6 +218,7 @@ class OfficialDrinksScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 OfficialDrinksScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -229,6 +242,7 @@ class OfficialDrinksScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 OfficialDrinksScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -253,6 +267,7 @@ class OfficialDrinksScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 OfficialDrinksScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -275,6 +290,7 @@ class OfficialDrinksScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 OfficialDrinksScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -294,6 +310,7 @@ class OfficialDrinksScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 OfficialDrinksScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -315,6 +332,7 @@ class OfficialDrinksScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 OfficialDrinksScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -335,6 +353,7 @@ class OfficialDrinksScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 OfficialDrinksScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -353,6 +372,7 @@ class OfficialDrinksScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 OfficialDrinksScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = { navigated = true },
                     viewModel = fakeVm
                 )
@@ -375,6 +395,7 @@ class OfficialDrinksScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 OfficialDrinksScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -392,6 +413,7 @@ class OfficialDrinksScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 OfficialDrinksScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -408,6 +430,7 @@ class OfficialDrinksScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 OfficialDrinksScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -424,5 +447,12 @@ class OfficialDrinksScreenTest {
         val vm = mockk<OfficialDrinksViewModel>(relaxed = true)
         every { vm.uiState } returns MutableStateFlow(state) as StateFlow<OfficialDrinksUiState>
         return vm
+    }
+
+    private fun createFakeSyncStatusTracker(): SyncStatusTracker {
+        val tracker = mockk<SyncStatusTracker>(relaxed = true)
+        val statusFlow = MutableStateFlow<SyncStatus>(SyncStatus.AwaitingDevice)
+        every { tracker.status } returns statusFlow
+        return tracker
     }
 }

@@ -18,6 +18,8 @@ import pl.dekrate.kofeino.tracker.data.local.LanguagePreferences
 import pl.dekrate.kofeino.tracker.data.local.ThemePreferences
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.SettingsUiState
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.SettingsViewModel
+import pl.dekrate.kofeino.common.sync.SyncStatus
+import pl.dekrate.kofeino.tracker.data.sync.SyncStatusTracker
 import pl.dekrate.kofeino.tracker.ui.theme.KofeinoTrackerPhoneTheme
 
 class SettingsScreenTest {
@@ -35,6 +37,7 @@ class SettingsScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 SettingsScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -50,6 +53,7 @@ class SettingsScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 SettingsScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -67,6 +71,7 @@ class SettingsScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 SettingsScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -82,6 +87,7 @@ class SettingsScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 SettingsScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -97,6 +103,7 @@ class SettingsScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 SettingsScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -114,6 +121,7 @@ class SettingsScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 SettingsScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -129,6 +137,7 @@ class SettingsScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 SettingsScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -144,6 +153,7 @@ class SettingsScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 SettingsScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -159,6 +169,7 @@ class SettingsScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 SettingsScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -176,6 +187,7 @@ class SettingsScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 SettingsScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -191,6 +203,7 @@ class SettingsScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 SettingsScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -212,6 +225,7 @@ class SettingsScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 SettingsScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -232,6 +246,7 @@ class SettingsScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 SettingsScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -252,6 +267,7 @@ class SettingsScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 SettingsScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -274,6 +290,7 @@ class SettingsScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 SettingsScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -294,6 +311,7 @@ class SettingsScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 SettingsScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -314,6 +332,7 @@ class SettingsScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 SettingsScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -333,6 +352,7 @@ class SettingsScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 SettingsScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = { navigated = true },
                     viewModel = fakeVm
                 )
@@ -351,6 +371,7 @@ class SettingsScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 SettingsScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -366,6 +387,7 @@ class SettingsScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 SettingsScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -381,6 +403,7 @@ class SettingsScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 SettingsScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -397,6 +420,7 @@ class SettingsScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 SettingsScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -413,6 +437,7 @@ class SettingsScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 SettingsScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -428,6 +453,7 @@ class SettingsScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 SettingsScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -443,6 +469,7 @@ class SettingsScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 SettingsScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -460,6 +487,7 @@ class SettingsScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 SettingsScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -475,6 +503,7 @@ class SettingsScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 SettingsScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -490,6 +519,7 @@ class SettingsScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 SettingsScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -511,6 +541,7 @@ class SettingsScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 SettingsScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     onNavigateBack = {},
                     viewModel = fakeVm
                 )
@@ -534,5 +565,12 @@ class SettingsScreenTest {
         val vm = mockk<SettingsViewModel>(relaxed = true)
         every { vm.uiState } returns MutableStateFlow(state) as StateFlow<SettingsUiState>
         return vm
+    }
+
+    private fun createFakeSyncStatusTracker(): SyncStatusTracker {
+        val tracker = mockk<SyncStatusTracker>(relaxed = true)
+        val statusFlow = MutableStateFlow<SyncStatus>(SyncStatus.AwaitingDevice)
+        every { tracker.status } returns statusFlow
+        return tracker
     }
 }

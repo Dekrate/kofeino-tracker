@@ -4,15 +4,25 @@ import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.wear.compose.material3.AppScaffold
 import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
 import dagger.hilt.android.AndroidEntryPoint
+import pl.dekrate.kofeino.data.sync.SyncStatusTracker
 import pl.dekrate.kofeino.presentation.navigation.WearNavHost
+import pl.dekrate.kofeino.presentation.screens.SyncStatusIndicator
 import pl.dekrate.kofeino.presentation.theme.KofeinoTrackerTheme
 import pl.dekrate.kofeino.presentation.util.LocaleHelper
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var syncStatusTracker: SyncStatusTracker
 
     override fun attachBaseContext(newBase: Context) {
         super.attachBaseContext(LocaleHelper.applyLocale(newBase))
@@ -26,7 +36,16 @@ class MainActivity : ComponentActivity() {
             KofeinoTrackerTheme {
                 AppScaffold {
                     val navController = rememberSwipeDismissableNavController()
-                    WearNavHost(navController = navController)
+
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        WearNavHost(navController = navController)
+
+                        // Sync status dot in the top-end corner
+                        SyncStatusIndicator(
+                            syncStatusTracker = syncStatusTracker,
+                            modifier = Modifier.align(Alignment.TopEnd)
+                        )
+                    }
                 }
             }
         }

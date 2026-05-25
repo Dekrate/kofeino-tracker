@@ -53,6 +53,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import pl.dekrate.kofeino.tracker.R
+import pl.dekrate.kofeino.tracker.data.sync.SyncStatusTracker
 import pl.dekrate.kofeino.common.domain.model.OfficialDrink
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.OfficialDrinksError
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.OfficialDrinksViewModel
@@ -60,6 +61,7 @@ import pl.dekrate.kofeino.tracker.presentation.viewmodel.OfficialDrinksViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OfficialDrinksScreen(
+    syncStatusTracker: SyncStatusTracker,
     onNavigateBack: () -> Unit,
     viewModel: OfficialDrinksViewModel = hiltViewModel()
 ) {
@@ -105,6 +107,9 @@ fun OfficialDrinksScreen(
                             contentDescription = stringResource(R.string.back)
                         )
                     }
+                },
+                actions = {
+                    SyncStatusChip(syncStatusTracker = syncStatusTracker)
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface

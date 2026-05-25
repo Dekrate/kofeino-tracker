@@ -7,6 +7,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import pl.dekrate.kofeino.tracker.data.sync.SyncStatusTracker
 import pl.dekrate.kofeino.tracker.ui.screens.AddDrinkScreen
 import pl.dekrate.kofeino.tracker.ui.screens.EditIntakeScreen
 import pl.dekrate.kofeino.tracker.ui.screens.HistoryScreen
@@ -18,6 +19,7 @@ import pl.dekrate.kofeino.tracker.ui.screens.SettingsScreen
 @Composable
 fun AppNavHost(
     navController: NavHostController,
+    syncStatusTracker: SyncStatusTracker,
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -26,23 +28,17 @@ fun AppNavHost(
         modifier = modifier
     ) {
         composable(Screen.Home.route) {
-            HomeScreen(
-                onNavigateToAddDrink = { navController.navigate(Screen.AddDrink.route) },
-                onNavigateToHistory = { navController.navigate(Screen.History.route) },
-                onNavigateToManageDrinks = { navController.navigate(Screen.ManageDrinks.route) },
-                onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
-                onEditIntake = { intakeId ->
-                    navController.navigate(Screen.editIntake(intakeId))
-                }
-            )
+            HomeRoute(navController = navController, syncStatusTracker = syncStatusTracker)
         }
         composable(Screen.AddDrink.route) {
             AddDrinkScreen(
+                syncStatusTracker = syncStatusTracker,
                 onNavigateBack = { navController.popBackStack() }
             )
         }
         composable(Screen.History.route) {
             HistoryScreen(
+                syncStatusTracker = syncStatusTracker,
                 onEditIntake = { intakeId ->
                     navController.navigate(Screen.editIntake(intakeId))
                 }
@@ -50,12 +46,14 @@ fun AppNavHost(
         }
         composable(Screen.ManageDrinks.route) {
             ManageDrinksScreen(
+                syncStatusTracker = syncStatusTracker,
                 onNavigateToOfficialDrinks = { navController.navigate(Screen.OfficialDrinks.route) },
                 onNavigateBack = { navController.popBackStack() }
             )
         }
         composable(Screen.OfficialDrinks.route) {
             OfficialDrinksScreen(
+                syncStatusTracker = syncStatusTracker,
                 onNavigateBack = { navController.popBackStack() }
             )
         }
@@ -68,13 +66,34 @@ fun AppNavHost(
             val intakeId = backStackEntry.arguments?.getLong(Screen.ARG_INTAKE_ID) ?: 0L
             EditIntakeScreen(
                 intakeId = intakeId,
+                syncStatusTracker = syncStatusTracker,
                 onNavigateBack = { navController.popBackStack() }
             )
         }
         composable(Screen.Settings.route) {
-            SettingsScreen(
-                onNavigateBack = { navController.popBackStack() }
-            )
+            SettingsRoute(navController = navController, syncStatusTracker = syncStatusTracker)
         }
     }
+}
+
+@Composable
+private fun HomeRoute(navController: NavHostController, syncStatusTracker: SyncStatusTracker) {
+    HomeScreen(
+        syncStatusTracker = syncStatusTracker,
+        onNavigateToAddDrink = { navController.navigate(Screen.AddDrink.route) },
+        onNavigateToHistory = { navController.navigate(Screen.History.route) },
+        onNavigateToManageDrinks = { navController.navigate(Screen.ManageDrinks.route) },
+        onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
+        onEditIntake = { intakeId ->
+            navController.navigate(Screen.editIntake(intakeId))
+        }
+    )
+}
+
+@Composable
+private fun SettingsRoute(navController: NavHostController, syncStatusTracker: SyncStatusTracker) {
+    SettingsScreen(
+        syncStatusTracker = syncStatusTracker,
+        onNavigateBack = { navController.popBackStack() }
+    )
 }

@@ -18,6 +18,8 @@ import pl.dekrate.kofeino.tracker.R
 import pl.dekrate.kofeino.common.domain.model.CaffeineIntake
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.EditIntakeUiState
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.EditIntakeViewModel
+import pl.dekrate.kofeino.common.sync.SyncStatus
+import pl.dekrate.kofeino.tracker.data.sync.SyncStatusTracker
 import pl.dekrate.kofeino.tracker.ui.theme.KofeinoTrackerPhoneTheme
 
 class EditIntakeScreenTest {
@@ -35,6 +37,7 @@ class EditIntakeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 EditIntakeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     intakeId = 1L,
                     onNavigateBack = {},
                     viewModel = fakeVm
@@ -53,6 +56,7 @@ class EditIntakeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 EditIntakeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     intakeId = 1L,
                     onNavigateBack = {},
                     viewModel = fakeVm
@@ -71,6 +75,7 @@ class EditIntakeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 EditIntakeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     intakeId = 1L,
                     onNavigateBack = {},
                     viewModel = fakeVm
@@ -89,6 +94,7 @@ class EditIntakeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 EditIntakeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     intakeId = 1L,
                     onNavigateBack = {},
                     viewModel = fakeVm
@@ -107,6 +113,7 @@ class EditIntakeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 EditIntakeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     intakeId = 1L,
                     onNavigateBack = {},
                     viewModel = fakeVm
@@ -128,6 +135,7 @@ class EditIntakeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 EditIntakeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     intakeId = 1L,
                     onNavigateBack = {},
                     viewModel = fakeVm
@@ -146,6 +154,7 @@ class EditIntakeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 EditIntakeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     intakeId = 999L,
                     onNavigateBack = {},
                     viewModel = fakeVm
@@ -168,6 +177,7 @@ class EditIntakeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 EditIntakeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     intakeId = 1L,
                     onNavigateBack = {},
                     viewModel = fakeVm
@@ -189,6 +199,7 @@ class EditIntakeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 EditIntakeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     intakeId = 1L,
                     onNavigateBack = {},
                     viewModel = fakeVm
@@ -210,6 +221,7 @@ class EditIntakeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 EditIntakeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     intakeId = 1L,
                     onNavigateBack = {},
                     viewModel = fakeVm
@@ -231,6 +243,7 @@ class EditIntakeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 EditIntakeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     intakeId = 1L,
                     onNavigateBack = {},
                     viewModel = fakeVm
@@ -252,6 +265,7 @@ class EditIntakeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 EditIntakeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     intakeId = 1L,
                     onNavigateBack = {},
                     viewModel = fakeVm
@@ -274,6 +288,7 @@ class EditIntakeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 EditIntakeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     intakeId = 1L,
                     onNavigateBack = {},
                     viewModel = fakeVm
@@ -296,6 +311,7 @@ class EditIntakeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 EditIntakeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     intakeId = 1L,
                     onNavigateBack = {},
                     viewModel = fakeVm
@@ -320,6 +336,7 @@ class EditIntakeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 EditIntakeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     intakeId = 1L,
                     onNavigateBack = {},
                     viewModel = fakeVm
@@ -343,6 +360,7 @@ class EditIntakeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 EditIntakeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     intakeId = 1L,
                     onNavigateBack = {},
                     viewModel = fakeVm
@@ -368,6 +386,7 @@ class EditIntakeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 EditIntakeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     intakeId = 1L,
                     onNavigateBack = { navigated = true },
                     viewModel = fakeVm
@@ -386,6 +405,7 @@ class EditIntakeScreenTest {
         composeTestRule.setContent {
             KofeinoTrackerPhoneTheme {
                 EditIntakeScreen(
+                    syncStatusTracker = createFakeSyncStatusTracker(),
                     intakeId = 1L,
                     onNavigateBack = {},
                     viewModel = fakeVm
@@ -403,5 +423,12 @@ class EditIntakeScreenTest {
         val vm = mockk<EditIntakeViewModel>(relaxed = true)
         every { vm.uiState } returns MutableStateFlow(state) as StateFlow<EditIntakeUiState>
         return vm
+    }
+
+    private fun createFakeSyncStatusTracker(): SyncStatusTracker {
+        val tracker = mockk<SyncStatusTracker>(relaxed = true)
+        val statusFlow = MutableStateFlow<SyncStatus>(SyncStatus.AwaitingDevice)
+        every { tracker.status } returns statusFlow
+        return tracker
     }
 }

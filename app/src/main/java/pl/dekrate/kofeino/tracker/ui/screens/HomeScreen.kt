@@ -47,6 +47,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import pl.dekrate.kofeino.tracker.R
+import pl.dekrate.kofeino.tracker.data.sync.SyncStatusTracker
 import pl.dekrate.kofeino.common.domain.model.CaffeineIntake
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.HomeUiState
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.HomeViewModel
@@ -57,6 +58,7 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    syncStatusTracker: SyncStatusTracker,
     onNavigateToAddDrink: () -> Unit,
     onNavigateToHistory: () -> Unit,
     onNavigateToManageDrinks: () -> Unit,
@@ -84,6 +86,7 @@ fun HomeScreen(
                     )
                 },
                 actions = {
+                    SyncStatusChip(syncStatusTracker = syncStatusTracker)
                     IconButton(
                         onClick = onNavigateToHistory,
                         modifier = Modifier.semantics { contentDescription = historyDesc }
