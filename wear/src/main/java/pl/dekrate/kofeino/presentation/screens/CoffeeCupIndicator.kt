@@ -1,6 +1,11 @@
 package pl.dekrate.kofeino.presentation.screens
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -47,8 +52,9 @@ fun CoffeeCupIndicator(
     modifier: Modifier = Modifier,
     safeLimit: Int = 400
 ) {
+    val safeProgress = progress.takeIf { it.isFinite() }?.coerceIn(0f, 1f) ?: 0f
     val animatedProgress by animateFloatAsState(
-        targetValue = progress.coerceIn(0f, 1f),
+        targetValue = safeProgress,
         animationSpec = tween(durationMillis = 600),
         label = "coffeeProgress"
     )
@@ -60,6 +66,31 @@ fun CoffeeCupIndicator(
         animatedProgress > 0.4f -> CoffeeColors.lightRoast
         else -> CoffeeColors.darkRoast
     }
+
+    val steamPhase: Float
+    if (exceeded) {
+        val transition = rememberInfiniteTransition(label = "steam")
+        val phase by transition.animateFloat(
+            initialValue = 0f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = 2500, easing = LinearEasing),
+                repeatMode = RepeatMode.Restart
+            ),
+            label = "steamPhase"
+        )
+        steamPhase = phase
+    } else {
+        steamPhase = 0f
+    }
+
+    val ringColor = when {
+        exceeded -> CoffeeColors.errorRed
+        animatedProgress >= 1f -> cupColor
+        animatedProgress > 0.6f -> CoffeeColors.cream
+        else -> CoffeeColors.cream.copy(alpha = 0.5f)
+    }
+    val trackColor = CoffeeColors.cream.copy(alpha = 0.2f)
 
     val safeLimitText = stringResource(R.string.safe_limit_format, safeLimit)
     val contentDesc = if (exceeded) {
@@ -76,11 +107,18 @@ fun CoffeeCupIndicator(
     ) {
         Box(contentAlignment = Alignment.Center) {
             Canvas(modifier = Modifier.size(120.dp)) {
+                drawProgressRing(
+                    progress = animatedProgress,
+                    ringColor = ringColor,
+                    trackColor = trackColor,
+                    strokeWidth = 4.dp.toPx()
+                )
                 drawCoffeeCup(
                     progress = animatedProgress,
                     exceeded = exceeded,
                     cupColor = cupColor,
-                    coffeeFill = coffeeFill
+                    coffeeFill = coffeeFill,
+                    steamPhase = steamPhase
                 )
             }
             // Dark pill background behind the caffeine counter for contrast
@@ -116,11 +154,47 @@ fun CoffeeCupIndicator(
     }
 }
 
+private fun DrawScope.drawProgressRing(
+    progress: Float,
+    ringColor: Color,
+    trackColor: Color,
+    strokeWidth: Float
+) {
+    val diameter = size.minDimension - strokeWidth
+    val topLeft = Offset(
+        (size.width - diameter) / 2f,
+        (size.height - diameter) / 2f
+    )
+
+    // Track
+    drawArc(
+        color = trackColor,
+        startAngle = -90f,
+        sweepAngle = 360f,
+        useCenter = false,
+        topLeft = topLeft,
+        size = Size(diameter, diameter),
+        style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+    )
+
+    // Progress
+    drawArc(
+        color = ringColor,
+        startAngle = -90f,
+        sweepAngle = 360f * (progress.takeIf { it.isFinite() }?.coerceIn(0f, 1f) ?: 0f),
+        useCenter = false,
+        topLeft = topLeft,
+        size = Size(diameter, diameter),
+        style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+    )
+}
+
 private fun DrawScope.drawCoffeeCup(
     progress: Float,
     exceeded: Boolean,
     cupColor: Color,
-    coffeeFill: Color
+    coffeeFill: Color,
+    steamPhase: Float = 0f
 ) {
     val w = size.width
     val h = size.height
@@ -220,22 +294,25 @@ private fun DrawScope.drawCoffeeCup(
         val steamBase = bodyTop - h * 0.04f - 2.dp.toPx()
         for (i in 0 until 3) {
             val sx = w * (0.28f + i * 0.2f)
-            val offset = i * 6.dp.toPx()
+            val phase = (steamPhase + i * 0.33f) % 1f
+            val riseOffset = phase * 24.dp.toPx()
+            val alpha = 1f - phase * 0.6f
+
             drawArc(
-                color = steamColor,
+                color = steamColor.copy(alpha = steamColor.alpha * alpha),
                 startAngle = 0f,
                 sweepAngle = 180f,
                 useCenter = false,
-                topLeft = Offset(sx - 4.dp.toPx(), steamBase - offset - 8.dp.toPx()),
+                topLeft = Offset(sx - 4.dp.toPx(), steamBase - i * 6.dp.toPx() - riseOffset - 8.dp.toPx()),
                 size = Size(8.dp.toPx(), 8.dp.toPx()),
                 style = Stroke(width = steamW)
             )
             drawArc(
-                color = steamColor,
+                color = steamColor.copy(alpha = steamColor.alpha * alpha),
                 startAngle = 0f,
                 sweepAngle = 180f,
                 useCenter = false,
-                topLeft = Offset(sx - 4.dp.toPx(), steamBase - offset - 16.dp.toPx()),
+                topLeft = Offset(sx - 4.dp.toPx(), steamBase - i * 6.dp.toPx() - riseOffset - 16.dp.toPx()),
                 size = Size(8.dp.toPx(), 8.dp.toPx()),
                 style = Stroke(width = steamW)
             )
