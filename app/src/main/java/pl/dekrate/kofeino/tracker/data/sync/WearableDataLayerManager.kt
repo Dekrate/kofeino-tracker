@@ -8,6 +8,7 @@ import com.google.android.gms.wearable.DataEventBuffer
 import com.google.android.gms.wearable.MessageClient
 import com.google.android.gms.wearable.MessageEvent
 import kotlinx.coroutines.CoroutineDispatcher
+import pl.dekrate.kofeino.common.sync.SyncPaths
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
@@ -34,7 +35,8 @@ class WearableDataLayerManager @Inject constructor(
     private val capabilityClient: CapabilityClient,
     private val incomingSyncProcessor: IncomingSyncProcessor,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
-    private val syncStatusTracker: SyncStatusTracker
+    private val syncStatusTracker: SyncStatusTracker,
+    private val fullSyncManager: FullSyncManager
 ) {
     companion object {
         const val SYNC_CAPABILITY_NAME = "caffeine_sync"
@@ -83,14 +85,29 @@ class WearableDataLayerManager @Inject constructor(
         val path = messageEvent.path
         val sourceNodeId = messageEvent.sourceNodeId
         val payloadSize = messageEvent.data.size
+
+        // Route full-sync messages to FullSyncManager
+        when (path) {
+            SyncPaths.MESSAGE_FULL_SYNC_REQUEST -> {
+                Timber.d("FullSync request from=%s", sourceNodeId)
+                scope.launch { fullSyncManager.handleFullSyncRequest(messageEvent) }
+                return
+            }
+            SyncPaths.MESSAGE_FULL_SYNC_RESPONSE -> {
+                Timber.d("FullSync response from=%s (%dB)", sourceNodeId, payloadSize)
+                scope.launch { fullSyncManager.handleFullSyncResponse(messageEvent) }
+                return
+            }
+        }
+
         if (path.startsWith(SYNC_PATH_PREFIX)) {
-            Timber.d("Sync message from=$sourceNodeId path=$path payload=${payloadSize}B")
+            Timber.d("Sync message from=%s path=%s payload=%dB", sourceNodeId, path, payloadSize)
             scope.launch {
                 val result = incomingSyncProcessor.processIncoming(messageEvent)
                 Timber.d("Incoming sync processed: %s", result)
             }
         } else {
-            Timber.d("Non-sync message from=$sourceNodeId path=$path payload=${payloadSize}B")
+            Timber.d("Non-sync message from=%s path=%s payload=%dB", sourceNodeId, path, payloadSize)
         }
     }
 
@@ -103,6 +120,19 @@ class WearableDataLayerManager @Inject constructor(
         val nodeIds = capabilityInfo.nodes.map { it.id }
         Timber.d("Capability '${capabilityInfo.name}': $nodeCount node(s) available — $nodeIds")
         syncStatusTracker.onDeviceConnectionChanged(nodeCount > 0)
+
+        // Trigger full sync for each connected node
+        for (node in capabilityInfo.nodes) {
+            if (node.isNearby) {
+                Timber.d("FullSync: triggering for nearby node=%s", node.id)
+                fullSyncManager.onNodeConnected(node.id)
+            }
+        }
+
+        // If no nodes remain connected, reset any active sync
+        if (capabilityInfo.nodes.isEmpty()) {
+            fullSyncManager.onNodeDisconnected("")
+        }
     }
 
     /**
