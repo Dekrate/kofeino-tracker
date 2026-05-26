@@ -3,6 +3,7 @@ package pl.dekrate.kofeino.common.sync
 import pl.dekrate.kofeino.common.domain.model.CaffeineIntake
 import pl.dekrate.kofeino.common.domain.model.DrinkEntity
 import java.security.MessageDigest
+import java.util.Locale
 
 /**
  * Computes deterministic SHA-256 state hashes for local entity collections.
@@ -147,5 +148,5 @@ object StateHashCalculator {
      * Convert a byte array to a lowercase hex string.
      */
     private fun ByteArray.toHexString(): String =
-        joinToString(separator = "") { byte -> "%02x".format(byte) }
+        joinToString(separator = "") { byte -> String.format(Locale.ROOT, "%02x", byte) }
 }
