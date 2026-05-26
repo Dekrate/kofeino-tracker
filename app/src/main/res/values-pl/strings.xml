@@ -225,4 +225,10 @@
     <string name="no_search_results">Nie znaleziono napojów</string>
     <string name="no_search_results_hint">Spróbuj innego zapytania</string>
     <string name="type_to_search">Wpisz, aby szukać napojów</string>
+
+    <!-- Sync Service Notification -->
+    <string name="sync_notification_channel_name">Usługa synchronizacji</string>
+    <string name="sync_notification_channel_description">Utrzymuje synchronizację między urządzeniami w tle</string>
+    <string name="sync_notification_title">Synchronizacja Kofeino</string>
+    <string name="sync_notification_text">Synchronizacja z parowanym urządzeniem</string>
 </resources>
