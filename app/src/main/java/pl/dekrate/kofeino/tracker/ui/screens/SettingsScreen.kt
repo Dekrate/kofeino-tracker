@@ -57,6 +57,10 @@ import pl.dekrate.kofeino.tracker.presentation.viewmodel.BackupUiState
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.SettingsEvent
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.SettingsUiState
 import pl.dekrate.kofeino.tracker.presentation.viewmodel.SettingsViewModel
+import pl.dekrate.kofeino.common.domain.model.TileConfig
+import pl.dekrate.kofeino.common.domain.model.DisplayOption
+import pl.dekrate.kofeino.common.domain.model.RefreshInterval
+import pl.dekrate.kofeino.common.domain.model.ColorScheme
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -74,6 +78,10 @@ private sealed interface SettingsAction {
     data class SetNotifRegular(val enabled: Boolean) : SettingsAction
     data class SetNotifEvening(val enabled: Boolean) : SettingsAction
     data class SetImportSettings(val enabled: Boolean) : SettingsAction
+    data class SetTileDisplayOption(val option: DisplayOption) : SettingsAction
+    data class SetTileRefreshInterval(val interval: RefreshInterval) : SettingsAction
+    data class SetTileColorScheme(val scheme: ColorScheme) : SettingsAction
+    data class SetTileCaffeineLimitColor(val enabled: Boolean) : SettingsAction
 }
 
 private fun SettingsViewModel.toSettingsActionHandler(): (SettingsAction) -> Unit = { action ->
@@ -87,6 +95,10 @@ private fun SettingsViewModel.toSettingsActionHandler(): (SettingsAction) -> Uni
         is SettingsAction.SetNotifRegular -> setNotifRegularEnabled(action.enabled)
         is SettingsAction.SetNotifEvening -> setNotifEveningEnabled(action.enabled)
         is SettingsAction.SetImportSettings -> setImportSettingsEnabled(action.enabled)
+        is SettingsAction.SetTileDisplayOption -> setTileDisplayOption(action.option)
+        is SettingsAction.SetTileRefreshInterval -> setTileRefreshInterval(action.interval)
+        is SettingsAction.SetTileColorScheme -> setTileColorScheme(action.scheme)
+        is SettingsAction.SetTileCaffeineLimitColor -> setTileCaffeineLimitColor(action.enabled)
     }
 }
 
@@ -247,6 +259,11 @@ private fun SettingsContent(
         )
         HorizontalDivider(Modifier.padding(vertical = 8.dp))
         CrossDeviceStatusSection(onNavigateToCrossDeviceStatus)
+        HorizontalDivider(Modifier.padding(vertical = 8.dp))
+        TileConfigSection(
+            tileConfig = state.tileConfig,
+            onSettingsAction = onSettingsAction
+        )
         HorizontalDivider(Modifier.padding(vertical = 8.dp))
         HealthDisclaimerSection()
         HorizontalDivider(Modifier.padding(vertical = 8.dp))
@@ -412,6 +429,130 @@ private fun CrossDeviceStatusSection(
             )
         }
     }
+}
+
+@Composable
+private fun TileConfigSection(
+    tileConfig: TileConfig,
+    onSettingsAction: (SettingsAction) -> Unit
+) {
+    Column {
+        SectionHeader(
+            stringResource(R.string.tile_config_title),
+            Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+        )
+        Text(
+            text = stringResource(R.string.tile_config_summary),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+        )
+
+        TileDisplayOptionGroup(
+            selected = tileConfig.displayOption,
+            onSelect = { onSettingsAction(SettingsAction.SetTileDisplayOption(it)) }
+        )
+        TileRefreshIntervalGroup(
+            selected = tileConfig.refreshIntervalMinutes,
+            onSelect = { onSettingsAction(SettingsAction.SetTileRefreshInterval(it)) }
+        )
+        TileColorSchemeGroup(
+            selected = tileConfig.colorScheme,
+            onSelect = { onSettingsAction(SettingsAction.SetTileColorScheme(it)) }
+        )
+
+        // Caffeine Limit Color Toggle
+        NotifToggle(
+            label = stringResource(R.string.tile_caffeine_limit_color),
+            description = stringResource(R.string.tile_caffeine_limit_color_desc),
+            checked = tileConfig.caffeineLimitColor,
+            onCheckedChange = { onSettingsAction(SettingsAction.SetTileCaffeineLimitColor(it)) }
+        )
+    }
+}
+
+@Composable
+private fun TileDisplayOptionGroup(
+    selected: DisplayOption,
+    onSelect: (DisplayOption) -> Unit
+) {
+    Text(
+        text = stringResource(R.string.tile_display_option),
+        style = MaterialTheme.typography.titleSmall,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+    )
+    DisplayOption.entries.forEach { option ->
+        RadioOption(
+            label = stringResource(getDisplayOptionResId(option)),
+            isSelected = selected == option,
+            onSelect = { onSelect(option) },
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+@Composable
+private fun TileRefreshIntervalGroup(
+    selected: RefreshInterval,
+    onSelect: (RefreshInterval) -> Unit
+) {
+    Text(
+        text = stringResource(R.string.tile_refresh_interval),
+        style = MaterialTheme.typography.titleSmall,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+    )
+    RefreshInterval.entries.forEach { interval ->
+        RadioOption(
+            label = stringResource(getRefreshIntervalResId(interval)),
+            isSelected = selected == interval,
+            onSelect = { onSelect(interval) },
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+@Composable
+private fun TileColorSchemeGroup(
+    selected: ColorScheme,
+    onSelect: (ColorScheme) -> Unit
+) {
+    Text(
+        text = stringResource(R.string.tile_color_scheme),
+        style = MaterialTheme.typography.titleSmall,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+    )
+    ColorScheme.entries.forEach { scheme ->
+        RadioOption(
+            label = stringResource(getColorSchemeResId(scheme)),
+            isSelected = selected == scheme,
+            onSelect = { onSelect(scheme) },
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+private fun getDisplayOptionResId(option: DisplayOption): Int = when (option) {
+    DisplayOption.CAFFEINE_TOTAL -> R.string.tile_display_caffeine_total
+    DisplayOption.DRINK_COUNT -> R.string.tile_display_drink_count
+    DisplayOption.LIMIT_STATUS -> R.string.tile_display_limit_status
+    DisplayOption.BOTH -> R.string.tile_display_both
+}
+
+private fun getRefreshIntervalResId(interval: RefreshInterval): Int = when (interval) {
+    RefreshInterval.MINUTES_15 -> R.string.tile_refresh_15min
+    RefreshInterval.MINUTES_30 -> R.string.tile_refresh_30min
+    RefreshInterval.HOUR_1 -> R.string.tile_refresh_1h
+    RefreshInterval.HOURS_2 -> R.string.tile_refresh_2h
+}
+
+private fun getColorSchemeResId(scheme: ColorScheme): Int = when (scheme) {
+    ColorScheme.DEFAULT -> R.string.tile_color_default
+    ColorScheme.MONOCHROME -> R.string.tile_color_monochrome
+    ColorScheme.AMBER -> R.string.tile_color_amber
+    ColorScheme.GREEN -> R.string.tile_color_green
 }
 
 @Composable

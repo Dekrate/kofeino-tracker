@@ -39,6 +39,9 @@ object SyncPaths {
     const val MESSAGE_FULL_SYNC_RESPONSE = "$MESSAGE_PATH_PREFIX/full-sync-response"
     const val MESSAGE_SYNC_ACK = "$MESSAGE_PATH_PREFIX/sync-ack"
 
+    // ─── Tile configuration ───────────────────────────────────────────
+    const val MESSAGE_TILE_CONFIG_CHANGED = "$MESSAGE_PATH_PREFIX/tile-config-changed"
+
     // ─── Builder helpers ─────────────────────────────────────────────
 
     /** Build a sync path for the given [entityType], e.g. `/sync/intakes`. */

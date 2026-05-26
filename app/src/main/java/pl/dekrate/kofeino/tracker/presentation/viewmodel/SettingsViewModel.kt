@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,6 +25,11 @@ import pl.dekrate.kofeino.tracker.data.backup.BackupVersionException
 import pl.dekrate.kofeino.tracker.data.local.CaffeineLimitProfile
 import pl.dekrate.kofeino.tracker.data.local.DataStorePreferences
 import pl.dekrate.kofeino.tracker.di.IoDispatcher
+import pl.dekrate.kofeino.common.domain.model.TileConfig
+import pl.dekrate.kofeino.common.domain.model.DisplayOption
+import pl.dekrate.kofeino.common.domain.model.RefreshInterval
+import pl.dekrate.kofeino.common.domain.model.ColorScheme
+import pl.dekrate.kofeino.tracker.data.sync.WearableDataLayerManager
 import javax.inject.Inject
 
 data class SettingsUiState(
@@ -42,7 +48,9 @@ data class SettingsUiState(
     // Backup / Restore state
     val backupState: BackupUiState = BackupUiState.Idle,
     /** Whether to import settings from the backup file (toggled by user in UI). */
-    val importSettingsEnabled: Boolean = false
+    val importSettingsEnabled: Boolean = false,
+    /** Configuration for the Wear OS caffeine tile. */
+    val tileConfig: TileConfig = TileConfig()
 )
 
 /** Sealed representation of the backup/restore UI state for button gating. */
@@ -66,10 +74,12 @@ sealed interface SettingsEvent {
 /**
  * ViewModel for the Settings screen.
  */
+@Suppress("TooManyFunctions")
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val preferences: DataStorePreferences,
     private val backupManager: BackupManager,
+    private val wearableDataLayerManager: WearableDataLayerManager,
     @ApplicationContext private val context: Context,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : ViewModel() {
@@ -90,6 +100,7 @@ class SettingsViewModel @Inject constructor(
             val notifEvening = preferences.observeNotificationEveningEnabled().first()
             val profile = preferences.observeCaffeineProfile().first()
             val customLimit = preferences.observeCustomCaffeineLimit().first()
+            val tileConfig = TileConfig()  // Future: load persisted TileConfig from DataStore
             _uiState.update {
                 it.copy(
                     currentLanguage = lang, currentThemeMode = theme,
@@ -98,7 +109,8 @@ class SettingsViewModel @Inject constructor(
                     notifRegularEnabled = notifRegular,
                     notifEveningEnabled = notifEvening,
                     currentCaffeineProfile = profile,
-                    currentCustomLimit = customLimit
+                    currentCustomLimit = customLimit,
+                    tileConfig = tileConfig
                 )
             }
         }
@@ -232,6 +244,60 @@ class SettingsViewModel @Inject constructor(
                     context.getString(R.string.backup_error, e.message.orEmpty())
                 ))
             }
+        }
+    }
+
+    // ===== Wear OS Tile Configuration =====
+
+    fun setTileDisplayOption(option: DisplayOption) {
+        if (option == _uiState.value.tileConfig.displayOption) return
+        viewModelScope.launch {
+            val newConfig = _uiState.value.tileConfig.copy(displayOption = option)
+            _uiState.update { it.copy(tileConfig = newConfig) }
+            sendTileConfigToWatch(newConfig)
+        }
+    }
+
+    fun setTileRefreshInterval(interval: RefreshInterval) {
+        if (interval == _uiState.value.tileConfig.refreshIntervalMinutes) return
+        viewModelScope.launch {
+            val newConfig = _uiState.value.tileConfig.copy(refreshIntervalMinutes = interval)
+            _uiState.update { it.copy(tileConfig = newConfig) }
+            sendTileConfigToWatch(newConfig)
+        }
+    }
+
+    fun setTileColorScheme(scheme: ColorScheme) {
+        if (scheme == _uiState.value.tileConfig.colorScheme) return
+        viewModelScope.launch {
+            val newConfig = _uiState.value.tileConfig.copy(colorScheme = scheme)
+            _uiState.update { it.copy(tileConfig = newConfig) }
+            sendTileConfigToWatch(newConfig)
+        }
+    }
+
+    fun setTileCaffeineLimitColor(enabled: Boolean) {
+        if (enabled == _uiState.value.tileConfig.caffeineLimitColor) return
+        viewModelScope.launch {
+            val newConfig = _uiState.value.tileConfig.copy(caffeineLimitColor = enabled)
+            _uiState.update { it.copy(tileConfig = newConfig) }
+            sendTileConfigToWatch(newConfig)
+        }
+    }
+
+    private suspend fun sendTileConfigToWatch(config: TileConfig) {
+        try {
+            val nodeCount = wearableDataLayerManager.sendTileConfig(config)
+            if (nodeCount > 0) {
+                _events.emit(SettingsEvent.ShowSnackbar("Tile configuration sent to watch"))
+            } else {
+                _events.emit(SettingsEvent.ShowSnackbar(context.getString(R.string.tile_config_no_watch)))
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+            val message = e.message ?: "unknown"
+            _events.emit(SettingsEvent.ShowSnackbar("Failed to sync tile config: $message"))
         }
     }
 }

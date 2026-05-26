@@ -9,6 +9,7 @@ import com.google.android.gms.wearable.MessageClient
 import com.google.android.gms.wearable.MessageEvent
 import kotlinx.coroutines.CoroutineDispatcher
 import pl.dekrate.kofeino.common.sync.SyncPaths
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
@@ -132,6 +133,40 @@ class WearableDataLayerManager @Inject constructor(
         // If no nodes remain connected, reset any active sync
         if (capabilityInfo.nodes.isEmpty()) {
             fullSyncManager.onNodeDisconnected("")
+        }
+    }
+
+    /**
+     * Send tile configuration to the paired watch via MessageClient.
+     *
+     * The message is sent to ALL connected nodes with the caffeine_sync capability.
+     * Uses fire-and-forget semantics — the message path is
+     * [SyncPaths.MESSAGE_TILE_CONFIG_CHANGED] and the payload is the serialised
+     * [TileConfig] string.
+     *
+     * ## Design
+     * - Fire-and-forget (no response expected).
+     * - Sends to all capable nodes (handles multi-device pairing).
+     * - Failures are logged but not propagated (degraded UX).
+     */
+    suspend fun sendTileConfig(config: pl.dekrate.kofeino.common.domain.model.TileConfig): Int {
+        val payload = config.toMessagePayload().toByteArray(Charsets.UTF_8)
+        return try {
+            val nodes = capabilityClient.getCapability(
+                SYNC_CAPABILITY_NAME,
+                CapabilityClient.FILTER_REACHABLE
+            ).await().nodes
+            for (node in nodes) {
+                messageClient.sendMessage(node.id, SyncPaths.MESSAGE_TILE_CONFIG_CHANGED, payload)
+                Timber.d("TileConfig sent to node=%s path=%s payload=%dB",
+                    node.id, SyncPaths.MESSAGE_TILE_CONFIG_CHANGED, payload.size)
+            }
+            nodes.size
+        } catch (e: CancellationException) {
+            throw e
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+            Timber.w(e, "Failed to send tile config to watch")
+            0
         }
     }
 

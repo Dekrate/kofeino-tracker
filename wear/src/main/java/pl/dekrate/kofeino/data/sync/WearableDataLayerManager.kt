@@ -12,7 +12,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import pl.dekrate.kofeino.common.domain.model.TileConfig
 import pl.dekrate.kofeino.common.sync.SyncPaths
+import pl.dekrate.kofeino.data.local.TileDataStorePreferences
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -35,7 +37,8 @@ class WearableDataLayerManager @Inject constructor(
     private val capabilityClient: CapabilityClient,
     private val incomingSyncProcessor: IncomingSyncProcessor,
     private val syncStatusTracker: SyncStatusTracker,
-    private val fullSyncManager: FullSyncManager
+    private val fullSyncManager: FullSyncManager,
+    private val tileDataStorePreferences: TileDataStorePreferences
 ) {
     companion object {
         const val SYNC_CAPABILITY_NAME = "caffeine_sync"
@@ -95,6 +98,18 @@ class WearableDataLayerManager @Inject constructor(
                 scope.launch { fullSyncManager.handleFullSyncResponse(messageEvent) }
                 return
             }
+        }
+
+        // Route tile config messages to TileDataStorePreferences
+        if (path == SyncPaths.MESSAGE_TILE_CONFIG_CHANGED) {
+            Timber.d("Tile config message from=%s payload=%dB", sourceNodeId, payloadSize)
+            scope.launch {
+                val payload = messageEvent.data.toString(Charsets.UTF_8)
+                val config = TileConfig.fromMessagePayload(payload)
+                tileDataStorePreferences.setTileConfig(config)
+                Timber.d("Tile config updated from message: %s", config.displayOption.name)
+            }
+            return
         }
 
         if (path.startsWith(SYNC_PATH_PREFIX)) {
