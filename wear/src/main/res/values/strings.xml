@@ -172,6 +172,16 @@
     <string name="health_references_title">Sources</string>
     <string name="health_references_text">• EFSA (2015): efsa.europa.eu/en/efsajournal/pub/4102\n• FDA (2024): fda.gov/consumers/consumer-updates/spilling-beans-how-much-caffeine-too-much\n• WHO (2023): who.int/tools/elena/interventions/caffeine-pregnancy</string>
 
+    <!-- Tile -->
+    <string name="tile_caffeine_total">--- mg</string>
+    <string name="tile_title_caffeine_total">Caffeine Total</string>
+    <string name="tile_drink_count">--- drinks</string>
+    <string name="tile_title_drink_count">Drinks Today</string>
+    <string name="tile_limit_status">Limit: --- mg</string>
+    <string name="tile_title_limit_status">Caffeine Limit</string>
+    <string name="tile_combined">--- mg / --- drinks</string>
+    <string name="tile_title_combined">Caffeine Overview</string>
+
     <!-- Notification scheduling -->
     <string name="reminder_channel_name">Caffeine Reminders</string>
     <string name="reminder_channel_description">Morning, regular, and evening reminders</string>

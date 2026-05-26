@@ -115,6 +115,10 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.datastore.preferences)
     implementation(libs.profileinstaller)
+    implementation(libs.wear.tiles)
+    implementation(libs.protolayout)
+    implementation(libs.protolayout.material3)
+    implementation(libs.protolayout.expression)
     implementation(project(":common"))
 
     detektPlugins(libs.detekt.compose.rules)

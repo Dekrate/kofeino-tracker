@@ -231,4 +231,28 @@
     <string name="sync_notification_channel_description">Utrzymuje synchronizację między urządzeniami w tle</string>
     <string name="sync_notification_title">Synchronizacja Kofeino</string>
     <string name="sync_notification_text">Synchronizacja z parowanym urządzeniem</string>
+
+    <!-- Wear OS Tile Configuration -->
+    <string name="tile_config_title">Kafelek Wear OS</string>
+    <string name="tile_config_summary">Skonfiguruj, jak dane o kofeinie wyświetlają się na kafelku Wear OS.</string>
+    <string name="tile_display_option">Opcja wyświetlania</string>
+    <string name="tile_refresh_interval">Częstotliwość odświeżania</string>
+    <string name="tile_color_scheme">Schemat kolorów</string>
+    <string name="tile_caffeine_limit_color">Kolor limitu kofeiny</string>
+    <string name="tile_caffeine_limit_color_desc">Zmień kolor kafelka na czerwony lub zielony w zależności od dziennego limitu</string>
+    <string name="tile_display_caffeine_total">Suma kofeiny (mg)</string>
+    <string name="tile_display_drink_count">Liczba napojów</string>
+    <string name="tile_display_limit_status">Status limitu</string>
+    <string name="tile_display_both">Oba (suma + liczba)</string>
+    <string name="tile_refresh_15min">15 minut</string>
+    <string name="tile_refresh_30min">30 minut</string>
+    <string name="tile_refresh_1h">1 godzina</string>
+    <string name="tile_refresh_2h">2 godziny</string>
+    <string name="tile_color_default">Domyślny</string>
+    <string name="tile_color_monochrome">Monochromatyczny</string>
+    <string name="tile_color_amber">Bursztynowy</string>
+    <string name="tile_color_green">Zielony</string>
+
+    <!-- Tile Config Sync -->
+    <string name="tile_config_no_watch">Nie znaleziono sparowanego zegarka do konfiguracji kafelka</string>
 </resources>

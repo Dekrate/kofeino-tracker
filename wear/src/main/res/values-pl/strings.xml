@@ -202,4 +202,14 @@
     <string name="sync_channel_description">Powiadomienie dla usługi synchronizacji</string>
     <string name="sync_notification_title">Synchronizacja danych</string>
     <string name="sync_notification_text">Trwa synchronizacja danych o kofeinie</string>
+
+    <!-- Wear Tile Configuration -->
+    <string name="tile_caffeine_total">--- mg</string>
+    <string name="tile_title_caffeine_total">Suma kofeiny</string>
+    <string name="tile_drink_count">--- napojów</string>
+    <string name="tile_title_drink_count">Napoje dzisiaj</string>
+    <string name="tile_limit_status">Limit: --- mg</string>
+    <string name="tile_title_limit_status">Limit kofeiny</string>
+    <string name="tile_combined">--- mg / --- napojów</string>
+    <string name="tile_title_combined">Podgląd kofeiny</string>
 </resources>

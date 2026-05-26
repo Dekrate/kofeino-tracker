@@ -20,6 +20,7 @@ import io.mockk.verify
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import pl.dekrate.kofeino.data.local.TileDataStorePreferences
 import pl.dekrate.kofeino.data.sync.IncomingSyncProcessor
 import pl.dekrate.kofeino.data.sync.WearableDataLayerManager.Companion.SYNC_CAPABILITY_NAME
 
@@ -52,6 +53,8 @@ class WearableDataLayerManagerTest {
     @MockK
     private lateinit var fullSyncManager: FullSyncManager
 
+    private lateinit var tileDataStorePreferences: TileDataStorePreferences
+
     private lateinit var manager: WearableDataLayerManager
 
     @Before
@@ -64,7 +67,8 @@ class WearableDataLayerManagerTest {
         every { capabilityClient.addListener(any<CapabilityClient.OnCapabilityChangedListener>(), any<String>()) } returns mockk()
         every { capabilityClient.removeListener(any<CapabilityClient.OnCapabilityChangedListener>()) } returns mockk()
 
-        manager = WearableDataLayerManager(dataClient, messageClient, capabilityClient, incomingSyncProcessor, syncStatusTracker, fullSyncManager)
+        tileDataStorePreferences = mockk(relaxed = true)
+        manager = WearableDataLayerManager(dataClient, messageClient, capabilityClient, incomingSyncProcessor, syncStatusTracker, fullSyncManager, tileDataStorePreferences)
     }
 
     @After

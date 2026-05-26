@@ -9,7 +9,8 @@ package pl.dekrate.kofeino.common.sync
 enum class SyncEntityType(val pathSegment: String) {
     INTAKE("intake"),
     DRINK("drink"),
-    SETTINGS("settings");
+    SETTINGS("settings"),
+    TILE_CONFIG("tile_config");
 
     companion object {
         /**

@@ -36,6 +36,11 @@ import pl.dekrate.kofeino.tracker.data.backup.ExportResult
 import pl.dekrate.kofeino.tracker.data.backup.ImportResult
 import pl.dekrate.kofeino.tracker.data.local.CaffeineLimitProfile
 import pl.dekrate.kofeino.tracker.data.local.DataStorePreferences
+import pl.dekrate.kofeino.common.domain.model.ColorScheme
+import pl.dekrate.kofeino.common.domain.model.DisplayOption
+import pl.dekrate.kofeino.common.domain.model.RefreshInterval
+import pl.dekrate.kofeino.common.domain.model.TileConfig
+import pl.dekrate.kofeino.tracker.data.sync.WearableDataLayerManager
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SettingsViewModelTest {
@@ -56,6 +61,7 @@ class SettingsViewModelTest {
     private lateinit var backupManager: BackupManager
     private lateinit var context: Context
     private lateinit var viewModel: SettingsViewModel
+    private lateinit var wearableDataLayerManager: WearableDataLayerManager
 
     /** Simulates the DataStore-backed reactive streams. */
     private val languageFlow = MutableStateFlow(DataStorePreferences.DEFAULT_LANGUAGE)
@@ -72,6 +78,8 @@ class SettingsViewModelTest {
         preferences = mockk(relaxed = true)
         backupManager = mockk()
         context = mockk()
+        wearableDataLayerManager = mockk(relaxed = true)
+        coEvery { wearableDataLayerManager.sendTileConfig(any()) } returns 1
         every { context.getString(any()) } answers { "mocked string" }
         every { context.getString(any(), *anyVararg()) } answers { "mocked string" }
         every { preferences.observeLanguage() } returns languageFlow
@@ -90,7 +98,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `initial state should use default language`() = runTest {
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle() // let init coroutines complete
 
         val state = viewModel.uiState.value
@@ -103,7 +111,7 @@ class SettingsViewModelTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_PL
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_PL
 
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
@@ -113,7 +121,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `initial state should use default theme mode`() = runTest {
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
@@ -126,7 +134,7 @@ class SettingsViewModelTest {
         themeFlow.value = DataStorePreferences.THEME_DARK
         every { preferences.getThemeMode() } returns DataStorePreferences.THEME_DARK
 
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
@@ -140,7 +148,7 @@ class SettingsViewModelTest {
     fun `setLanguage to pl should update currentLanguage`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_EN
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_EN
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setLanguage("pl")
@@ -154,7 +162,7 @@ class SettingsViewModelTest {
     fun `setLanguage to pl should persist preference`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_EN
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_EN
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setLanguage("pl")
@@ -167,7 +175,7 @@ class SettingsViewModelTest {
     fun `setLanguage to en should update currentLanguage`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_PL
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_PL
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setLanguage("en")
@@ -181,7 +189,7 @@ class SettingsViewModelTest {
     fun `setLanguage to en should persist preference`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_PL
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_PL
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setLanguage("en")
@@ -194,7 +202,7 @@ class SettingsViewModelTest {
     fun `setLanguage should set languageChanged flag`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_EN
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_EN
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setLanguage("pl")
@@ -207,7 +215,7 @@ class SettingsViewModelTest {
     fun `setLanguage with same language should not update languageChanged`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_EN
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_EN
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         // First change
@@ -225,7 +233,7 @@ class SettingsViewModelTest {
     fun `setLanguage with same language should not persist again`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_EN
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_EN
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setLanguage("pl")
@@ -242,7 +250,7 @@ class SettingsViewModelTest {
     fun `setLanguage to system empty should persist empty string`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_EN
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_EN
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setLanguage(DataStorePreferences.LANGUAGE_SYSTEM)
@@ -254,7 +262,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `setLanguage to system when already system is no-op`() = runTest {
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setLanguage(DataStorePreferences.LANGUAGE_SYSTEM)
@@ -268,7 +276,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `setThemeMode to dark should update currentThemeMode`() = runTest {
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setThemeMode(DataStorePreferences.THEME_DARK)
@@ -279,7 +287,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `setThemeMode to dark should persist preference`() = runTest {
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setThemeMode(DataStorePreferences.THEME_DARK)
@@ -290,7 +298,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `setThemeMode with same mode should not update themeChanged`() = runTest {
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setThemeMode(DataStorePreferences.THEME_DARK)
@@ -304,7 +312,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `setThemeMode with same mode should not persist again`() = runTest {
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setThemeMode(DataStorePreferences.THEME_DARK)
@@ -317,7 +325,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `setThemeMode should set themeChanged flag`() = runTest {
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setThemeMode(DataStorePreferences.THEME_DARK)
@@ -332,7 +340,7 @@ class SettingsViewModelTest {
     fun `consumeLanguageChanged should reset languageChanged flag`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_EN
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_EN
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setLanguage("pl")
@@ -345,7 +353,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `consumeThemeChanged should reset themeChanged flag`() = runTest {
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setThemeMode(DataStorePreferences.THEME_DARK)
@@ -362,7 +370,7 @@ class SettingsViewModelTest {
     fun `uiState should emit initial state then emit on setLanguage`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_EN
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_EN
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -386,7 +394,7 @@ class SettingsViewModelTest {
     fun `repeated setLanguage should keep languageChanged true`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_EN
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_EN
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -411,7 +419,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `uiState should emit on setThemeMode`() = runTest {
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.uiState.test {
@@ -436,7 +444,7 @@ class SettingsViewModelTest {
     fun `setLanguage with same en when already en is no-op`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_EN
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_EN
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setLanguage("en")
@@ -450,7 +458,7 @@ class SettingsViewModelTest {
     fun `setLanguage with same pl when already pl is no-op`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_PL
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_PL
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setLanguage("pl")
@@ -463,7 +471,7 @@ class SettingsViewModelTest {
     fun `switching back to original language after change should re-trigger`() = runTest {
         languageFlow.value = DataStorePreferences.LANGUAGE_EN
         every { preferences.getLanguage() } returns DataStorePreferences.LANGUAGE_EN
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setLanguage("pl")
@@ -503,7 +511,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `setCaffeineProfile should update state and call preferences setCaffeineProfile`() = runTest {
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setCaffeineProfile(CaffeineLimitProfile.PREGNANT)
@@ -515,7 +523,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `setCaffeineProfile with same profile should not persist again`() = runTest {
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         // First change
@@ -532,7 +540,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `setCustomCaffeineLimit should update state and call preferences setCustomCaffeineLimit`() = runTest {
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setCustomCaffeineLimit(200)
@@ -546,7 +554,7 @@ class SettingsViewModelTest {
     fun `state should reflect observed caffeine profile from preferences`() = runTest {
         caffeineProfileFlow.value = CaffeineLimitProfile.SENSITIVE
 
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         assertEquals(CaffeineLimitProfile.SENSITIVE, viewModel.uiState.value.currentCaffeineProfile)
@@ -556,7 +564,7 @@ class SettingsViewModelTest {
     fun `state should reflect observed custom caffeine limit from preferences`() = runTest {
         customLimitFlow.value = 150
 
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         assertEquals(150, viewModel.uiState.value.currentCustomLimit)
@@ -569,7 +577,7 @@ class SettingsViewModelTest {
         val uri = mockk<Uri>()
         coEvery { backupManager.exportBackup(uri) } returns ExportResult(intakeCount = 2, drinkCount = 1)
 
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.exportBackup(uri)
@@ -583,7 +591,7 @@ class SettingsViewModelTest {
         val uri = mockk<Uri>()
         coEvery { backupManager.exportBackup(uri) } returns ExportResult(intakeCount = 0, drinkCount = 0)
 
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.exportBackup(uri)
@@ -597,7 +605,7 @@ class SettingsViewModelTest {
         val uri = mockk<Uri>()
         coEvery { backupManager.exportBackup(uri) } throws BackupIOException("Export failed")
 
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.exportBackup(uri)
@@ -615,7 +623,7 @@ class SettingsViewModelTest {
             settingsImported = false
         )
 
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.importBackup(uri)
@@ -633,7 +641,7 @@ class SettingsViewModelTest {
             settingsImported = true
         )
 
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         // Enable settings import
@@ -649,7 +657,7 @@ class SettingsViewModelTest {
         val uri = mockk<Uri>()
         coEvery { backupManager.importBackup(uri, any()) } throws BackupVersionException("Unsupported version")
 
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.importBackup(uri)
@@ -667,7 +675,7 @@ class SettingsViewModelTest {
             ExportResult(0, 0)
         }
 
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.exportBackup(uri)
@@ -681,7 +689,7 @@ class SettingsViewModelTest {
 
     @Test
     fun `setImportSettingsEnabled updates state`() = runTest {
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.setImportSettingsEnabled(true)
@@ -696,7 +704,7 @@ class SettingsViewModelTest {
         val uri = mockk<Uri>()
         coEvery { backupManager.exportBackup(uri) } returns ExportResult(intakeCount = 3, drinkCount = 2)
 
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.events.test {
@@ -719,7 +727,7 @@ class SettingsViewModelTest {
             settingsImported = false
         )
 
-        viewModel = SettingsViewModel(preferences, backupManager, context, testDispatcher)
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
         advanceUntilIdle()
 
         viewModel.events.test {
@@ -731,5 +739,116 @@ class SettingsViewModelTest {
             assertTrue((event as SettingsEvent.ShowSnackbar).message.isNotEmpty())
             cancelAndIgnoreRemainingEvents()
         }
+    }
+
+    // ===== Wear OS Tile Configuration tests =====
+
+    @Test
+    fun `setTileDisplayOption should update state`() = runTest {
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
+        advanceUntilIdle()
+
+        viewModel.setTileDisplayOption(DisplayOption.BOTH)
+        advanceUntilIdle()
+
+        assertEquals(DisplayOption.BOTH, viewModel.uiState.value.tileConfig.displayOption)
+    }
+
+    @Test
+    fun `setTileDisplayOption should send config to watch`() = runTest {
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
+        advanceUntilIdle()
+
+        viewModel.setTileDisplayOption(DisplayOption.BOTH)
+        advanceUntilIdle()
+
+        coVerify { wearableDataLayerManager.sendTileConfig(any()) }
+    }
+
+    @Test
+    fun `setTileRefreshInterval should update state`() = runTest {
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
+        advanceUntilIdle()
+
+        viewModel.setTileRefreshInterval(RefreshInterval.HOUR_1)
+        advanceUntilIdle()
+
+        assertEquals(RefreshInterval.HOUR_1, viewModel.uiState.value.tileConfig.refreshIntervalMinutes)
+    }
+
+    @Test
+    fun `setTileColorScheme should update state`() = runTest {
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
+        advanceUntilIdle()
+
+        viewModel.setTileColorScheme(ColorScheme.AMBER)
+        advanceUntilIdle()
+
+        assertEquals(ColorScheme.AMBER, viewModel.uiState.value.tileConfig.colorScheme)
+    }
+
+    @Test
+    fun `setTileCaffeineLimitColor should update state`() = runTest {
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
+        advanceUntilIdle()
+
+        viewModel.setTileCaffeineLimitColor(false)
+        advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.value.tileConfig.caffeineLimitColor)
+    }
+
+    @Test
+    fun `setTileDisplayOption with same value should not send to watch`() = runTest {
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
+        advanceUntilIdle()
+
+        // Default is CAFFEINE_TOTAL, so setting it again should be no-op
+        viewModel.setTileDisplayOption(DisplayOption.CAFFEINE_TOTAL)
+        advanceUntilIdle()
+
+        coVerify(exactly = 0) { wearableDataLayerManager.sendTileConfig(any()) }
+    }
+
+    @Test
+    fun `sendTileConfigToWatch with zero nodes should show no-watch snackbar`() = runTest {
+        coEvery { wearableDataLayerManager.sendTileConfig(any()) } returns 0
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
+        advanceUntilIdle()
+
+        viewModel.events.test {
+            viewModel.setTileDisplayOption(DisplayOption.BOTH)
+            advanceUntilIdle()
+
+            val event = awaitItem()
+            assertTrue(event is SettingsEvent.ShowSnackbar)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `setTileDisplayOption should only change displayOption not other fields`() = runTest {
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
+        advanceUntilIdle()
+
+        // First set some other fields
+        viewModel.setTileColorScheme(ColorScheme.GREEN)
+        advanceUntilIdle()
+
+        viewModel.setTileDisplayOption(DisplayOption.BOTH)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value.tileConfig
+        assertEquals(DisplayOption.BOTH, state.displayOption)
+        assertEquals(ColorScheme.GREEN, state.colorScheme) // Should be preserved
+    }
+
+    @Test
+    fun `tileConfig should be part of initial state`() = runTest {
+        viewModel = SettingsViewModel(preferences, backupManager, wearableDataLayerManager, context, testDispatcher)
+        advanceUntilIdle()
+
+        assertNotNull(viewModel.uiState.value.tileConfig)
+        assertEquals(TileConfig(), viewModel.uiState.value.tileConfig)
     }
 }
