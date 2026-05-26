@@ -176,6 +176,12 @@
     <string name="reminder_channel_name">Caffeine Reminders</string>
     <string name="reminder_channel_description">Morning, regular, and evening reminders</string>
 
+    <!-- Sync foreground service -->
+    <string name="sync_channel_name">Sync Service</string>
+    <string name="sync_channel_description">Notification for the wearable sync foreground service</string>
+    <string name="sync_notification_title">Syncing data</string>
+    <string name="sync_notification_text">Keeping your caffeine data in sync</string>
+
     <string name="reminder_morning_title_1">☕ Good morning!</string>
     <string name="reminder_morning_body_1">Time for your first coffee! Log your intake to start tracking today.</string>
     <string name="reminder_morning_title_2">🌅 Rise and shine!</string>

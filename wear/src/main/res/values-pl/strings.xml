@@ -196,4 +196,10 @@
     <string name="reminder_evening_body_2">Jak minął dzień z kofeiną? Otwórz aplikację, aby zobaczyć szczegóły.</string>
     <string name="reminder_evening_title_3">📋 Raport dnia</string>
     <string name="reminder_evening_body_3">Czas przejrzeć dzienne spożycie kofeiny. Stuknij, aby sprawdzić.</string>
+
+    <!-- Sync foreground service -->
+    <string name="sync_channel_name">Usługa synchronizacji</string>
+    <string name="sync_channel_description">Powiadomienie dla usługi synchronizacji</string>
+    <string name="sync_notification_title">Synchronizacja danych</string>
+    <string name="sync_notification_text">Trwa synchronizacja danych o kofeinie</string>
 </resources>
