@@ -48,6 +48,9 @@ class SyncStateStore @Inject constructor(
         const val DEFAULT_LAST_SYNC_TIMESTAMP = 0L
         const val DEFAULT_LAST_STATE_HASH = ""
         const val DEFAULT_LAST_SYNCED_DEVICE_ID = ""
+
+        /** Number of characters to log for the state hash prefix. */
+        private const val LOG_HASH_PREFIX_LENGTH = 16
     }
 
     // ------------------------------------------------------------------
@@ -107,7 +110,7 @@ class SyncStateStore @Inject constructor(
             preferences[KEY_LAST_SYNCED_DEVICE_ID] = deviceId
         }
         Timber.d("SyncStateStore: recorded sync completion ts=%d hash=%s device=%s",
-            timestamp, stateHash.take(16), deviceId)
+            timestamp, stateHash.take(LOG_HASH_PREFIX_LENGTH), deviceId)
     }
 
     /**

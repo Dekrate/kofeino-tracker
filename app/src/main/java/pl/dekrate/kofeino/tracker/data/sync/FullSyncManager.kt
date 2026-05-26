@@ -26,6 +26,8 @@ import pl.dekrate.kofeino.tracker.di.IoDispatcher
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
+import pl.dekrate.kofeino.tracker.domain.model.CaffeineIntake
+import pl.dekrate.kofeino.tracker.domain.model.DrinkEntity
 
 /**
  * Orchestrates the full-sync protocol between paired devices.
@@ -53,6 +55,7 @@ import javax.inject.Singleton
  * after [WearableDataLayerManager.register] detects a node.
  */
 @Singleton
+@Suppress("TooGenericExceptionCaught")
 class FullSyncManager @Inject constructor(
     private val messageClient: MessageClient,
     private val intakeDao: CaffeineIntakeDao,
@@ -70,6 +73,12 @@ class FullSyncManager @Inject constructor(
 
         /** Maximum entities per full-sync batch message (fits in 100KB Wear message limit). */
         private const val MAX_BATCH_SIZE = 50
+
+        /** Session timeout in milliseconds for full-sync protocol. */
+        private const val SESSION_TIMEOUT_MS = 30_000L
+
+        /** Number of characters to display of the state hash in logs. */
+        private const val STATE_HASH_LOG_PREFIX = 16
     }
 
     /** Serialises all sync operations — only one at a time. */
@@ -195,7 +204,7 @@ class FullSyncManager @Inject constructor(
         sessionState = SyncSessionState.Requesting(nodeId, sessionId, System.currentTimeMillis())
 
         try {
-            withTimeout(30_000L) {  // 30-second timeout for full sync
+            withTimeout(SESSION_TIMEOUT_MS) {  // 30-second timeout for full sync
                 val lastSyncTimestamp = syncStateStore.getLastSyncTimestamp()
                 val intakes = intakeDao.getAllIntakesSnapshot()
                 val drinks = drinkDao.getAllDrinksSnapshot()
@@ -205,7 +214,7 @@ class FullSyncManager @Inject constructor(
                 )
 
                 Timber.d("FullSync: initiating with %s, lastSyncTs=%d, hash=%s",
-                    nodeId, lastSyncTimestamp, currentHash.take(16))
+                    nodeId, lastSyncTimestamp, currentHash.take(STATE_HASH_LOG_PREFIX))
 
                 // Skip sync if state hasn't changed since last sync with this device
                 val lastStateHash = syncStateStore.getLastStateHash()
@@ -239,9 +248,9 @@ class FullSyncManager @Inject constructor(
                 sessionState = SyncSessionState.AwaitingResponse(nodeId, sessionId)
             }
         } catch (e: TimeoutCancellationException) {
-            Timber.w("FullSync: session timed out (30s) for node=%s", nodeId)
+            Timber.w(e, "FullSync: session timed out (30s) for node=%s", nodeId)
             sessionState = SyncSessionState.Idle
-            syncStatusTracker.onSyncFailed("Timeout")
+            syncStatusTracker.onSyncFailed("Timeout: ${e.message}")
         } catch (e: CancellationException) {
             sessionState = SyncSessionState.Idle
             syncStatusTracker.onSyncFailed("Cancelled")
@@ -289,19 +298,7 @@ class FullSyncManager @Inject constructor(
                 event.sourceNodeId, request.lastSyncTimestamp)
 
             // Collect entities modified since lastSyncTimestamp
-            val intakesToSend = if (request.lastSyncTimestamp == 0L) {
-                intakeDao.getAllIntakesSnapshot()
-            } else {
-                intakeDao.getAllIntakesSnapshot()
-                    .filter { it.lastModifiedTimestamp > request.lastSyncTimestamp }
-            }
-
-            val drinksToSend = if (request.lastSyncTimestamp == 0L) {
-                drinkDao.getAllDrinksSnapshot()
-            } else {
-                drinkDao.getAllDrinksSnapshot()
-                    .filter { it.lastModifiedTimestamp > request.lastSyncTimestamp }
-            }
+            val (intakesToSend, drinksToSend) = queryDeltaEntities(request.lastSyncTimestamp)
 
             // Send intakes batch
             sendEntityBatch(
@@ -452,8 +449,8 @@ class FullSyncManager @Inject constructor(
                     SyncPaths.MESSAGE_FULL_SYNC_RESPONSE,
                     responseJson.toByteArray()
                 ).await()
-                Timber.d("FullSync: sent batch %d (%d entities) to %s",
-                    batchIndex, batch.size, targetNodeId)
+                Timber.d("FullSync: sending batch %d (%d entities) to %s (session=%s)",
+                    batchIndex, batch.size, targetNodeId, sessionId)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -461,6 +458,19 @@ class FullSyncManager @Inject constructor(
                     batchIndex, targetNodeId)
                 throw e
             }
+        }
+    }
+
+    /**
+     * Query entities modified after [lastSyncTimestamp] for delta sync.
+     * Returns all entities when [lastSyncTimestamp] is `0L` (first-time sync).
+     */
+    private suspend fun queryDeltaEntities(lastSyncTimestamp: Long): Pair<List<CaffeineIntake>, List<DrinkEntity>> {
+        return if (lastSyncTimestamp == 0L) {
+            intakeDao.getAllIntakesSnapshot() to drinkDao.getAllDrinksSnapshot()
+        } else {
+            intakeDao.getAllIntakesSnapshot().filter { it.lastModifiedTimestamp > lastSyncTimestamp } to
+                drinkDao.getAllDrinksSnapshot().filter { it.lastModifiedTimestamp > lastSyncTimestamp }
         }
     }
 }
