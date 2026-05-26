@@ -54,7 +54,7 @@ import pl.dekrate.kofeino.domain.model.DrinkEntity
  * after [WearableDataLayerManager.register] detects a node.
  */
 @Singleton
-@Suppress("TooGenericExceptionCaught")
+@Suppress("TooGenericExceptionCaught", "SuspendFunSwallowedCancellation")
 class FullSyncManager @Inject constructor(
     private val messageClient: MessageClient,
     private val intakeDao: CaffeineIntakeDao,
@@ -88,7 +88,7 @@ class FullSyncManager @Inject constructor(
     private var sessionState: SyncSessionState = SyncSessionState.Idle
 
     /** Background scope for async sync operations. */
-    private var scope: CoroutineScope = CoroutineScope(SupervisorJob() + ioDispatcher)
+    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + ioDispatcher)
 
     // ------------------------------------------------------------------
     // Public API — called by WearableDataLayerManager
@@ -249,14 +249,14 @@ class FullSyncManager @Inject constructor(
         } catch (e: TimeoutCancellationException) {
             Timber.w(e, "FullSync: session timed out (30s) for node=%s", nodeId)
             sessionState = SyncSessionState.Idle
-            syncStatusTracker.onSyncFailed("Timeout: ${e.message}")
+            syncStatusTracker.onSyncFailed("Timeout: " + (e.message ?: "Unknown error"))
         } catch (e: CancellationException) {
             sessionState = SyncSessionState.Idle
             syncStatusTracker.onSyncFailed("Cancelled")
             throw e
         } catch (e: Exception) {
             sessionState = SyncSessionState.Idle
-            syncStatusTracker.onSyncFailed("FullSync initiation failed: ${e.message}")
+            syncStatusTracker.onSyncFailed("FullSync initiation failed: " + (e.message ?: "Unknown error"))
             Timber.w(e, "FullSync: initiation failed for node=%s", nodeId)
         }
     }
@@ -340,7 +340,7 @@ class FullSyncManager @Inject constructor(
             throw e
         } catch (e: Exception) {
             sessionState = SyncSessionState.Idle
-            syncStatusTracker.onSyncFailed("FullSync response failed: ${e.message}")
+            syncStatusTracker.onSyncFailed("FullSync response failed: " + (e.message ?: "Unknown error"))
             Timber.w(e, "FullSync: response preparation failed")
         }
     }
@@ -415,7 +415,7 @@ class FullSyncManager @Inject constructor(
             throw e
         } catch (e: Exception) {
             sessionState = SyncSessionState.Idle
-            syncStatusTracker.onSyncFailed("FullSync response processing failed: ${e.message}")
+            syncStatusTracker.onSyncFailed("FullSync response processing failed: " + (e.message ?: "Unknown error"))
             Timber.w(e, "FullSync: response processing failed")
         }
     }
