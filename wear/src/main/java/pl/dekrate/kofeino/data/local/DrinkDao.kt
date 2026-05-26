@@ -35,4 +35,7 @@ interface DrinkDao {
         "'%' ESCAPE '\\' ORDER BY name ASC"
     )
     fun searchDrinks(query: String): Flow<List<DrinkEntity>>
+
+    @Query("SELECT * FROM drinks ORDER BY name ASC")
+    suspend fun getAllDrinksSnapshot(): List<DrinkEntity>
 }

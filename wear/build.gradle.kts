@@ -113,6 +113,7 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
     implementation(libs.gson)
+    implementation(libs.datastore.preferences)
     implementation(libs.profileinstaller)
     implementation(project(":common"))
 

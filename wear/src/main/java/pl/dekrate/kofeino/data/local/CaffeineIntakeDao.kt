@@ -34,4 +34,7 @@ interface CaffeineIntakeDao {
 
     @Query("SELECT * FROM caffeine_intakes ORDER BY timestamp DESC LIMIT :limit")
     fun getRecentIntakes(limit: Int): Flow<List<CaffeineIntake>>
+
+    @Query("SELECT * FROM caffeine_intakes ORDER BY timestamp DESC")
+    suspend fun getAllIntakesSnapshot(): List<CaffeineIntake>
 }
