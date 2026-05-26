@@ -146,6 +146,26 @@
     <string name="custom_limit_decrease">Decrease limit</string>
     <string name="custom_limit_increase">Increase limit</string>
 
+    <!-- Cross-Device Status -->
+    <string name="cross_device_status_title">Cross-Device Status</string>
+    <string name="sync_queue_title">Sync Queue</string>
+    <string name="pending_changes">Pending</string>
+    <string name="failed_changes">Failed</string>
+    <string name="conflict_log_title">Conflict Log</string>
+    <string name="conflict_entries">Conflicts</string>
+    <string name="last_sync_title">Last Sync</string>
+    <string name="last_sync_time">Time</string>
+    <string name="never_synced">Never</string>
+    <string name="about">About</string>
+    <string name="app_version">Version</string>
+    <string name="view_cross_device_status">View Status</string>
+    <string name="paired_device">Paired device</string>
+    <string name="no_paired_device">No paired device</string>
+    <string name="sync_status_synced">Synced</string>
+    <string name="sync_status_awaiting_device">Awaiting device</string>
+    <string name="sync_status_syncing">Syncing</string>
+    <string name="sync_status_error">Sync error</string>
+
     <!-- Health disclaimer -->
     <string name="health_disclaimer_title">Disclaimer</string>
     <string name="health_disclaimer_text">This app provides informational tracking only and does not constitute medical advice. Caffeine tolerance varies by individual. Consult a healthcare professional before making significant changes to your caffeine intake. The creator of this app assumes no responsibility for any health consequences arising from its use. Sources: EFSA (2015), FDA (2024), WHO (2023).</string>

@@ -11,6 +11,7 @@ sealed class Screen(val route: String) {
     data object OfficialDrinks : Screen("official_drinks")
     data object EditIntake : Screen("edit_intake/{intakeId}")
     data object Settings : Screen("settings")
+    data object CrossDeviceStatus : Screen("cross_device_status")
 
     companion object {
         const val ARG_INTAKE_ID = "intakeId"

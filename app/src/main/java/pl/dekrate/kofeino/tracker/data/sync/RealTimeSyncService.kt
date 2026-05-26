@@ -31,7 +31,8 @@ import javax.inject.Singleton
 class RealTimeSyncService @Inject constructor(
     private val pendingSyncQueue: PendingSyncQueue,
     private val messageClient: MessageClient,
-    private val capabilityClient: CapabilityClient
+    private val capabilityClient: CapabilityClient,
+    private val syncStatusTracker: SyncStatusTracker
 ) {
     companion object {
         /** Wear capability name used to discover the paired device's sync node. */
@@ -61,16 +62,19 @@ class RealTimeSyncService @Inject constructor(
         // 2. Attempt immediate real-time delivery
         try {
             val nodeId = resolveNodeId() ?: return
+            syncStatusTracker.onSyncStarted()
             val path = SYNC_PATH_FORMAT.format(
                 Locale.ROOT,
                 entityType,
                 operationType.lowercase(Locale.ROOT)
             )
             messageClient.sendMessage(nodeId, path, payload.toByteArray()).await()
+            syncStatusTracker.onSyncCompleted()
             Timber.d("Real-time sync sent: %s id=%s via node=%s", path, entityId, nodeId)
         } catch (e: CancellationException) {
             throw e
         } catch (e: java.util.concurrent.ExecutionException) {
+            syncStatusTracker.onSyncFailed("ExecutionException: ${e.message ?: "null"}")
             Timber.w(e, "Real-time send failed (queued for retry): %s/%s id=%s",
                 entityType, operationType, entityId)
         }

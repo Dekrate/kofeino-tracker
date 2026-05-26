@@ -3,6 +3,7 @@ package pl.dekrate.kofeino.data.sync
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ConflictLogDao {
@@ -18,4 +19,8 @@ interface ConflictLogDao {
 
     @Query("DELETE FROM conflict_log")
     suspend fun clearAll()
+
+    /** Emits the total number of conflict log entries on every change. */
+    @Query("SELECT COUNT(*) FROM conflict_log")
+    fun observeCount(): Flow<Int>
 }

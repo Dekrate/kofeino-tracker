@@ -39,7 +39,9 @@ import pl.dekrate.kofeino.domain.model.CaffeineLimitProfile
 
 
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(
+    onNavigateToCrossDeviceStatus: () -> Unit = {}
+) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val activity = context.findActivity()
     val langPrefs = remember { LanguagePreferences(context) }
@@ -127,6 +129,24 @@ fun SettingsScreen() {
                             caffeinePrefs.setCustomLimit(newValue)
                         }
                     )
+                }
+            }
+
+            // ===== Cross-Device Status section =====
+            item {
+                ListHeader {
+                    Text(
+                        text = stringResource(R.string.cross_device_status_title),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+            }
+            item {
+                Button(
+                    onClick = onNavigateToCrossDeviceStatus,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+                ) {
+                    Text(stringResource(R.string.view_cross_device_status))
                 }
             }
 

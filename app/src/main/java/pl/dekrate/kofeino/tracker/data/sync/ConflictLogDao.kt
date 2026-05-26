@@ -3,6 +3,7 @@ package pl.dekrate.kofeino.tracker.data.sync
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Data-access object for the [ConflictLogEntry] table.
@@ -42,4 +43,8 @@ interface ConflictLogDao {
     /** Retrieve all entries that recorded a clock-skew warning. */
     @Query("SELECT * FROM conflict_log WHERE clockSkewMs > 0 ORDER BY resolvedAt DESC")
     suspend fun getClockSkewEntries(): List<ConflictLogEntry>
+
+    /** Reactive count of all entries in the conflict log. */
+    @Query("SELECT COUNT(*) FROM conflict_log")
+    fun observeCount(): Flow<Int>
 }

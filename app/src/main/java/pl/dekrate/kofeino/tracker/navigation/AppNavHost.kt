@@ -14,6 +14,7 @@ import pl.dekrate.kofeino.tracker.ui.screens.HistoryScreen
 import pl.dekrate.kofeino.tracker.ui.screens.HomeScreen
 import pl.dekrate.kofeino.tracker.ui.screens.ManageDrinksScreen
 import pl.dekrate.kofeino.tracker.ui.screens.OfficialDrinksScreen
+import pl.dekrate.kofeino.tracker.ui.screens.CrossDeviceStatusScreen
 import pl.dekrate.kofeino.tracker.ui.screens.SettingsScreen
 
 @Composable
@@ -73,6 +74,12 @@ fun AppNavHost(
         composable(Screen.Settings.route) {
             SettingsRoute(navController = navController, syncStatusTracker = syncStatusTracker)
         }
+        composable(Screen.CrossDeviceStatus.route) {
+            CrossDeviceStatusScreen(
+                syncStatusTracker = syncStatusTracker,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
     }
 }
 
@@ -94,6 +101,7 @@ private fun HomeRoute(navController: NavHostController, syncStatusTracker: SyncS
 private fun SettingsRoute(navController: NavHostController, syncStatusTracker: SyncStatusTracker) {
     SettingsScreen(
         syncStatusTracker = syncStatusTracker,
-        onNavigateBack = { navController.popBackStack() }
+        onNavigateBack = { navController.popBackStack() },
+        onNavigateToCrossDeviceStatus = { navController.navigate(Screen.CrossDeviceStatus.route) }
     )
 }
