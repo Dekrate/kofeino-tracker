@@ -1,5 +1,10 @@
 package pl.dekrate.kofeino.tracker.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -35,7 +40,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -54,6 +62,9 @@ import pl.dekrate.kofeino.tracker.presentation.viewmodel.HomeViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+
+@Suppress("TopLevelPropertyNaming")
+private const val ITEM_SLIDE_DIVISOR = 4
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -210,11 +221,19 @@ private fun HomeContent(
             }
         } else {
             items(state.todayIntakes, key = { it.id }) { intake ->
-                TodayIntakeItem(
-                    intake = intake,
-                    onClick = { onIntakeClick(intake.id) },
-                    modifier = Modifier.animateItem()
-                )
+                var isVisible by remember { mutableStateOf(false) }
+                LaunchedEffect(Unit) { isVisible = true }
+                AnimatedVisibility(
+                    visible = isVisible,
+                    enter = fadeIn() + slideInVertically { -it / ITEM_SLIDE_DIVISOR },
+                    exit = fadeOut() + slideOutVertically { it / ITEM_SLIDE_DIVISOR }
+                ) {
+                    TodayIntakeItem(
+                        intake = intake,
+                        onClick = { onIntakeClick(intake.id) },
+                        modifier = Modifier.animateItem()
+                    )
+                }
             }
         }
     }
