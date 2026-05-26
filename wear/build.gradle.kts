@@ -50,6 +50,10 @@ android {
         }
     }
 
+    tasks.withType<Test>().configureEach {
+        jvmArgs("-Dnet.bytebuddy.experimental=true")
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true

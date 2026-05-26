@@ -40,7 +40,7 @@ class RealTimeSyncServiceTest {
 
     @Before
     fun setUp() {
-        service = RealTimeSyncService(pendingSyncQueue, messageClient, capabilityClient)
+        service = RealTimeSyncService(pendingSyncQueue, messageClient, capabilityClient, mockk(relaxUnitFun = true))
         mockkStatic(Tasks::class)
     }
 

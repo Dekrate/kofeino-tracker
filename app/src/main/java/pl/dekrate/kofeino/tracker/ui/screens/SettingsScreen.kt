@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package pl.dekrate.kofeino.tracker.ui.screens
 
 import android.app.Activity
@@ -93,6 +95,7 @@ private fun SettingsViewModel.toSettingsActionHandler(): (SettingsAction) -> Uni
 fun SettingsScreen(
     syncStatusTracker: SyncStatusTracker,
     onNavigateBack: () -> Unit,
+    onNavigateToCrossDeviceStatus: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -183,6 +186,7 @@ fun SettingsScreen(
                 importLauncher.launch(arrayOf("application/json"))
             },
             onSettingsAction = onSettingsAction,
+            onNavigateToCrossDeviceStatus = onNavigateToCrossDeviceStatus,
             modifier = Modifier.fillMaxSize().padding(innerPadding).verticalScroll(rememberScrollState())
         )
     }
@@ -195,6 +199,7 @@ private fun SettingsContent(
     onExportClick: () -> Unit,
     onImportClick: () -> Unit,
     onSettingsAction: (SettingsAction) -> Unit,
+    onNavigateToCrossDeviceStatus: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val themeSystemDesc = stringResource(R.string.theme_system_description)
@@ -240,6 +245,8 @@ private fun SettingsContent(
             onImportClick = onImportClick,
             onSettingsAction = onSettingsAction
         )
+        HorizontalDivider(Modifier.padding(vertical = 8.dp))
+        CrossDeviceStatusSection(onNavigateToCrossDeviceStatus)
         HorizontalDivider(Modifier.padding(vertical = 8.dp))
         HealthDisclaimerSection()
         HorizontalDivider(Modifier.padding(vertical = 8.dp))
@@ -381,6 +388,29 @@ private fun BackupSection(
             enabled = !isBackupInProgress,
             onClick = onImportClick
         )
+    }
+}
+
+@Composable
+private fun CrossDeviceStatusSection(
+    onNavigateToCrossDeviceStatus: () -> Unit
+) {
+    Column {
+        SectionHeader(
+            stringResource(R.string.cross_device_status_title),
+            Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+        )
+        Button(
+            onClick = onNavigateToCrossDeviceStatus,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 4.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.view_cross_device_status),
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
     }
 }
 

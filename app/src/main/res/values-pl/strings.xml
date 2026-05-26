@@ -194,6 +194,25 @@
     <string name="sync_status_syncing">Synchronizacja…</string>
     <string name="sync_status_error">Błąd synchronizacji: %s</string>
 
+    <!-- Cross-Device Status -->
+    <string name="cross_device_status_title">Status międzyurządzeniowy</string>
+    <string name="paired_device">Sparowane urządzenie</string>
+    <string name="no_paired_device">Brak sparowanego urządzenia</string>
+    <string name="device_connected">Połączono</string>
+    <string name="device_disconnected">Rozłączono</string>
+    <string name="status">Status</string>
+    <string name="sync_status_title">Stan synchronizacji</string>
+    <string name="sync_queue_title">Kolejka synchronizacji</string>
+    <string name="pending_changes">Oczekujące zmiany</string>
+    <string name="failed_changes">Nieudane zmiany</string>
+    <string name="conflict_log_title">Dziennik konfliktów</string>
+    <string name="conflict_entries">Wpisy konfliktów</string>
+    <string name="last_sync_title">Ostatnia synchronizacja</string>
+    <string name="last_sync_time">Ostatnia synchronizacja</string>
+    <string name="never_synced">Nigdy nie synchronizowano</string>
+    <string name="app_version">Wersja aplikacji</string>
+    <string name="view_cross_device_status">Zobacz status międzyurządzeniowy</string>
+
     <!-- OfficialDrinksScreen -->
     <string name="search_hint">Szukaj napojów…</string>
     <string name="search_clear">Wyczyść wyszukiwanie</string>

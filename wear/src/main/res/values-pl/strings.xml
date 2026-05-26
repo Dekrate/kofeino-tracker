@@ -146,6 +146,26 @@
     <string name="custom_limit_decrease">Zmniejsz limit</string>
     <string name="custom_limit_increase">Zwiększ limit</string>
 
+    <!-- Cross-Device Status -->
+    <string name="cross_device_status_title">Status międzyurządzeniowy</string>
+    <string name="sync_queue_title">Kolejka synchronizacji</string>
+    <string name="pending_changes">Oczekujące</string>
+    <string name="failed_changes">Nieudane</string>
+    <string name="conflict_log_title">Dziennik konfliktów</string>
+    <string name="conflict_entries">Konflikty</string>
+    <string name="last_sync_title">Ostatnia synchronizacja</string>
+    <string name="last_sync_time">Czas</string>
+    <string name="never_synced">Nigdy</string>
+    <string name="about">O aplikacji</string>
+    <string name="app_version">Wersja</string>
+    <string name="view_cross_device_status">Zobacz status</string>
+    <string name="paired_device">Sparowane urządzenie</string>
+    <string name="no_paired_device">Brak sparowanego urządzenia</string>
+    <string name="sync_status_synced">Zsynchronizowano</string>
+    <string name="sync_status_awaiting_device">Oczekiwanie na urządzenie</string>
+    <string name="sync_status_syncing">Synchronizacja</string>
+    <string name="sync_status_error">Błąd synchronizacji</string>
+
     <!-- Health disclaimer -->
     <string name="health_disclaimer_title">Zastrzeżenie</string>
     <string name="health_disclaimer_text">Ta aplikacja służy wyłącznie do celów informacyjnych i nie stanowi porady medycznej. Tolerancja kofeiny różni się w zależności od osoby. Skonsultuj się z lekarzem przed znaczącą zmianą spożycia kofeiny. Twórca aplikacji nie ponosi odpowiedzialności za jakiekolwiek konsekwencje zdrowotne wynikające z jej używania. Źródła: EFSA (2015), FDA (2024), WHO (2023).</string>

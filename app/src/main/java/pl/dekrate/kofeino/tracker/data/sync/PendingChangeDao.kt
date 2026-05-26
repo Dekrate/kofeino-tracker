@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Data-access object for the [PendingChangeEntity] queue table.
@@ -74,4 +75,19 @@ interface PendingChangeDao {
      */
     @Query("SELECT * FROM pending_changes WHERE status = 'FAILED' AND retryCount < 5")
     suspend fun getRetryableFailed(): List<PendingChangeEntity>
+
+    /** Reactive count of all rows in the queue. */
+    @Query("SELECT COUNT(*) FROM pending_changes")
+    fun observeCount(): Flow<Int>
+
+    /** Reactive count of FAILED changes. */
+    @Query("SELECT COUNT(*) FROM pending_changes WHERE status = :status")
+    fun observeFailedCount(status: String = PendingChangeEntity.STATUS_FAILED): Flow<Int>
+
+    /**
+     * Returns the timestamp of the most recently enqueued pending change.
+     * This is NOT the last successful sync time — it reflects queue activity.
+     */
+    @Query("SELECT MAX(timestamp) FROM pending_changes")
+    suspend fun getLatestEnqueuedTimestamp(): Long?
 }
