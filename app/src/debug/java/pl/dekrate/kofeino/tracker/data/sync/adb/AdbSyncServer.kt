@@ -80,6 +80,7 @@ class AdbSyncServer @Inject constructor(
                 }
             }
         } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+            if (e is CancellationException) throw e
             if (coroutineContext.isActive) Timber.d(e, "AdbSyncServer: connection error")
         } finally {
             cleanup()
