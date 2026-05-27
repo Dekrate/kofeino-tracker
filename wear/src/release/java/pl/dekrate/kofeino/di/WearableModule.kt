@@ -1,4 +1,4 @@
-package pl.dekrate.kofeino.tracker.di
+package pl.dekrate.kofeino.di
 
 import android.content.Context
 import com.google.android.gms.wearable.CapabilityClient
@@ -10,9 +10,14 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import pl.dekrate.kofeino.tracker.data.sync.SyncStatusTracker
 import javax.inject.Singleton
 
+/**
+ * Production Hilt module providing real Wear OS Data Layer clients.
+ * Installed only in release builds via the `release` source set.
+ *
+ * In debug builds [AdbWearableModule] provides ADB TCP implementations instead.
+ */
 @Module
 @InstallIn(SingletonComponent::class)
 object WearableModule {
@@ -34,8 +39,4 @@ object WearableModule {
     fun provideCapabilityClient(@ApplicationContext context: Context): CapabilityClient {
         return Wearable.getCapabilityClient(context)
     }
-
-    @Provides
-    @Singleton
-    fun provideSyncStatusTracker(): SyncStatusTracker = SyncStatusTracker()
 }

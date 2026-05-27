@@ -89,6 +89,18 @@ android {
             excludes += "/META-INF/LICENSE-notice.md"
         }
     }
+
+    sourceSets {
+        getByName("debug") {
+            java.srcDirs("src/debug/kotlin", "src/debug/java")
+        }
+        getByName("release") {
+            java.srcDirs("src/release/kotlin", "src/release/java")
+        }
+        getByName("testRelease") {
+            java.srcDirs("src/testRelease/kotlin", "src/testRelease/java")
+        }
+    }
 }
 
 dependencies {
