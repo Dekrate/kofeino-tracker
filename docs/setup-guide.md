@@ -248,6 +248,93 @@ Po ustawieniu locale na `pl-PL` aplikacja wyświetla polskie komunikaty, daty i 
 
 ---
 
+## 13. Development Setup: Running Both Apps with Sync (English)
+
+This section covers how to run both the Wear OS watch app (`:wear`) and the Android phone companion app (`:app`) simultaneously with cross-device synchronization enabled.
+
+### 13.1 Prerequisites
+
+- Both apps must be installed on their respective devices
+- Wear OS emulator + phone emulator (or physical devices running both)
+- Both devices must be signed into the **same Google account**
+- Google Play Services is required on both sides (available on emulators by default)
+
+> **Note:** On the Wear OS emulator, open Settings → Accounts → Add account and sign in with a Google account. Do the same on the phone emulator via Settings → Accounts. Without a Google account, the Wearable Data Layer cannot establish a connection.
+- Bluetooth and/or WiFi must be enabled on both devices
+
+### 13.2 Building Both Apps
+
+```bash
+# Build the Wear OS watch app
+./gradlew :wear:assembleDebug
+
+# Build the phone companion app
+./gradlew :app:assembleDebug
+
+# Install both on connected devices
+./gradlew :wear:installDebug :app:installDebug
+```
+
+If you have both emulators running simultaneously, `adb` routes correctly as long as each APK targets the right device type.
+
+### 13.3 Enabling Sync
+
+1. Install both apps on their respective devices or emulators.
+2. On the **watch**, navigate to **Cross-Device Sync** from the app's main menu.
+3. Tap **Start Sync** — this launches the foreground `WearableSyncService` that manages the Wearable Data Layer connection.
+4. On the **phone**, open the companion app and navigate to **Cross-Device Sync**.
+5. Both devices should display **"Synced"** status once the connection is established.
+
+> Sync uses Google's Wearable Data Layer API under the hood. Messages and data items are exchanged over Bluetooth (when paired) or WiFi (when on the same network).
+
+### 13.4 Verifying Sync
+
+1. **Log a drink on the watch** — it should appear on the phone within seconds (typically < 5 s).
+2. **Log a drink on the phone** — it should sync to the watch automatically.
+3. **Turn off Bluetooth/WiFi** — changes should queue locally in the pending sync queue.
+4. **Reconnect** — queued changes should be flushed and synced automatically (exponential backoff up to 16 s).
+
+Expected behavior: both devices converge to the same state within seconds under normal connectivity.
+
+### 13.5 Troubleshooting Sync Issues
+
+| Issue | Solution |
+|-------|----------|
+| "No paired device" shown | Ensure both devices are on the same Google account and have Bluetooth/WiFi enabled |
+| Sync stuck on "Syncing..." | Check device connectivity and restart the sync service |
+| Data not appearing on other device | Wait for queue flush (up to 16 s backoff) or restart sync service |
+| Conflict resolution warnings | Check device clock sync — devices should be within 60 s of each other |
+| Wearable Sync Service not running (watch) | Restart the app or use `adb shell am startservice -n pl.dekrate.kofeino/.data.sync.WearableSyncService -a pl.dekrate.kofeino.action.START_SYNC` |
+| Wearable Sync Service not running (phone) | Restart the app or use `adb shell am force-stop pl.dekrate.kofeino.tracker` and re-open the app |
+
+### 13.6 Using adb to Test Sync
+
+```bash
+# --- Watch commands ---
+# Check sync service is running
+adb shell dumpsys activity services pl.dekrate.kofeino/.data.sync.WearableSyncService
+
+# Force-start sync service on watch
+adb shell am startservice -n pl.dekrate.kofeino/.data.sync.WearableSyncService -a pl.dekrate.kofeino.action.START_SYNC
+
+# Force-stop sync service on watch
+adb shell am startservice -n pl.dekrate.kofeino/.data.sync.WearableSyncService -a pl.dekrate.kofeino.action.STOP_SYNC
+
+# --- Phone commands ---
+# The phone sync service starts automatically with the app.
+# To restart: force-stop and reopen
+adb shell am force-stop pl.dekrate.kofeino.tracker
+
+# --- Logs (from whichever device is connected) ---
+adb logcat -s WearableSyncService:D RealTimeSyncService:D FullSyncManager:D
+```
+
+### 13.7 Architecture Note on Testing Sync Locally
+
+Since the Wearable Data Layer requires Google Play Services, local testing with two emulators works best when both are signed into the same Google account. For automated testing, the sync layer is covered by extensive unit tests with mocked `MessageClient` and `CapabilityClient` — no physical devices required.
+
+---
+
 ## Podsumowanie komend
 
 ```powershell
