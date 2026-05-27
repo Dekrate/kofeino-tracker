@@ -12,9 +12,6 @@ import androidx.wear.tiles.TileBuilders.Tile
 import androidx.wear.tiles.TileService
 import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.EntryPointAccessors
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.future.future
-import java.util.concurrent.CompletableFuture
 import pl.dekrate.kofeino.R
 import pl.dekrate.kofeino.common.domain.model.ColorScheme
 import pl.dekrate.kofeino.common.domain.model.DisplayOption
@@ -53,73 +50,69 @@ class CaffeineTileService : TileService() {
     }
 
     override fun onTileRequest(requestParams: RequestBuilders.TileRequest): ListenableFuture<Tile> {
-        return GlobalScope.future {
-            val config = tileDataStorePreferences.getTileConfig()
+        val config = kotlinx.coroutines.runBlocking {
+            tileDataStorePreferences.getTileConfig()
+        }
+        val caffeineTotalStr = getString(R.string.tile_caffeine_total)
+        val drinkCountStr = getString(R.string.tile_drink_count)
+        val limitStatusStr = getString(R.string.tile_limit_status)
+        val combinedStr = getString(R.string.tile_combined)
+        val titleCaffeineTotal = getString(R.string.tile_title_caffeine_total)
+        val titleDrinkCount = getString(R.string.tile_title_drink_count)
+        val titleLimitStatus = getString(R.string.tile_title_limit_status)
+        val titleCombined = getString(R.string.tile_title_combined)
 
-            val caffeineTotalStr = getString(R.string.tile_caffeine_total)
-            val drinkCountStr = getString(R.string.tile_drink_count)
-            val limitStatusStr = getString(R.string.tile_limit_status)
-            val combinedStr = getString(R.string.tile_combined)
-            val titleCaffeineTotal = getString(R.string.tile_title_caffeine_total)
-            val titleDrinkCount = getString(R.string.tile_title_drink_count)
-            val titleLimitStatus = getString(R.string.tile_title_limit_status)
-            val titleCombined = getString(R.string.tile_title_combined)
+        val colors = CustomTileColors.fromColorScheme(config.colorScheme, config.caffeineLimitColor)
 
-            val colors = CustomTileColors.fromColorScheme(config.colorScheme, config.caffeineLimitColor)
+        val tileLayout = materialScope(this, requestParams.deviceConfiguration) {
+            primaryLayout(
+                titleSlot = {
+                    text(
+                        text = when (config.displayOption) {
+                            DisplayOption.CAFFEINE_TOTAL -> titleCaffeineTotal
+                            DisplayOption.DRINK_COUNT -> titleDrinkCount
+                            DisplayOption.LIMIT_STATUS -> titleLimitStatus
+                            DisplayOption.BOTH -> titleCombined
+                        }.layoutString,
+                        color = LayoutColor(colors.accentColor)
+                    )
+                },
+                mainSlot = {
+                    text(
+                        text = when (config.displayOption) {
+                            DisplayOption.CAFFEINE_TOTAL -> caffeineTotalStr
+                            DisplayOption.DRINK_COUNT -> drinkCountStr
+                            DisplayOption.LIMIT_STATUS -> limitStatusStr
+                            DisplayOption.BOTH -> combinedStr
+                        }.layoutString,
+                        color = LayoutColor(colors.primaryColor),
+                        typography = Typography.BODY_LARGE
+                    )
+                }
+            )
+        }
 
-            val tileLayout = materialScope(this@CaffeineTileService, requestParams.deviceConfiguration) {
-                primaryLayout(
-                    titleSlot = {
-                        text(
-                            text = when (config.displayOption) {
-                                DisplayOption.CAFFEINE_TOTAL -> titleCaffeineTotal
-                                DisplayOption.DRINK_COUNT -> titleDrinkCount
-                                DisplayOption.LIMIT_STATUS -> titleLimitStatus
-                                DisplayOption.BOTH -> titleCombined
-                            }.layoutString,
-                            color = LayoutColor(colors.accentColor)
-                        )
-                    },
-                    mainSlot = {
-                        text(
-                            text = when (config.displayOption) {
-                                DisplayOption.CAFFEINE_TOTAL -> caffeineTotalStr
-                                DisplayOption.DRINK_COUNT -> drinkCountStr
-                                DisplayOption.LIMIT_STATUS -> limitStatusStr
-                                DisplayOption.BOTH -> combinedStr
-                            }.layoutString,
-                            color = LayoutColor(colors.primaryColor),
-                            typography = Typography.BODY_LARGE
-                        )
-                    }
-                )
-            }
+        val tile = Tile.Builder()
+            .setResourcesVersion("1")
+            .setFreshnessIntervalMillis(config.refreshIntervalMinutes.minutes * 60_000L)
+            .setTileTimeline(Timeline.fromLayoutElement(tileLayout))
+            .build()
 
-            Tile.Builder()
-                .setResourcesVersion("1")
-                .setFreshnessIntervalMillis(config.refreshIntervalMinutes.minutes * 60_000L)
-                .setTileTimeline(Timeline.fromLayoutElement(tileLayout))
-                .build()
-        }.asListenableFuture()
+        return immediateListenableFuture(tile)
     }
 
     /**
-     * Converts a [CompletableFuture] to a [ListenableFuture].
-     *
-     * The listener registered via [addListener] is invoked when the future completes
-     * (normally, exceptionally, or by cancellation).
+     * Returns a [ListenableFuture] that is already complete with the given [value].
      */
-    private fun <T> CompletableFuture<T>.asListenableFuture(): ListenableFuture<T> {
+    private fun <T> immediateListenableFuture(value: T): ListenableFuture<T> {
         return object : ListenableFuture<T> {
-            override fun get(): T = this@asListenableFuture.get()
-            override fun get(timeout: Long, unit: TimeUnit): T = this@asListenableFuture.get(timeout, unit)
-            override fun cancel(mayInterruptIfRunning: Boolean): Boolean =
-                this@asListenableFuture.cancel(mayInterruptIfRunning)
-
-            override fun isCancelled(): Boolean = this@asListenableFuture.isCancelled()
-            override fun isDone(): Boolean = this@asListenableFuture.isDone()
+            override fun get(): T = value
+            override fun get(timeout: Long, unit: TimeUnit): T = value
+            override fun cancel(mayInterruptIfRunning: Boolean): Boolean = false
+            override fun isCancelled(): Boolean = false
+            override fun isDone(): Boolean = true
             override fun addListener(listener: Runnable, executor: Executor) {
-                this@asListenableFuture.whenCompleteAsync({ _, _ -> listener.run() }, executor)
+                executor.execute(listener)
             }
         }
     }
