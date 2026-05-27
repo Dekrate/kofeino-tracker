@@ -11,14 +11,14 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.plus
+import pl.dekrate.kofeino.tracker.di.ApplicationScope
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -54,7 +54,8 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
  */
 @Singleton
 class DataStorePreferences @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    @ApplicationScope private val applicationScope: CoroutineScope
 ) {
     private val dataStore: DataStore<Preferences> = context.dataStore
 
@@ -69,14 +70,11 @@ class DataStorePreferences @Inject constructor(
     @Volatile private var cachedCustomLimit: Int = DEFAULT_CUSTOM_CAFFEINE_LIMIT
     @Volatile private var initialized = false
 
-    /** Application-scoped coroutine scope with supervisor behaviour. */
-    private val scope = GlobalScope + CoroutineExceptionHandler { _, e ->
-        Timber.w(e, "DataStorePreferences: unhandled exception in warm-up coroutine")
-    }
-
     /** Eagerly warm the cache from DataStore on construction. */
     init {
-        scope.launch(Dispatchers.IO) {
+        applicationScope.launch(Dispatchers.IO + CoroutineExceptionHandler { _, e ->
+            Timber.w(e, "DataStorePreferences: unhandled exception in warm-up coroutine")
+        }) {
             try {
                 val prefs = dataStore.data.first()
                 cachedLanguage = prefs[LANGUAGE_KEY] ?: migrateLanguageFromSp()

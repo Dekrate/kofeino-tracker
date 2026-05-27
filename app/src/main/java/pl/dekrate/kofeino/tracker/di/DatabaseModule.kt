@@ -17,7 +17,9 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import timber.log.Timber
 import javax.inject.Qualifier
 import javax.inject.Singleton
@@ -25,6 +27,10 @@ import javax.inject.Singleton
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class IoDispatcher
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class ApplicationScope
 
 @Suppress("TooManyFunctions")
 @Module
@@ -136,6 +142,13 @@ object DatabaseModule {
     @Singleton
     @IoDispatcher
     fun provideIoDispatcher(): CoroutineDispatcher = Dispatchers.IO
+
+    @Provides
+    @Singleton
+    @ApplicationScope
+    fun provideApplicationScope(@IoDispatcher ioDispatcher: CoroutineDispatcher): CoroutineScope {
+        return CoroutineScope(SupervisorJob() + ioDispatcher)
+    }
 
     private fun insertOfficialDrinkCache(db: androidx.sqlite.db.SupportSQLiteDatabase) {
         // Seed cache with common drinks (data sourced from Open Food Facts)
