@@ -1,13 +1,9 @@
 package pl.dekrate.kofeino.di
 
-import android.content.Context
-import androidx.test.core.app.ApplicationProvider
 import okhttp3.OkHttpClient
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 import pl.dekrate.kofeino.data.remote.CustomDns
 import pl.dekrate.kofeino.common.util.OpenFoodFactsConfig
 
@@ -17,7 +13,6 @@ import pl.dekrate.kofeino.common.util.OpenFoodFactsConfig
  *
  * These are isolated provider tests — no Hilt required.
  */
-@RunWith(RobolectricTestRunner::class)
 class NetworkModuleConfigTest {
 
     @Test
@@ -40,7 +35,7 @@ class NetworkModuleConfigTest {
 
     @Test
     fun `provideOkHttpClient should return non-null instance`() {
-        val client = NetworkModule.provideOkHttpClient(CustomDns(), ApplicationProvider.getApplicationContext<Context>())
+        val client = NetworkModule.provideOkHttpClient(CustomDns())
         assertNotNull("OkHttpClient must not be null", client)
     }
 

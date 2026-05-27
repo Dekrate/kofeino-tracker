@@ -30,6 +30,7 @@ class AdbDataClient @Inject constructor(
     @Suppress("DataBufferLeak")
     private val emptyDataItemBuffer by lazy { DataItemBuffer(DataHolder.builder(arrayOf("_id")).build(0)) }
 
+    @Suppress("ForbiddenVoid")
     override fun addListener(listener: DataClient.OnDataChangedListener): Task<Void> {
         listeners.add(listener); return Tasks.forResult(null)
     }
@@ -38,6 +39,7 @@ class AdbDataClient @Inject constructor(
         listeners.remove(listener); return Tasks.forResult(true)
     }
 
+    @Suppress("ForbiddenVoid")
     override fun addListener(
         listener: DataClient.OnDataChangedListener,
         uri: Uri,
