@@ -40,6 +40,7 @@ class AdbCapabilityClient @Inject constructor(
         }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     internal fun setConnected(value: Boolean) {
         if (connected == value) return
         connected = value
@@ -59,6 +60,7 @@ class AdbCapabilityClient @Inject constructor(
     override fun getAllCapabilities(filter: Int): Task<Map<String, CapabilityInfo>> =
         Tasks.forResult(mapOf(SYNC_CAPABILITY_NAME to createCapabilityInfo(SYNC_CAPABILITY_NAME)))
 
+    @Suppress("ForbiddenVoid")
     override fun addListener(
         listener: CapabilityClient.OnCapabilityChangedListener,
         name: String
@@ -66,6 +68,7 @@ class AdbCapabilityClient @Inject constructor(
         listeners.add(listener); return Tasks.forResult(null)
     }
 
+    @Suppress("ForbiddenVoid")
     override fun addListener(
         listener: CapabilityClient.OnCapabilityChangedListener,
         uri: Uri,
@@ -87,7 +90,9 @@ class AdbCapabilityClient @Inject constructor(
         listeners.remove(listener); return Tasks.forResult(true)
     }
 
+    @Suppress("ForbiddenVoid")
     override fun addLocalCapability(name: String): Task<Void> = Tasks.forResult(null)
 
+    @Suppress("ForbiddenVoid")
     override fun removeLocalCapability(name: String): Task<Void> = Tasks.forResult(null)
 }

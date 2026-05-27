@@ -22,6 +22,7 @@ class AdbSyncServer @Inject constructor(
     private val adbCapabilityClient: AdbCapabilityClient
 ) : AdbSyncTransport {
 
+    @Suppress("InjectDispatcher")
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     @Volatile private var serverSocket: ServerSocket? = null
     @Volatile private var clientSocket: Socket? = null
@@ -33,6 +34,7 @@ class AdbSyncServer @Inject constructor(
         scope.launch { run() }
     }
 
+    @Suppress("SuspendFunSwallowedCancellation")
     private suspend fun run() {
         try {
             serverSocket = ServerSocket(AdbSyncConfig.PORT).also {
@@ -50,7 +52,7 @@ class AdbSyncServer @Inject constructor(
             }
         } catch (e: CancellationException) {
             throw e
-        } catch (e: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
             Timber.e(e, "AdbSyncServer: fatal error")
         }
     }
@@ -77,7 +79,7 @@ class AdbSyncServer @Inject constructor(
                     adbMessageClient.dispatchMessage(path, payload, AdbCapabilityClient.ADB_NODE_ID)
                 }
             }
-        } catch (e: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
             if (coroutineContext.isActive) Timber.d(e, "AdbSyncServer: connection error")
         } finally {
             cleanup()
@@ -86,6 +88,7 @@ class AdbSyncServer @Inject constructor(
 
     @Synchronized
     override fun write(data: ByteArray) {
+        @Suppress("UseCheckOrError")
         val sock = clientSocket ?: throw IllegalStateException("AdbSyncServer: not connected")
         sock.getOutputStream().run { write(data); flush() }
     }
@@ -103,7 +106,7 @@ class AdbSyncServer @Inject constructor(
         if (adbMessageClient.transport === this) adbMessageClient.transport = null
         try {
             clientSocket?.close()
-        } catch (_: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
         }
         clientSocket = null
     }

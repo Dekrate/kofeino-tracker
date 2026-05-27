@@ -32,12 +32,13 @@ class AdbMessageClient @Inject constructor(
             val frame = AdbSyncProtocol.frame(path, data)
             t.write(frame)
             Tasks.forResult(data.size)
-        } catch (e: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
             Timber.w(e, "AdbMessageClient: send failed for %s", path)
             Tasks.forException(e)
         }
     }
 
+    @Suppress("ForbiddenVoid")
     override fun addListener(listener: MessageClient.OnMessageReceivedListener): Task<Void> {
         listeners.add(listener); return Tasks.forResult(null)
     }
@@ -46,15 +47,18 @@ class AdbMessageClient @Inject constructor(
         listeners.remove(listener); return Tasks.forResult(true)
     }
 
+    @Suppress("ForbiddenVoid")
     override fun addListener(
         listener: MessageClient.OnMessageReceivedListener,
         uri: Uri,
         strategy: Int
     ): Task<Void> = addListener(listener)
 
+    @Suppress("ForbiddenVoid")
     override fun addRpcService(service: MessageClient.RpcService, path: String): Task<Void> =
         Tasks.forResult(null)
 
+    @Suppress("ForbiddenVoid")
     override fun addRpcService(service: MessageClient.RpcService, path: String, microAppId: String): Task<Void> =
         Tasks.forResult(null)
 
@@ -74,7 +78,7 @@ class AdbMessageClient @Inject constructor(
         for (listener in listeners) {
             try {
                 listener.onMessageReceived(event)
-            } catch (e: Exception) {
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
                 Timber.w(e, "AdbMessageClient: listener threw")
             }
         }

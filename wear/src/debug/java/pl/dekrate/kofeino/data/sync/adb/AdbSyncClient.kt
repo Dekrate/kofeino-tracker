@@ -23,6 +23,7 @@ class AdbSyncClient @Inject constructor(
     private val adbCapabilityClient: AdbCapabilityClient
 ) : AdbSyncTransport {
 
+    @Suppress("InjectDispatcher")
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     @Volatile private var socket: Socket? = null
     @Volatile override var isConnected: Boolean = false
@@ -33,6 +34,7 @@ class AdbSyncClient @Inject constructor(
         scope.launch { run() }
     }
 
+    @Suppress("SuspendFunSwallowedCancellation")
     private suspend fun run() {
         var attempt = 0
         while (coroutineContext.isActive) {
@@ -58,7 +60,7 @@ class AdbSyncClient @Inject constructor(
                 readLoop(s)
             } catch (e: CancellationException) {
                 throw e
-            } catch (e: Exception) {
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
                 if (!coroutineContext.isActive) break
                 Timber.d(e, "AdbSyncClient: attempt %d failed", attempt)
                 cleanup()
@@ -89,7 +91,7 @@ class AdbSyncClient @Inject constructor(
                     adbMessageClient.dispatchMessage(path, payload, AdbCapabilityClient.ADB_NODE_ID)
                 }
             }
-        } catch (e: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
             if (coroutineContext.isActive) Timber.d(e, "AdbSyncClient: read error")
         } finally {
             cleanup()
@@ -98,6 +100,7 @@ class AdbSyncClient @Inject constructor(
 
     @Synchronized
     override fun write(data: ByteArray) {
+        @Suppress("UseCheckOrError")
         val s = socket ?: throw IllegalStateException("AdbSyncClient: not connected")
         s.getOutputStream().run { write(data); flush() }
     }
@@ -114,7 +117,7 @@ class AdbSyncClient @Inject constructor(
         if (adbMessageClient.transport === this) adbMessageClient.transport = null
         try {
             socket?.close()
-        } catch (_: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
         }
         socket = null
     }
