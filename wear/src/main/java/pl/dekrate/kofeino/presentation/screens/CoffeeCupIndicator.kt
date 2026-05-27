@@ -32,7 +32,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.invisibleToUser
+import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.wear.compose.material3.MaterialTheme
@@ -90,7 +90,7 @@ fun CoffeeCupIndicator(
         Box(contentAlignment = Alignment.Center) {
             Canvas(modifier = Modifier
                 .size(120.dp)
-                .semantics { invisibleToUser() }
+                .semantics { hideFromAccessibility() }
             ) {
                 drawProgressRing(
                     progress = animatedProgress,
