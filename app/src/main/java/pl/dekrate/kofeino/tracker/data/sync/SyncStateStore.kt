@@ -1,22 +1,17 @@
 package pl.dekrate.kofeino.tracker.data.sync
 
-import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import pl.dekrate.kofeino.tracker.di.SyncStateDataStore
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
-
-/** Extension property for the sync state DataStore. */
-private val Context.syncStateStore: DataStore<Preferences> by preferencesDataStore(name = "sync_state")
 
 /**
  * DataStore-backed persistent store for cross-device sync metadata.
@@ -38,7 +33,7 @@ private val Context.syncStateStore: DataStore<Preferences> by preferencesDataSto
  */
 @Singleton
 class SyncStateStore @Inject constructor(
-    @ApplicationContext private val context: Context
+    @SyncStateDataStore private val syncStateStore: DataStore<Preferences>
 ) {
     companion object {
         private val KEY_LAST_SYNC_TIMESTAMP = longPreferencesKey("last_sync_timestamp")
@@ -58,17 +53,17 @@ class SyncStateStore @Inject constructor(
     // ------------------------------------------------------------------
 
     /** Observe the last sync timestamp as a [Flow]. */
-    val lastSyncTimestampFlow: Flow<Long> = context.syncStateStore.data.map { preferences ->
+    val lastSyncTimestampFlow: Flow<Long> = syncStateStore.data.map { preferences ->
         preferences[KEY_LAST_SYNC_TIMESTAMP] ?: DEFAULT_LAST_SYNC_TIMESTAMP
     }
 
     /** Observe the last known combined state hash. */
-    val lastStateHashFlow: Flow<String> = context.syncStateStore.data.map { preferences ->
+    val lastStateHashFlow: Flow<String> = syncStateStore.data.map { preferences ->
         preferences[KEY_LAST_STATE_HASH] ?: DEFAULT_LAST_STATE_HASH
     }
 
     /** Observe the last synced device ID. */
-    val lastSyncedDeviceIdFlow: Flow<String> = context.syncStateStore.data.map { preferences ->
+    val lastSyncedDeviceIdFlow: Flow<String> = syncStateStore.data.map { preferences ->
         preferences[KEY_LAST_SYNCED_DEVICE_ID] ?: DEFAULT_LAST_SYNCED_DEVICE_ID
     }
 
@@ -78,15 +73,15 @@ class SyncStateStore @Inject constructor(
 
     /** Get the last sync timestamp. `0L` means never synced. */
     suspend fun getLastSyncTimestamp(): Long =
-        context.syncStateStore.data.first()[KEY_LAST_SYNC_TIMESTAMP] ?: DEFAULT_LAST_SYNC_TIMESTAMP
+        syncStateStore.data.first()[KEY_LAST_SYNC_TIMESTAMP] ?: DEFAULT_LAST_SYNC_TIMESTAMP
 
     /** Get the last known combined state hash. */
     suspend fun getLastStateHash(): String =
-        context.syncStateStore.data.first()[KEY_LAST_STATE_HASH] ?: DEFAULT_LAST_STATE_HASH
+        syncStateStore.data.first()[KEY_LAST_STATE_HASH] ?: DEFAULT_LAST_STATE_HASH
 
     /** Get the last synced device ID. */
     suspend fun getLastSyncedDeviceId(): String =
-        context.syncStateStore.data.first()[KEY_LAST_SYNCED_DEVICE_ID] ?: DEFAULT_LAST_SYNCED_DEVICE_ID
+        syncStateStore.data.first()[KEY_LAST_SYNCED_DEVICE_ID] ?: DEFAULT_LAST_SYNCED_DEVICE_ID
 
     // ------------------------------------------------------------------
     // Mutation
@@ -104,7 +99,7 @@ class SyncStateStore @Inject constructor(
         stateHash: String,
         deviceId: String
     ) {
-        context.syncStateStore.edit { preferences ->
+        syncStateStore.edit { preferences ->
             preferences[KEY_LAST_SYNC_TIMESTAMP] = timestamp
             preferences[KEY_LAST_STATE_HASH] = stateHash
             preferences[KEY_LAST_SYNCED_DEVICE_ID] = deviceId
@@ -119,7 +114,7 @@ class SyncStateStore @Inject constructor(
      * Useful after a full resync or when the user explicitly requests it.
      */
     suspend fun reset() {
-        context.syncStateStore.edit { preferences ->
+        syncStateStore.edit { preferences ->
             preferences.clear()
         }
         Timber.d("SyncStateStore: reset to defaults")

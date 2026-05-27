@@ -114,6 +114,13 @@ dependencies {
     implementation(libs.okhttp.logging)
     implementation(libs.gson)
     implementation(libs.datastore.preferences)
+
+    // Encryption
+    implementation(libs.encryption.datastore.tink)
+    implementation(libs.encryption.sqlcipher.android)
+    implementation(libs.encryption.sqlite.ktx)
+    implementation(libs.encryption.tink.android)
+
     implementation(libs.profileinstaller)
     implementation(libs.wear.tiles)
     implementation(libs.protolayout)

@@ -1,22 +1,17 @@
 package pl.dekrate.kofeino.data.local
 
-import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import pl.dekrate.kofeino.common.domain.model.TileConfig
+import pl.dekrate.kofeino.di.TileConfigDataStore
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
-
-/** Extension property for the wear tile configuration DataStore. */
-private val Context.tileConfigStore: DataStore<Preferences> by preferencesDataStore(name = "wear_tile_config")
 
 /**
  * DataStore-backed persistent store for the Wear OS Tile configuration.
@@ -34,7 +29,7 @@ private val Context.tileConfigStore: DataStore<Preferences> by preferencesDataSt
  */
 @Singleton
 class TileDataStorePreferences @Inject constructor(
-    @ApplicationContext private val context: Context
+    @TileConfigDataStore private val tileConfigStore: DataStore<Preferences>
 ) {
     companion object {
         private val KEY_TILE_CONFIG = stringPreferencesKey("tile_config_payload")
@@ -45,7 +40,7 @@ class TileDataStorePreferences @Inject constructor(
     // ------------------------------------------------------------------
 
     /** Observe the current tile configuration as a [Flow]. */
-    val tileConfigFlow: Flow<TileConfig> = context.tileConfigStore.data.map { preferences ->
+    val tileConfigFlow: Flow<TileConfig> = tileConfigStore.data.map { preferences ->
         val payload = preferences[KEY_TILE_CONFIG]
         if (payload != null) {
             TileConfig.fromMessagePayload(payload)
@@ -60,7 +55,7 @@ class TileDataStorePreferences @Inject constructor(
 
     /** Get the current tile configuration (falls back to defaults). */
     suspend fun getTileConfig(): TileConfig {
-        val payload = context.tileConfigStore.data.first()[KEY_TILE_CONFIG]
+        val payload = tileConfigStore.data.first()[KEY_TILE_CONFIG]
         return if (payload != null) {
             TileConfig.fromMessagePayload(payload)
         } else {
@@ -78,7 +73,7 @@ class TileDataStorePreferences @Inject constructor(
      * @param config The [TileConfig] to store.
      */
     suspend fun setTileConfig(config: TileConfig) {
-        context.tileConfigStore.edit { preferences ->
+        tileConfigStore.edit { preferences ->
             preferences[KEY_TILE_CONFIG] = config.toMessagePayload()
         }
         Timber.d("TileDataStorePreferences: tile config updated — display=%s refresh=%dmin",
@@ -89,7 +84,7 @@ class TileDataStorePreferences @Inject constructor(
      * Reset tile configuration to defaults (clears stored value).
      */
     suspend fun reset() {
-        context.tileConfigStore.edit { preferences ->
+        tileConfigStore.edit { preferences ->
             preferences.clear()
         }
         Timber.d("TileDataStorePreferences: reset to defaults")

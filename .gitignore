@@ -28,3 +28,4 @@ app/build/
 common/build/
 /screen*.png
 .kotlin/
+/keystore/

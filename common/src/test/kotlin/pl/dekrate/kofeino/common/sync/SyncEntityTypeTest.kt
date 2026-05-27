@@ -23,6 +23,11 @@ class SyncEntityTypeTest {
     }
 
     @Test
+    fun `TILE_CONFIG should have pathSegment tile_config`() {
+        assertEquals("tile_config", SyncEntityType.TILE_CONFIG.pathSegment)
+    }
+
+    @Test
     fun `fromPath should resolve intake correctly`() {
         assertEquals(SyncEntityType.INTAKE, SyncEntityType.fromPath("intake"))
     }
@@ -38,10 +43,16 @@ class SyncEntityTypeTest {
     }
 
     @Test
+    fun `fromPath should resolve tile_config correctly`() {
+        assertEquals(SyncEntityType.TILE_CONFIG, SyncEntityType.fromPath("tile_config"))
+    }
+
+    @Test
     fun `fromPath should be case-insensitive`() {
         assertEquals(SyncEntityType.INTAKE, SyncEntityType.fromPath("INTAKE"))
         assertEquals(SyncEntityType.DRINK, SyncEntityType.fromPath("Drink"))
         assertEquals(SyncEntityType.SETTINGS, SyncEntityType.fromPath("Settings"))
+        assertEquals(SyncEntityType.TILE_CONFIG, SyncEntityType.fromPath("Tile_Config"))
     }
 
     @Test
@@ -61,16 +72,19 @@ class SyncEntityTypeTest {
 
     @Test
     fun `allPathSegments should contain all segments`() {
-        assertEquals(3, SyncEntityType.allPathSegments.size)
+        assertEquals(4, SyncEntityType.allPathSegments.size)
         assertTrue(SyncEntityType.allPathSegments.contains("intake"))
         assertTrue(SyncEntityType.allPathSegments.contains("drink"))
         assertTrue(SyncEntityType.allPathSegments.contains("settings"))
+        assertTrue(SyncEntityType.allPathSegments.contains("tile_config"))
     }
 
     @Test
     fun `fromPath should not match substrings`() {
         assertNull(SyncEntityType.fromPath("intakes"))
         assertNull(SyncEntityType.fromPath("drinks"))
+        assertNull(SyncEntityType.fromPath("settingss"))
+        assertNull(SyncEntityType.fromPath("tile_configs"))
     }
 
     @Test
@@ -82,8 +96,8 @@ class SyncEntityTypeTest {
     }
 
     @Test
-    fun `there should be exactly 3 entity types`() {
-        assertEquals(3, SyncEntityType.entries.size)
+    fun `there should be exactly 4 entity types`() {
+        assertEquals(4, SyncEntityType.entries.size)
     }
 
     @Test
