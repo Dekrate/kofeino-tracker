@@ -61,7 +61,7 @@ class SyncEntityTypeTest {
 
     @Test
     fun `allPathSegments should contain all segments`() {
-        assertEquals(3, SyncEntityType.allPathSegments.size)
+        assertEquals(4, SyncEntityType.allPathSegments.size)
         assertTrue(SyncEntityType.allPathSegments.contains("intake"))
         assertTrue(SyncEntityType.allPathSegments.contains("drink"))
         assertTrue(SyncEntityType.allPathSegments.contains("settings"))
@@ -82,8 +82,8 @@ class SyncEntityTypeTest {
     }
 
     @Test
-    fun `there should be exactly 3 entity types`() {
-        assertEquals(3, SyncEntityType.entries.size)
+    fun `there should be exactly 4 entity types`() {
+        assertEquals(4, SyncEntityType.entries.size)
     }
 
     @Test

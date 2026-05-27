@@ -87,7 +87,7 @@ class WearableSyncServiceTest {
 
     @After
     fun tearDown() {
-        if (!destroyed) {
+        if (::controller.isInitialized && !destroyed) {
             controller.destroy()
         }
     }
