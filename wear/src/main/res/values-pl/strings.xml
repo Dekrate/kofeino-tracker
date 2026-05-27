@@ -172,6 +172,27 @@
     <string name="health_references_title">Źródła</string>
     <string name="health_references_text">• EFSA (2015): efsa.europa.eu/en/efsajournal/pub/4102\n• FDA (2024): fda.gov/consumers/consumer-updates/spilling-beans-how-much-caffeine-too-much\n• WHO (2023): who.int/tools/elena/interventions/caffeine-pregnancy</string>
 
+    <!-- Accessibility descriptions -->
+    <string name="accessibility_drink_name_field">Nazwa napoju</string>
+    <string name="accessibility_save_drink">Zapisz napój</string>
+    <string name="accessibility_delete_drink">Usuń napój</string>
+    <string name="accessibility_caffeine_value">Kofeina: %d mg</string>
+    <string name="accessibility_volume_value">Objętość: %d ml</string>
+    <string name="accessibility_date_label">Data: %s</string>
+    <string name="accessibility_total_today">Dzisiaj łącznie: %d mg</string>
+    <string name="accessibility_no_drinks">Brak zarejestrowanych napojów</string>
+    <string name="accessibility_loading">Ładowanie danych</string>
+    <string name="accessibility_error_state">Błąd ładowania danych</string>
+    <string name="accessibility_select_language">Wybierz język: %s</string>
+    <string name="accessibility_select_profile">Wybierz profil: %s</string>
+    <string name="accessibility_view_status">Zobacz status synchronizacji</string>
+    <string name="accessibility_device_info">Urządzenie: %s</string>
+    <string name="accessibility_sync_status">Status synchronizacji: %s</string>
+    <string name="accessibility_date_navigation">Nawigacja daty</string>
+    <string name="accessibility_drink_section">Lista napojów</string>
+    <string name="accessibility_intake_item">%1$s %2$d mg o %3$s</string>
+    <string name="accessibility_caffeine_display">Ilość kofeiny: %d mg</string>
+
     <!-- Notification scheduling -->
     <string name="reminder_channel_name">Przypomnienia o kofeinie</string>
     <string name="reminder_channel_description">Poranne, regularne i wieczorne przypomnienia</string>

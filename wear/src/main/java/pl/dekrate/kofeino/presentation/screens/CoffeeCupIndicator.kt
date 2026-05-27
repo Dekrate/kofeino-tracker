@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.wear.compose.material3.MaterialTheme
@@ -59,44 +60,25 @@ fun CoffeeCupIndicator(
         label = "coffeeProgress"
     )
 
-    val cupColor = if (exceeded) CoffeeColors.errorRed else CoffeeColors.latte
-    val coffeeFill = when {
-        exceeded -> CoffeeColors.errorRed.copy(alpha = 0.5f)
-        animatedProgress > 0.75f -> CoffeeColors.mediumRoast
-        animatedProgress > 0.4f -> CoffeeColors.lightRoast
-        else -> CoffeeColors.darkRoast
-    }
-
-    val steamPhase: Float
-    if (exceeded) {
-        val transition = rememberInfiniteTransition(label = "steam")
-        val phase by transition.animateFloat(
-            initialValue = 0f,
-            targetValue = 1f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(durationMillis = 2500, easing = LinearEasing),
-                repeatMode = RepeatMode.Restart
-            ),
-            label = "steamPhase"
-        )
-        steamPhase = phase
-    } else {
-        steamPhase = 0f
-    }
-
-    val ringColor = when {
-        exceeded -> CoffeeColors.errorRed
-        animatedProgress >= 1f -> cupColor
-        animatedProgress > 0.6f -> CoffeeColors.cream
-        else -> CoffeeColors.cream.copy(alpha = 0.5f)
-    }
+    val cupColor = computeCupColor(exceeded)
+    val coffeeFill = computeCoffeeFill(exceeded, animatedProgress)
+    val steamPhase = computeSteamPhase(exceeded)
+    val ringColor = computeRingColor(exceeded, animatedProgress, cupColor)
     val trackColor = CoffeeColors.cream.copy(alpha = 0.2f)
 
     val safeLimitText = stringResource(R.string.safe_limit_format, safeLimit)
+    val limitExceededText = stringResource(R.string.limit_exceeded)
+
     val contentDesc = if (exceeded) {
-        "${stringResource(R.string.limit_exceeded)}: $total mg"
+        "$limitExceededText: $total mg"
     } else {
         "$total mg / $safeLimitText"
+    }
+
+    val counterDesc = if (exceeded) {
+        "$limitExceededText: $total mg"
+    } else {
+        "$total mg"
     }
 
     Column(
@@ -106,7 +88,10 @@ fun CoffeeCupIndicator(
             .semantics { contentDescription = contentDesc }
     ) {
         Box(contentAlignment = Alignment.Center) {
-            Canvas(modifier = Modifier.size(120.dp)) {
+            Canvas(modifier = Modifier
+                .size(120.dp)
+                .semantics { hideFromAccessibility() }
+            ) {
                 drawProgressRing(
                     progress = animatedProgress,
                     ringColor = ringColor,
@@ -132,25 +117,91 @@ fun CoffeeCupIndicator(
                 Text(
                     text = "$total",
                     style = MaterialTheme.typography.displaySmall,
-                    color = Color.White
+                    color = Color.White,
+                    modifier = Modifier.semantics {
+                        contentDescription = counterDesc
+                    }
                 )
             }
         }
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        if (exceeded) {
-            Text(
-                text = stringResource(R.string.limit_exceeded),
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.labelMedium
-            )
-        } else {
-            Text(
-                text = stringResource(R.string.safe_limit_format, safeLimit),
-                style = MaterialTheme.typography.labelMedium
-            )
-        }
+        CoffeeCupLabel(
+            exceeded = exceeded,
+            total = total,
+            safeLimit = safeLimit,
+            safeLimitText = safeLimitText
+        )
+    }
+}
+
+private fun computeCupColor(exceeded: Boolean): Color =
+    if (exceeded) CoffeeColors.errorRed else CoffeeColors.latte
+
+@Suppress("MagicNumber")
+private fun computeCoffeeFill(exceeded: Boolean, animatedProgress: Float): Color = when {
+    exceeded -> CoffeeColors.errorRed.copy(alpha = 0.5f)
+    animatedProgress > 0.75f -> CoffeeColors.mediumRoast
+    animatedProgress > 0.4f -> CoffeeColors.lightRoast
+    else -> CoffeeColors.darkRoast
+}
+
+@Suppress("MagicNumber")
+private fun computeRingColor(
+    exceeded: Boolean,
+    animatedProgress: Float,
+    cupColor: Color
+): Color = when {
+    exceeded -> CoffeeColors.errorRed
+    animatedProgress >= 1f -> cupColor
+    animatedProgress > 0.6f -> CoffeeColors.cream
+    else -> CoffeeColors.cream.copy(alpha = 0.5f)
+}
+
+@Composable
+private fun computeSteamPhase(exceeded: Boolean): Float {
+    if (!exceeded) return 0f
+
+    val transition = rememberInfiniteTransition(label = "steam")
+    val phase by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 2500, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "steamPhase"
+    )
+    return phase
+}
+
+@Composable
+private fun CoffeeCupLabel(
+    exceeded: Boolean,
+    total: Int,
+    safeLimit: Int,
+    safeLimitText: String
+) {
+    if (exceeded) {
+        val exceededDesc = stringResource(R.string.limit_exceeded)
+        Text(
+            text = exceededDesc,
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.labelMedium,
+            modifier = Modifier.semantics {
+                contentDescription = "$exceededDesc: $total mg / $safeLimitText"
+            }
+        )
+    } else {
+        val todayDesc = stringResource(R.string.today_caffeine)
+        Text(
+            text = stringResource(R.string.safe_limit_format, safeLimit),
+            style = MaterialTheme.typography.labelMedium,
+            modifier = Modifier.semantics {
+                contentDescription = "$todayDesc: $total mg / $safeLimitText"
+            }
+        )
     }
 }
 

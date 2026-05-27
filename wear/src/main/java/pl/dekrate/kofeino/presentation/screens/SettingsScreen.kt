@@ -53,6 +53,7 @@ fun SettingsScreen(
     val listScrollState = rememberTransformingLazyColumnState()
     val decreaseDesc = stringResource(R.string.custom_limit_decrease)
     val increaseDesc = stringResource(R.string.custom_limit_increase)
+    val viewStatusDesc = stringResource(R.string.accessibility_view_status)
 
     ScreenScaffold(scrollState = listScrollState) { contentPadding ->
         TransformingLazyColumn(
@@ -144,7 +145,12 @@ fun SettingsScreen(
             item {
                 Button(
                     onClick = onNavigateToCrossDeviceStatus,
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp)
+                        .semantics {
+                            contentDescription = viewStatusDesc
+                        }
                 ) {
                     Text(stringResource(R.string.view_cross_device_status))
                 }
@@ -311,6 +317,7 @@ private fun CustomLimitControls(
         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        val caffeineValueDesc = stringResource(R.string.accessibility_caffeine_value, customLimit)
         Text(
             text = stringResource(R.string.custom_limit),
             style = MaterialTheme.typography.labelLarge,
@@ -319,7 +326,11 @@ private fun CustomLimitControls(
         Text(
             text = stringResource(R.string.custom_limit_value, customLimit),
             style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(vertical = 4.dp)
+            modifier = Modifier
+                .padding(vertical = 4.dp)
+                .semantics {
+                    contentDescription = caffeineValueDesc
+                }
         )
         Row(
             modifier = Modifier.fillMaxWidth(),

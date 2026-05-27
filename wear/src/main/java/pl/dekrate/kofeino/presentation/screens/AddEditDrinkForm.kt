@@ -56,6 +56,14 @@ fun AddEditDrinkForm(
     val caffeineAmountDesc = stringResource(R.string.caffeine_amount)
     val volumeDecDesc = stringResource(R.string.volume_decrease)
     val volumeIncDesc = stringResource(R.string.volume_increase)
+    val drinkNameFieldDesc = stringResource(R.string.accessibility_drink_name_field)
+    val caffeineDisplayDesc = stringResource(R.string.accessibility_caffeine_display, caffeineMg)
+    val volumeValueDesc = stringResource(R.string.accessibility_volume_value, volumeMl)
+    val errorNameRequiredDesc = stringResource(R.string.error_name_required)
+    val errorCaffeineInvalidDesc = stringResource(R.string.error_caffeine_invalid)
+    val saveDrinkDesc = stringResource(R.string.accessibility_save_drink)
+    val deleteDrinkDesc = stringResource(R.string.accessibility_delete_drink)
+    val cancelDesc = stringResource(R.string.cancel)
 
     Column(
         modifier = Modifier.fillMaxWidth().padding(8.dp).verticalScroll(rememberScrollState()),
@@ -94,7 +102,11 @@ fun AddEditDrinkForm(
             BasicTextField(
                 value = name,
                 onValueChange = { name = it },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .semantics {
+                        contentDescription = drinkNameFieldDesc
+                    },
                 singleLine = true,
                 textStyle = MaterialTheme.typography.bodyMedium.copy(
                     color = MaterialTheme.colorScheme.onSurface
@@ -110,7 +122,10 @@ fun AddEditDrinkForm(
         // Caffeine mg
         Text(
             text = "${stringResource(R.string.caffeine_amount)}: $caffeineMg",
-            style = MaterialTheme.typography.labelMedium
+            style = MaterialTheme.typography.labelMedium,
+            modifier = Modifier.semantics {
+                contentDescription = caffeineDisplayDesc
+            }
         )
         // Coarse adjustment (±5)
         Row(
@@ -168,7 +183,10 @@ fun AddEditDrinkForm(
         // Volume ml
         Text(
             text = "${stringResource(R.string.volume)}: $volumeMl ml",
-            style = MaterialTheme.typography.labelMedium
+            style = MaterialTheme.typography.labelMedium,
+            modifier = Modifier.semantics {
+                contentDescription = volumeValueDesc
+            }
         )
         Row(
             modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
@@ -202,21 +220,31 @@ fun AddEditDrinkForm(
             Text(
                 text = stringResource(R.string.error_name_required),
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.error
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.semantics {
+                    contentDescription = errorNameRequiredDesc
+                }
             )
         }
         if (!isCaffeineValid) {
             Text(
                 text = stringResource(R.string.error_caffeine_invalid),
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.error
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.semantics {
+                    contentDescription = errorCaffeineInvalidDesc
+                }
             )
         }
 
         // Save
         Button(
             onClick = { onSave(name.trim(), caffeineMg, volumeMl) },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics {
+                    contentDescription = saveDrinkDesc
+                },
             enabled = isFormValid,
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary
@@ -230,7 +258,11 @@ fun AddEditDrinkForm(
             Spacer(modifier = Modifier.height(4.dp))
             Button(
                 onClick = onDelete,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .semantics {
+                        contentDescription = deleteDrinkDesc
+                    },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.error
                 )
@@ -243,7 +275,11 @@ fun AddEditDrinkForm(
         Spacer(modifier = Modifier.height(4.dp))
         Button(
             onClick = onDismiss,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics {
+                    contentDescription = cancelDesc
+                }
         ) {
             Text(stringResource(R.string.cancel))
         }

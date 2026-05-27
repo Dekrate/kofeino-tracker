@@ -9,7 +9,6 @@ import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import pl.dekrate.kofeino.BuildConfig
-import pl.dekrate.kofeino.data.local.OfficialDrinkCacheDao
 import pl.dekrate.kofeino.data.remote.CaffeineApiService
 import pl.dekrate.kofeino.data.remote.ConnectivityObserver
 import pl.dekrate.kofeino.data.remote.CustomDns

@@ -11,6 +11,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -55,10 +57,14 @@ fun CrossDeviceStatusScreen(
         ) {
             // ── Header ──
             item {
+                val headerDescription = stringResource(R.string.cross_device_status_title)
                 ListHeader {
                     Text(
-                        text = stringResource(R.string.cross_device_status_title),
-                        style = MaterialTheme.typography.titleMedium
+                        text = headerDescription,
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.semantics {
+                            contentDescription = headerDescription
+                        }
                     )
                 }
             }
@@ -84,18 +90,30 @@ private fun DeviceInfoCard(
     status: pl.dekrate.kofeino.common.sync.CrossDeviceStatus,
     syncStatus: SyncStatus
 ) {
+    val deviceName = if (status.isPaired) {
+        status.pairedDeviceName ?: stringResource(R.string.paired_device)
+    } else {
+        stringResource(R.string.no_paired_device)
+    }
+    val pairedName = status.pairedDeviceName
+        ?: stringResource(R.string.paired_device)
+    val deviceDescription = if (status.isPaired) {
+        stringResource(R.string.accessibility_device_info, pairedName)
+    } else {
+        stringResource(R.string.accessibility_device_info, stringResource(R.string.no_paired_device))
+    }
     Column(
         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = if (status.isPaired) {
-                status.pairedDeviceName ?: stringResource(R.string.paired_device)
-            } else {
-                stringResource(R.string.no_paired_device)
-            },
+            text = deviceName,
             style = MaterialTheme.typography.labelLarge,
-            modifier = Modifier.padding(bottom = 4.dp)
+            modifier = Modifier
+                .padding(bottom = 4.dp)
+                .semantics {
+                    contentDescription = deviceDescription
+                }
         )
         SyncStatusDot(syncStatus = syncStatus)
     }
@@ -115,11 +133,15 @@ private fun SyncStatusDot(syncStatus: SyncStatus) {
         SyncStatus.Syncing -> stringResource(R.string.sync_status_syncing)
         is SyncStatus.Error -> syncStatus.message
     }
+    val statusDescription = stringResource(R.string.accessibility_sync_status, label)
     Text(
         text = label,
         style = MaterialTheme.typography.bodySmall,
         color = color,
-        textAlign = TextAlign.Center
+        textAlign = TextAlign.Center,
+        modifier = Modifier.semantics {
+            contentDescription = statusDescription
+        }
     )
 }
 
@@ -129,7 +151,11 @@ private fun StatRow(
     value: String
 ) {
     Row(
-        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+        modifier = Modifier
+            .padding(horizontal = 8.dp, vertical = 2.dp)
+            .semantics {
+                contentDescription = "$label: $value"
+            },
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
@@ -147,11 +173,15 @@ private fun StatRow(
 
 @Composable
 private fun SyncQueueContent(state: CrossDeviceStatusUiState) {
+    val syncQueueTitle = stringResource(R.string.sync_queue_title)
     Column {
         ListHeader {
             Text(
-                text = stringResource(R.string.sync_queue_title),
-                style = MaterialTheme.typography.titleMedium
+                text = syncQueueTitle,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.semantics {
+                    contentDescription = syncQueueTitle
+                }
             )
         }
         StatRow(
@@ -167,11 +197,15 @@ private fun SyncQueueContent(state: CrossDeviceStatusUiState) {
 
 @Composable
 private fun ConflictLogContent(state: CrossDeviceStatusUiState) {
+    val conflictLogTitle = stringResource(R.string.conflict_log_title)
     Column {
         ListHeader {
             Text(
-                text = stringResource(R.string.conflict_log_title),
-                style = MaterialTheme.typography.titleMedium
+                text = conflictLogTitle,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.semantics {
+                    contentDescription = conflictLogTitle
+                }
             )
         }
         StatRow(
@@ -183,11 +217,15 @@ private fun ConflictLogContent(state: CrossDeviceStatusUiState) {
 
 @Composable
 private fun LastSyncContent(state: CrossDeviceStatusUiState) {
+    val lastSyncTitle = stringResource(R.string.last_sync_title)
     Column {
         ListHeader {
             Text(
-                text = stringResource(R.string.last_sync_title),
-                style = MaterialTheme.typography.titleMedium
+                text = lastSyncTitle,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.semantics {
+                    contentDescription = lastSyncTitle
+                }
             )
         }
         val lastSyncText = state.deviceStatus.lastEnqueuedTimestamp?.let { ts ->
@@ -203,11 +241,15 @@ private fun LastSyncContent(state: CrossDeviceStatusUiState) {
 
 @Composable
 private fun AppVersionContent(state: CrossDeviceStatusUiState) {
+    val aboutTitle = stringResource(R.string.about)
     Column {
         ListHeader {
             Text(
-                text = stringResource(R.string.about),
-                style = MaterialTheme.typography.titleMedium
+                text = aboutTitle,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.semantics {
+                    contentDescription = aboutTitle
+                }
             )
         }
         StatRow(

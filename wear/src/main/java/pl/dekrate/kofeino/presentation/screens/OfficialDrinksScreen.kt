@@ -20,12 +20,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.input.ImeAction
@@ -58,12 +59,15 @@ fun OfficialDrinksScreen(
     var searchText by remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    // Pre-resolve strings for accessibility
+    // Pre-resolve strings for accessibility (semantics blocks are not @Composable)
     val searchHint = stringResource(R.string.official_drinks_search)
     val searchBtn = stringResource(R.string.official_drinks_search_button)
     val clearBtn = stringResource(R.string.official_drinks_clear_search)
     val retryBtn = stringResource(R.string.official_drinks_retry)
     val per100mlUnit = stringResource(R.string.official_drinks_caffeine_unit_per_100ml)
+    val loadingDesc = stringResource(R.string.accessibility_loading)
+    val errorStateDesc = stringResource(R.string.accessibility_error_state)
+    val noResultsDesc = stringResource(R.string.official_drinks_no_results)
 
     ScreenScaffold(scrollState = listScrollState) { contentPadding ->
         when {
@@ -73,11 +77,15 @@ fun OfficialDrinksScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        CircularProgressIndicator()
+                        CircularProgressIndicator(
+                            modifier = Modifier.semantics { contentDescription = loadingDesc }
+                        )
                         Text(
                             text = stringResource(R.string.official_drinks_loading),
                             style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(top = 8.dp)
+                            modifier = Modifier
+                                .padding(top = 8.dp)
+                                .semantics { contentDescription = loadingDesc }
                         )
                     }
                 }
@@ -94,13 +102,17 @@ fun OfficialDrinksScreen(
                     Text(
                         text = stringResource(R.string.official_drinks_error),
                         style = MaterialTheme.typography.bodyMedium,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.semantics { contentDescription = errorStateDesc }
                     )
                     Button(
                         onClick = viewModel::refresh,
                         modifier = Modifier
                             .padding(top = 12.dp)
-                            .semantics { contentDescription = retryBtn }
+                            .semantics { 
+                                contentDescription = retryBtn
+                                role = Role.Button
+                            }
                     ) {
                         Text(stringResource(R.string.official_drinks_retry))
                     }
@@ -178,7 +190,10 @@ fun OfficialDrinksScreen(
                                         modifier = Modifier
                                             .weight(1f)
                                             .padding(end = 4.dp)
-                                            .semantics { contentDescription = searchBtn }
+                                            .semantics { 
+                                                contentDescription = searchBtn
+                                                role = Role.Button
+                                            }
                                     ) {
                                         Text(stringResource(R.string.official_drinks_search_button))
                                     }
@@ -190,7 +205,10 @@ fun OfficialDrinksScreen(
                                         modifier = Modifier
                                             .weight(1f)
                                             .padding(start = 4.dp)
-                                            .semantics { contentDescription = clearBtn }
+                                            .semantics { 
+                                                contentDescription = clearBtn
+                                                role = Role.Button
+                                            }
                                     ) {
                                         Text(stringResource(R.string.official_drinks_clear_search))
                                     }
@@ -219,6 +237,7 @@ fun OfficialDrinksScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(8.dp)
+                                    .semantics { contentDescription = loadingDesc }
                             )
                         }
                     }
@@ -228,7 +247,9 @@ fun OfficialDrinksScreen(
                             Text(
                                 text = stringResource(R.string.official_drinks_no_results),
                                 style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.padding(16.dp),
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .semantics { contentDescription = noResultsDesc },
                                 textAlign = TextAlign.Center
                             )
                         }

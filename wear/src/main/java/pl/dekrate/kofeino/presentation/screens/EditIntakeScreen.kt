@@ -20,6 +20,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -51,17 +53,25 @@ fun EditIntakeScreen(
     }
 
     if (isLoading) {
+        val loadingDesc = stringResource(R.string.accessibility_loading)
         ScreenScaffold {
-            CircularProgressIndicator(modifier = Modifier.padding(16.dp))
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .semantics { contentDescription = loadingDesc }
+            )
         }
         return
     }
 
     if (intake == null) {
+        val intakeNotFoundDesc = stringResource(R.string.intake_not_found)
         ScreenScaffold {
             Text(
                 text = stringResource(R.string.intake_not_found),
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier
+                    .padding(16.dp)
+                    .semantics { contentDescription = intakeNotFoundDesc }
             )
         }
         return
@@ -94,6 +104,8 @@ fun EditIntakeScreen(
     var isSaving by remember { mutableStateOf(false) }
     var isDeleting by remember { mutableStateOf(false) }
 
+    val volumeValueDesc = stringResource(R.string.accessibility_volume_value, volumeMl)
+
     ScreenScaffold {
         Column(
             modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -121,18 +133,24 @@ fun EditIntakeScreen(
                     modifier = Modifier
                         .weight(1f)
                         .padding(end = 4.dp)
-                        .semantics { contentDescription = "$caffeineDesc -5" }
-                ) {
-                    Text(stringResource(R.string.caffeine_adjustment_decrease, CaffeineCoarseStepMg))
+                        .semantics {
+                            contentDescription = "$caffeineDesc -5"
+                            role = Role.Button
+                        }
+    ) {
+        Text(stringResource(R.string.caffeine_adjustment_decrease, CaffeineCoarseStepMg))
                 }
                 Button(
                     onClick = { caffeineMg += CaffeineCoarseStepMg },
                     modifier = Modifier
                         .weight(1f)
                         .padding(start = 4.dp)
-                        .semantics { contentDescription = "$caffeineDesc +5" }
-                ) {
-                    Text(stringResource(R.string.caffeine_adjustment_increase, CaffeineCoarseStepMg))
+                        .semantics {
+                            contentDescription = "$caffeineDesc +5"
+                            role = Role.Button
+                        }
+    ) {
+        Text(stringResource(R.string.caffeine_adjustment_increase, CaffeineCoarseStepMg))
                 }
             }
 
@@ -147,25 +165,34 @@ fun EditIntakeScreen(
                     modifier = Modifier
                         .weight(1f)
                         .padding(end = 4.dp)
-                        .semantics { contentDescription = "$caffeineDesc -1" }
-                ) {
-                    Text(stringResource(R.string.caffeine_adjustment_decrease, CaffeineFineStepMg))
+                        .semantics {
+                            contentDescription = "$caffeineDesc -1"
+                            role = Role.Button
+                        }
+    ) {
+        Text(stringResource(R.string.caffeine_adjustment_decrease, CaffeineFineStepMg))
                 }
                 Button(
                     onClick = { caffeineMg += CaffeineFineStepMg },
                     modifier = Modifier
                         .weight(1f)
                         .padding(start = 4.dp)
-                        .semantics { contentDescription = "$caffeineDesc +1" }
-                ) {
-                    Text(stringResource(R.string.caffeine_adjustment_increase, CaffeineFineStepMg))
+                        .semantics {
+                            contentDescription = "$caffeineDesc +1"
+                            role = Role.Button
+                        }
+    ) {
+        Text(stringResource(R.string.caffeine_adjustment_increase, CaffeineFineStepMg))
                 }
             }
 
             // Volume adjustment buttons
             Text(
                 text = "${stringResource(R.string.volume)}: ${volumeMl}ml",
-                style = MaterialTheme.typography.bodySmall
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.semantics {
+                    contentDescription = volumeValueDesc
+                }
             )
 
             Row(
@@ -178,18 +205,24 @@ fun EditIntakeScreen(
                     modifier = Modifier
                         .weight(1f)
                         .padding(end = 4.dp)
-                        .semantics { contentDescription = volumeDecDesc }
-                ) {
-                    Text("-10")
+                        .semantics {
+                            contentDescription = volumeDecDesc
+                            role = Role.Button
+                        }
+    ) {
+        Text("-10")
                 }
                 Button(
                     onClick = { volumeMl += 10 },
                     modifier = Modifier
                         .weight(1f)
                         .padding(start = 4.dp)
-                        .semantics { contentDescription = volumeIncDesc }
-                ) {
-                    Text("+10")
+                        .semantics {
+                            contentDescription = volumeIncDesc
+                            role = Role.Button
+                        }
+    ) {
+        Text("+10")
                 }
             }
 
@@ -211,7 +244,10 @@ fun EditIntakeScreen(
                 enabled = !isSaving,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .semantics { contentDescription = saveDesc },
+                    .semantics {
+                        contentDescription = saveDesc
+                        role = Role.Button
+                    },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary
                 )
@@ -228,7 +264,10 @@ fun EditIntakeScreen(
                     onClick = { showDeleteConfirm = true },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .semantics { contentDescription = deleteDesc },
+                        .semantics {
+                            contentDescription = deleteDesc
+                            role = Role.Button
+                        },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.error
                     )
@@ -246,7 +285,10 @@ fun EditIntakeScreen(
                 ) {
                     Button(
                         onClick = { showDeleteConfirm = false },
-                        modifier = Modifier.semantics { contentDescription = cancelDesc }
+                        modifier = Modifier.semantics {
+                            contentDescription = cancelDesc
+                            role = Role.Button
+                        }
                     ) {
                         Text(stringResource(R.string.cancel))
                     }
@@ -268,7 +310,10 @@ fun EditIntakeScreen(
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.error
                         ),
-                        modifier = Modifier.semantics { contentDescription = "$confirmDesc $deleteDesc" }
+                        modifier = Modifier.semantics {
+                            contentDescription = "$confirmDesc $deleteDesc"
+                            role = Role.Button
+                        }
                     ) {
                         if (isDeleting) {
                             CircularProgressIndicator(modifier = Modifier.padding(end = 4.dp))

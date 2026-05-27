@@ -21,6 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -56,10 +58,13 @@ fun HistoryScreen(
         }
     }
 
-    // Pre-resolve strings for accessibility
+    // Pre-resolve strings for accessibility (semantics blocks are not @Composable)
     val previousDayDesc = stringResource(R.string.previous_day)
     val todayDesc = stringResource(R.string.today)
     val nextDayDesc = stringResource(R.string.next_day)
+    val noDrinksDesc = stringResource(R.string.accessibility_no_drinks)
+    val totalTodayDesc = stringResource(R.string.accessibility_total_today, state.totalCaffeineMg)
+    val dateNavDesc = stringResource(R.string.accessibility_date_navigation)
 
     ScreenScaffold(scrollState = scrollState) { contentPadding ->
         TransformingLazyColumn(
@@ -89,7 +94,9 @@ fun HistoryScreen(
                         textAlign = TextAlign.Center
                     )
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                        modifier = Modifier.fillMaxWidth()
+                            .padding(top = 4.dp)
+                            .semantics { contentDescription = dateNavDesc },
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         Button(
@@ -97,7 +104,10 @@ fun HistoryScreen(
                             modifier = Modifier
                                 .weight(1f)
                                 .padding(end = 4.dp)
-                                .semantics { contentDescription = previousDayDesc }
+                                .semantics { 
+                                    contentDescription = previousDayDesc
+                                    role = Role.Button
+                                }
                         ) {
                             Text("\u25C0", style = MaterialTheme.typography.labelLarge)
                         }
@@ -107,7 +117,10 @@ fun HistoryScreen(
                                 modifier = Modifier
                                     .weight(1f)
                                     .padding(horizontal = 4.dp)
-                                    .semantics { contentDescription = todayDesc }
+                                    .semantics { 
+                                        contentDescription = todayDesc
+                                        role = Role.Button
+                                    }
                             ) {
                                 Text(
                                     stringResource(R.string.today),
@@ -120,7 +133,10 @@ fun HistoryScreen(
                             modifier = Modifier
                                 .weight(1f)
                                 .padding(start = 4.dp)
-                                .semantics { contentDescription = nextDayDesc }
+                                .semantics { 
+                                    contentDescription = nextDayDesc
+                                    role = Role.Button
+                                }
                         ) {
                             Text("\u25B6", style = MaterialTheme.typography.labelLarge)
                         }
@@ -133,7 +149,11 @@ fun HistoryScreen(
                     text = stringResource(R.string.total_today) + ": ${state.totalCaffeineMg} mg",
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                        .semantics { 
+                            contentDescription = totalTodayDesc
+                        }
                 )
             }
 
@@ -143,7 +163,9 @@ fun HistoryScreen(
                         text = stringResource(R.string.no_drinks_today),
                         style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                            .semantics { contentDescription = noDrinksDesc }
                     )
                 }
             } else {
