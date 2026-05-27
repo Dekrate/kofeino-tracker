@@ -10,12 +10,14 @@ import com.google.android.gms.wearable.CapabilityInfo
 import com.google.android.gms.wearable.Node
 import timber.log.Timber
 import java.util.concurrent.CopyOnWriteArrayList
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Suppress("CAST_NEVER_SUCCEEDS")
 @Singleton
-class AdbCapabilityClient @Inject constructor() : CapabilityClient(null as Context, null as GoogleApi.Settings) {
+class AdbCapabilityClient @Inject constructor(
+    @ApplicationContext context: Context
+) : CapabilityClient(context, GoogleApi.Settings.Builder().build()) {
 
     companion object {
         const val ADB_NODE_ID = "adb-bridge"

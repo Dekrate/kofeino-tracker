@@ -10,12 +10,14 @@ import com.google.android.gms.wearable.MessageEvent
 import pl.dekrate.kofeino.common.sync.adb.AdbSyncProtocol
 import timber.log.Timber
 import java.util.concurrent.CopyOnWriteArrayList
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Suppress("CAST_NEVER_SUCCEEDS")
 @Singleton
-class AdbMessageClient @Inject constructor() : MessageClient(null as Context, null as GoogleApi.Settings) {
+class AdbMessageClient @Inject constructor(
+    @ApplicationContext context: Context
+) : MessageClient(context, GoogleApi.Settings.Builder().build()) {
 
     private val listeners = CopyOnWriteArrayList<MessageClient.OnMessageReceivedListener>()
     internal var transport: AdbSyncTransport? = null

@@ -13,20 +13,22 @@ import com.google.android.gms.wearable.DataItemAsset
 import com.google.android.gms.wearable.DataItemBuffer
 import com.google.android.gms.wearable.PutDataRequest
 import java.util.concurrent.CopyOnWriteArrayList
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Suppress("CAST_NEVER_SUCCEEDS")
 @Singleton
-class AdbDataClient @Inject constructor() : DataClient(null as Context, null as GoogleApi.Settings) {
+class AdbDataClient @Inject constructor(
+    @ApplicationContext context: Context
+) : DataClient(context, GoogleApi.Settings.Builder().build()) {
 
     private val listeners = CopyOnWriteArrayList<DataClient.OnDataChangedListener>()
 
-    // Debug-only: empty DataItemBuffer with null DataHolder.
+    // Debug-only: empty DataItemBuffer with an empty DataHolder (0 rows).
     // Callers are not expected to iterate or release this buffer.
     // This is acceptable for debug builds — the real DataClient is used in release.
     @Suppress("DataBufferLeak")
-    private val emptyDataItemBuffer = DataItemBuffer(null as DataHolder)
+    private val emptyDataItemBuffer = DataItemBuffer(DataHolder.builder(arrayOf("_id")).build(0))
 
     override fun addListener(listener: DataClient.OnDataChangedListener): Task<Void> {
         listeners.add(listener); return Tasks.forResult(null)

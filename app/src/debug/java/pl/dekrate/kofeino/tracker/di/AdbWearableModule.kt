@@ -10,7 +10,6 @@ import dagger.hilt.components.SingletonComponent
 import pl.dekrate.kofeino.tracker.data.sync.adb.AdbCapabilityClient
 import pl.dekrate.kofeino.tracker.data.sync.adb.AdbDataClient
 import pl.dekrate.kofeino.tracker.data.sync.adb.AdbMessageClient
-import pl.dekrate.kofeino.tracker.data.sync.adb.AdbSyncServer
 import javax.inject.Singleton
 
 /**
@@ -31,6 +30,4 @@ object AdbWearableModule {
     @Provides @Singleton
     fun provideDataClient(client: AdbDataClient): DataClient = client
 
-    @Provides @Singleton
-    fun provideAdbSyncServer(server: AdbSyncServer): AdbSyncServer = server
 }
