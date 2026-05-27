@@ -294,8 +294,8 @@ class WearableSyncServiceTest {
             startSync()
             stopSync()
         }
-        // No crash — pass
-        assertTrue("Multiple start-stop cycles completed without exception", true)
+        verify(exactly = 3) { wearableDataLayerManager.register() }
+        verify(exactly = 3) { wearableDataLayerManager.unregister() }
     }
 
     // ------------------------------------------------------------------
