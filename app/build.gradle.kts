@@ -120,7 +120,6 @@ dependencies {
     implementation(libs.datastore.preferences)
 
     // Encryption
-    implementation(libs.encryption.datastore.tink)
     implementation(libs.encryption.sqlcipher.android)
     implementation(libs.encryption.sqlite.ktx)
     implementation(libs.encryption.tink.android)

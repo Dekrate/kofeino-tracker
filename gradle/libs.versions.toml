@@ -36,7 +36,7 @@ profileinstaller = "1.4.1"
 wearTiles = "1.4.0"
 
 # Encryption
-datastore-tink = "1.3.0-alpha07"
+
 sqlcipher-android = "4.14.0"
 sqlite-ktx = "2.6.2"
 tink-android = "1.16.0"
@@ -112,7 +112,6 @@ protolayout-material3 = { group = "androidx.wear.protolayout", name = "protolayo
 protolayout-expression = { group = "androidx.wear.protolayout", name = "protolayout-expression", version.ref = "wearTiles" }
 
 # Encryption
-encryption-datastore-tink = { module = "androidx.datastore:datastore-tink", version.ref = "datastore-tink" }
 encryption-sqlcipher-android = { module = "net.zetetic:sqlcipher-android", version.ref = "sqlcipher-android" }
 encryption-sqlite-ktx = { module = "androidx.sqlite:sqlite-ktx", version.ref = "sqlite-ktx" }
 encryption-tink-android = { module = "com.google.crypto.tink:tink-android", version.ref = "tink-android" }

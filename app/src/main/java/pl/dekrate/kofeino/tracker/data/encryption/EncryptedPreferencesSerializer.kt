@@ -33,7 +33,7 @@ class EncryptedPreferencesSerializer(
         if (encryptedBytes.isEmpty()) return emptyPreferences()
         val decryptedBytes = try {
             aead.decrypt(encryptedBytes, associatedData)
-        } catch (e: java.io.IOException) {
+        } catch (e: java.security.GeneralSecurityException) {
             throw CorruptionException("Failed to decrypt preferences data", e)
         }
         val source: BufferedSource = Buffer().apply { write(decryptedBytes) }

@@ -3,7 +3,6 @@ package pl.dekrate.kofeino.tracker.data.encryption
 import android.content.Context
 import android.content.SharedPreferences
 import com.google.crypto.tink.Aead
-import com.google.crypto.tink.aead.AeadConfig
 import com.google.crypto.tink.aead.PredefinedAeadParameters
 import com.google.crypto.tink.integration.android.AndroidKeysetManager
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -61,7 +60,7 @@ class KofeinoEncryptionManager @Inject constructor(
      */
     @Suppress("Deprecation")
     val aead: Aead by lazy {
-        AeadConfig.register()
+        com.google.crypto.tink.config.TinkConfig.register()
         keysetManager.keysetHandle.getPrimitive(Aead::class.java)
     }
 
