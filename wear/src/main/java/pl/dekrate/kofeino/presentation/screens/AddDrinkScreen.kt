@@ -29,6 +29,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -182,11 +184,13 @@ private fun RecentIntakesSection(
     onIntakeSelect: (DrinkEntity) -> Unit,
 ) {
     val haptic = LocalHapticFeedback.current
+    val recentIntakesDesc = stringResource(R.string.recent_intakes)
     Column {
         ListHeader {
             Text(
                 text = stringResource(R.string.recent_intakes),
-                style = MaterialTheme.typography.labelSmall
+                style = MaterialTheme.typography.labelSmall,
+                modifier = Modifier.semantics { contentDescription = recentIntakesDesc }
             )
         }
         LazyRow(
@@ -219,16 +223,19 @@ private fun TransformingLazyColumnScope.DrinkListSection(
     haptic: HapticFeedback,
 ) {
     item {
+        val drinkSectionDesc = stringResource(R.string.accessibility_drink_section)
         ListHeader {
             Text(
                 text = stringResource(R.string.select_drink),
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.semantics { contentDescription = drinkSectionDesc }
             )
         }
     }
 
     if (drinks.isEmpty()) {
         item {
+            val noDrinksDesc = stringResource(R.string.accessibility_no_drinks)
             Text(
                 text = if (searchQuery.isNotBlank()) {
                     stringResource(R.string.no_search_results)
@@ -236,7 +243,9 @@ private fun TransformingLazyColumnScope.DrinkListSection(
                     stringResource(R.string.no_drinks_defined)
                 },
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .semantics { contentDescription = noDrinksDesc },
                 textAlign = TextAlign.Center
             )
         }
@@ -277,7 +286,11 @@ private fun RecentIntakeChip(
     }
     CompactButton(
         onClick = onClick,
-        modifier = Modifier.width(100.dp),
+        modifier = Modifier
+            .width(100.dp)
+            .semantics {
+                contentDescription = "${intake.drinkName} ${intake.caffeineMg} mg, ${intake.drinkName}"
+            },
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.tertiaryContainer,
             contentColor = MaterialTheme.colorScheme.onTertiaryContainer

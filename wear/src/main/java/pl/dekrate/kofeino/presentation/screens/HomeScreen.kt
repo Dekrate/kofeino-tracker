@@ -18,6 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -67,6 +69,8 @@ fun HomeScreen(
     val historyDesc = stringResource(R.string.history)
     val manageDrinksDesc = stringResource(R.string.manage_drinks)
     val settingsDesc = stringResource(R.string.settings)
+    val noDrinksDesc = stringResource(R.string.accessibility_no_drinks)
+    val dateLabelDesc = stringResource(R.string.accessibility_date_label, state.dateLabel)
 
     ScreenScaffold(
         scrollState = scrollState,
@@ -76,6 +80,7 @@ fun HomeScreen(
                 buttonSize = EdgeButtonSize.Small,
                 modifier = Modifier.semantics {
                     contentDescription = addDrinkDesc
+                    role = Role.Button
                 }
             ) {
                 Text(text = "+")
@@ -106,7 +111,11 @@ fun HomeScreen(
                     text = state.dateLabel,
                     style = MaterialTheme.typography.labelMedium,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 16.dp)
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .semantics { 
+                            contentDescription = dateLabelDesc
+                        }
                 )
             }
 
@@ -160,7 +169,9 @@ fun HomeScreen(
                         text = stringResource(R.string.no_drinks_today),
                         style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                            .semantics { contentDescription = noDrinksDesc }
                     )
                 }
             } else {

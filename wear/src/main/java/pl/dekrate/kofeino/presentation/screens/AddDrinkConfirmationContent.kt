@@ -15,6 +15,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.wear.compose.material3.Button
@@ -58,6 +60,9 @@ fun AddDrinkConfirmationContent(
     val servingIncDesc = stringResource(R.string.serving_increase)
     val logDrinkDesc = stringResource(R.string.log_drink)
     val cancelDesc = stringResource(R.string.cancel)
+    val selectDrinkText = stringResource(R.string.select_drink)
+    val accessibilityCaffeineDisplay = stringResource(R.string.accessibility_caffeine_display, caffeineMg)
+    val accessibilityVolumeValue = stringResource(R.string.accessibility_volume_value, servingMl)
 
     ScreenScaffold(modifier = modifier) {
         LazyColumn(
@@ -71,7 +76,10 @@ fun AddDrinkConfirmationContent(
             item {
                 Text(
                     text = drink.name,
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.semantics {
+                        contentDescription = "$selectDrinkText: ${drink.name}"
+                    }
                 )
             }
 
@@ -87,7 +95,10 @@ fun AddDrinkConfirmationContent(
             item {
                 Text(
                     text = stringResource(R.string.caffeine_label, caffeineMg),
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.semantics {
+                        contentDescription = accessibilityCaffeineDisplay
+                    }
                 )
             }
 
@@ -103,7 +114,10 @@ fun AddDrinkConfirmationContent(
                         modifier = Modifier
                             .weight(1f)
                             .padding(end = 4.dp)
-                            .semantics { contentDescription = "$caffeineDesc -5" }
+                            .semantics {
+                                contentDescription = "$caffeineDesc -5"
+                                role = Role.Button
+                            }
                     ) {
                         Text(stringResource(R.string.caffeine_adjustment_decrease, CaffeineCoarseStepMg))
                     }
@@ -113,7 +127,10 @@ fun AddDrinkConfirmationContent(
                         modifier = Modifier
                             .weight(1f)
                             .padding(start = 4.dp)
-                            .semantics { contentDescription = "$caffeineDesc +5" }
+                            .semantics {
+                                contentDescription = "$caffeineDesc +5"
+                                role = Role.Button
+                            }
                     ) {
                         Text(stringResource(R.string.caffeine_adjustment_increase, CaffeineCoarseStepMg))
                     }
@@ -132,7 +149,10 @@ fun AddDrinkConfirmationContent(
                         modifier = Modifier
                             .weight(1f)
                             .padding(end = 4.dp)
-                            .semantics { contentDescription = "$caffeineDesc -1" }
+                            .semantics {
+                                contentDescription = "$caffeineDesc -1"
+                                role = Role.Button
+                            }
                     ) {
                         Text(stringResource(R.string.caffeine_adjustment_decrease, CaffeineFineStepMg))
                     }
@@ -142,7 +162,10 @@ fun AddDrinkConfirmationContent(
                         modifier = Modifier
                             .weight(1f)
                             .padding(start = 4.dp)
-                            .semantics { contentDescription = "$caffeineDesc +1" }
+                            .semantics {
+                                contentDescription = "$caffeineDesc +1"
+                                role = Role.Button
+                            }
                     ) {
                         Text(stringResource(R.string.caffeine_adjustment_increase, CaffeineFineStepMg))
                     }
@@ -153,7 +176,10 @@ fun AddDrinkConfirmationContent(
             item {
                 Text(
                     text = stringResource(R.string.serving_label, servingMl),
-                    style = MaterialTheme.typography.bodySmall
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.semantics {
+                        contentDescription = accessibilityVolumeValue
+                    }
                 )
             }
 
@@ -177,7 +203,10 @@ fun AddDrinkConfirmationContent(
                         modifier = Modifier
                             .weight(1f)
                             .padding(end = 4.dp)
-                            .semantics { contentDescription = servingDecDesc }
+                            .semantics {
+                                contentDescription = servingDecDesc
+                                role = Role.Button
+                            }
                     ) {
                         Text("-10")
                     }
@@ -193,7 +222,10 @@ fun AddDrinkConfirmationContent(
                         modifier = Modifier
                             .weight(1f)
                             .padding(start = 4.dp)
-                            .semantics { contentDescription = servingIncDesc }
+                            .semantics {
+                                contentDescription = servingIncDesc
+                                role = Role.Button
+                            }
                     ) {
                         Text("+10")
                     }
@@ -207,7 +239,10 @@ fun AddDrinkConfirmationContent(
                     enabled = !isLogging,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .semantics { contentDescription = logDrinkDesc },
+                        .semantics {
+                            contentDescription = logDrinkDesc
+                            role = Role.Button
+                        },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary
                     )
@@ -229,7 +264,10 @@ fun AddDrinkConfirmationContent(
                     enabled = !isLogging,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .semantics { contentDescription = cancelDesc }
+                        .semantics {
+                            contentDescription = cancelDesc
+                            role = Role.Button
+                        }
                 ) {
                     Text(stringResource(R.string.cancel))
                 }

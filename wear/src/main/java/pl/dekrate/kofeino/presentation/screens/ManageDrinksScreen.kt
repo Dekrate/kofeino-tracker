@@ -18,6 +18,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -82,6 +84,7 @@ fun ManageDrinksScreen(
     val listScrollState = rememberTransformingLazyColumnState()
     val addNewDrinkDesc = stringResource(R.string.add_new_drink)
     val officialDrinksDesc = stringResource(R.string.official_drinks_button)
+    val noDrinksDefinedDesc = stringResource(R.string.accessibility_no_drinks)
     ScreenScaffold(scrollState = listScrollState) { contentPadding ->
         TransformingLazyColumn(
             state = listScrollState,
@@ -103,7 +106,10 @@ fun ManageDrinksScreen(
                     onClick = { showAddForm = true },
                     modifier = Modifier
                         .padding(horizontal = 8.dp)
-                        .semantics { contentDescription = addNewDrinkDesc }
+                        .semantics { 
+                            contentDescription = addNewDrinkDesc
+                            role = Role.Button
+                        }
                 ) {
                     Text(stringResource(R.string.add_new_drink))
                 }
@@ -114,7 +120,10 @@ fun ManageDrinksScreen(
                     onClick = onOfficialDrinks,
                     modifier = Modifier
                         .padding(horizontal = 8.dp)
-                        .semantics { contentDescription = officialDrinksDesc }
+                        .semantics { 
+                            contentDescription = officialDrinksDesc
+                            role = Role.Button
+                        }
                 ) {
                     Text(stringResource(R.string.official_drinks_button))
                 }
@@ -125,7 +134,9 @@ fun ManageDrinksScreen(
                     Text(
                         text = stringResource(R.string.no_drinks_defined),
                         style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                            .semantics { contentDescription = noDrinksDefinedDesc }
                     )
                 }
             } else {

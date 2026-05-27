@@ -19,8 +19,11 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.Dp
@@ -76,22 +79,33 @@ fun SyncStatusIndicator(
     }
 
     if (isVisible) {
+        val clickModifier = if (status is SyncStatus.Error) {
+            Modifier
+                .size(40.dp)
+                .clickable {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                }
+                .semantics {
+                    contentDescription = getSyncStatusDescription(status)
+                    role = Role.Button
+                }
+        } else {
+            Modifier.semantics { contentDescription = getSyncStatusDescription(status) }
+        }
+
         Box(
-            modifier = modifier
-                .size(dotSize)
-                .alpha(alphaValue)
-                .clip(CircleShape)
-                .background(dotColor, CircleShape)
-                .testTag("sync_status_indicator")
-                    .semantics { contentDescription = getSyncStatusDescription(status) }
-                .then(
-                    if (status is SyncStatus.Error) {
-                        Modifier.clickable {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        }
-                    } else Modifier
-                )
-        )
+            modifier = modifier.then(clickModifier),
+            contentAlignment = Alignment.Center
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(dotSize)
+                    .alpha(alphaValue)
+                    .clip(CircleShape)
+                    .background(dotColor, CircleShape)
+                    .testTag("sync_status_indicator")
+            )
+        }
     }
 }
 

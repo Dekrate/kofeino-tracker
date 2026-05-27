@@ -172,6 +172,27 @@
     <string name="health_references_title">Sources</string>
     <string name="health_references_text">• EFSA (2015): efsa.europa.eu/en/efsajournal/pub/4102\n• FDA (2024): fda.gov/consumers/consumer-updates/spilling-beans-how-much-caffeine-too-much\n• WHO (2023): who.int/tools/elena/interventions/caffeine-pregnancy</string>
 
+    <!-- Accessibility descriptions -->
+    <string name="accessibility_drink_name_field">Drink name field</string>
+    <string name="accessibility_save_drink">Save drink</string>
+    <string name="accessibility_delete_drink">Delete drink</string>
+    <string name="accessibility_caffeine_value">Caffeine: %d mg</string>
+    <string name="accessibility_volume_value">Volume: %d ml</string>
+    <string name="accessibility_date_label">Date: %s</string>
+    <string name="accessibility_total_today">Total today: %d mg</string>
+    <string name="accessibility_no_drinks">No drinks recorded</string>
+    <string name="accessibility_loading">Loading data</string>
+    <string name="accessibility_error_state">Error loading data</string>
+    <string name="accessibility_select_language">Select language: %s</string>
+    <string name="accessibility_select_profile">Select profile: %s</string>
+    <string name="accessibility_view_status">View cross-device sync status</string>
+    <string name="accessibility_device_info">Device: %s</string>
+    <string name="accessibility_sync_status">Sync status: %s</string>
+    <string name="accessibility_date_navigation">Date navigation</string>
+    <string name="accessibility_drink_section">Drink list</string>
+    <string name="accessibility_intake_item">%1$s %2$d mg at %3$s</string>
+    <string name="accessibility_caffeine_display">Caffeine amount: %d mg</string>
+
     <!-- Tile -->
     <string name="tile_caffeine_total">--- mg</string>
     <string name="tile_title_caffeine_total">Caffeine Total</string>
