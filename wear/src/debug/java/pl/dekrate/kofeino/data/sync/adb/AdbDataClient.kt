@@ -27,6 +27,7 @@ class AdbDataClient @Inject constructor(
     // Debug-only: empty DataItemBuffer with an empty DataHolder (0 rows).
     // Callers are not expected to iterate or release this buffer.
     // This is acceptable for debug builds — the real DataClient is used in release.
+    // Lazy init avoids VerifyError from DataHolder.builder bytecode in Robolectric tests.
     @Suppress("DataBufferLeak")
     private val emptyDataItemBuffer by lazy { DataItemBuffer(DataHolder.builder(arrayOf("_id")).build(0)) }
 
