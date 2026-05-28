@@ -34,7 +34,7 @@ class AdbSyncClient @Inject constructor(
         scope.launch { run() }
     }
 
-    @Suppress("SuspendFunSwallowedCancellation")
+    @Suppress("SuspendFunSwallowedCancellation", "LoopWithTooManyJumpStatements")
     private suspend fun run() {
         var attempt = 0
         while (coroutineContext.isActive) {
