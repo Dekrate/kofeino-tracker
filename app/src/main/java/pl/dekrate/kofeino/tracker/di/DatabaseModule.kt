@@ -16,7 +16,9 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
 import pl.dekrate.kofeino.tracker.data.encryption.KofeinoEncryptionManager
 import pl.dekrate.kofeino.tracker.data.local.CaffeineDatabase
@@ -42,6 +44,10 @@ annotation class SettingsDataStore
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class SyncStateDataStore
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class ApplicationScope
 
 @Suppress("TooManyFunctions")
 @Module
@@ -279,6 +285,13 @@ object DatabaseModule {
     @Singleton
     @IoDispatcher
     fun provideIoDispatcher(): CoroutineDispatcher = Dispatchers.IO
+
+    @Provides
+    @Singleton
+    @ApplicationScope
+    fun provideApplicationScope(@IoDispatcher ioDispatcher: CoroutineDispatcher): CoroutineScope {
+        return CoroutineScope(SupervisorJob() + ioDispatcher)
+    }
 
     private fun insertOfficialDrinkCache(db: androidx.sqlite.db.SupportSQLiteDatabase) {
         // Seed cache with common drinks (data sourced from Open Food Facts)

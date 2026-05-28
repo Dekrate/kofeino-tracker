@@ -10,14 +10,15 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
+import pl.dekrate.kofeino.tracker.di.ApplicationScope
 import pl.dekrate.kofeino.tracker.di.SettingsDataStore
 import timber.log.Timber
 import javax.inject.Inject
@@ -52,7 +53,8 @@ import javax.inject.Singleton
 @Singleton
 class DataStorePreferences @Inject constructor(
     @SettingsDataStore private val dataStore: DataStore<Preferences>,
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    @ApplicationScope private val applicationScope: CoroutineScope
 ) {
 
     // In-memory caches for synchronous access (avoids runBlocking on every read)
@@ -66,14 +68,11 @@ class DataStorePreferences @Inject constructor(
     @Volatile private var cachedCustomLimit: Int = DEFAULT_CUSTOM_CAFFEINE_LIMIT
     @Volatile private var initialized = false
 
-    /** Application-scoped coroutine scope with supervisor behaviour. */
-    private val scope = GlobalScope + CoroutineExceptionHandler { _, e ->
-        Timber.w(e, "DataStorePreferences: unhandled exception in warm-up coroutine")
-    }
-
     /** Eagerly warm the cache from DataStore on construction. */
     init {
-        scope.launch(Dispatchers.IO) {
+        applicationScope.launch(Dispatchers.IO + CoroutineExceptionHandler { _, e ->
+            Timber.w(e, "DataStorePreferences: unhandled exception in warm-up coroutine")
+        }) {
             try {
                 val prefs = dataStore.data.first()
                 cachedLanguage = prefs[LANGUAGE_KEY] ?: migrateLanguageFromSp()

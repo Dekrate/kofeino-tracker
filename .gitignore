@@ -29,3 +29,8 @@ common/build/
 /screen*.png
 .kotlin/
 /keystore/
+
+# Keystore (sensitive — never commit)
+keystore/
+*.keystore
+keystore.properties
