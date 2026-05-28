@@ -79,8 +79,9 @@ class AdbSyncServer @Inject constructor(
                     adbMessageClient.dispatchMessage(path, payload, AdbCapabilityClient.ADB_NODE_ID)
                 }
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-            if (e is CancellationException) throw e
             if (coroutineContext.isActive) Timber.d(e, "AdbSyncServer: connection error")
         } finally {
             cleanup()
