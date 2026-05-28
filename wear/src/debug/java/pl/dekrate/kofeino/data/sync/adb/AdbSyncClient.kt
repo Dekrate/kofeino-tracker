@@ -91,6 +91,8 @@ class AdbSyncClient @Inject constructor(
                     adbMessageClient.dispatchMessage(path, payload, AdbCapabilityClient.ADB_NODE_ID)
                 }
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
             if (coroutineContext.isActive) Timber.d(e, "AdbSyncClient: read error")
         } finally {
