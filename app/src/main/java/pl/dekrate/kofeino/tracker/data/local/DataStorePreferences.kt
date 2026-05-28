@@ -8,7 +8,6 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -18,13 +17,12 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
 import pl.dekrate.kofeino.tracker.di.ApplicationScope
+import pl.dekrate.kofeino.tracker.di.SettingsDataStore
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
-
-/** Extension property — single DataStore instance per process. */
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "kofeino_settings")
 
 /**
  * DataStore-backed preferences for language, theme, notifications, and caffeine limit profile.
@@ -54,10 +52,10 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
  */
 @Singleton
 class DataStorePreferences @Inject constructor(
+    @SettingsDataStore private val dataStore: DataStore<Preferences>,
     @ApplicationContext private val context: Context,
     @ApplicationScope private val applicationScope: CoroutineScope
 ) {
-    private val dataStore: DataStore<Preferences> = context.dataStore
 
     // In-memory caches for synchronous access (avoids runBlocking on every read)
     @Volatile private var cachedLanguage: String = DEFAULT_LANGUAGE

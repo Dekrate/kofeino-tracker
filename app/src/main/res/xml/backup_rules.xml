@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- Exclude encrypted Room database -->
+    <exclude domain="database" path="caffeine_database" />
+    <exclude domain="database" path="caffeine_database-wal" />
+    <exclude domain="database" path="caffeine_database-shm" />
+    <!-- Exclude encrypted DataStore files -->
+    <exclude domain="file" path="datastore/" />
+    <!-- Exclude Tink keyset preferences -->
+    <exclude domain="sharedpref" path="kofeino_encryption_keyset_prefs" />
+    <exclude domain="sharedpref" path="kofeino_db_passphrase" />
+</full-backup-content>
