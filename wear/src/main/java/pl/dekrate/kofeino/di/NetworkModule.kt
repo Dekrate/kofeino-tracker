@@ -6,6 +6,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import okhttp3.Cache
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import pl.dekrate.kofeino.BuildConfig
@@ -15,6 +16,7 @@ import pl.dekrate.kofeino.data.remote.CustomDns
 import pl.dekrate.kofeino.common.util.OpenFoodFactsConfig
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.io.File
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
@@ -24,11 +26,16 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(customDns: CustomDns): OkHttpClient {
+    fun provideOkHttpClient(
+        customDns: CustomDns,
+        @ApplicationContext context: Context
+    ): OkHttpClient {
         val logging = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BASIC
         }
         val userAgent = "KofeinoTracker/${BuildConfig.VERSION_NAME} (Android; Wear OS; pl.dekrate.kofeino)"
+        val cacheDir = File(context.cacheDir, "okhttp_cache")
+        val cache = Cache(cacheDir, 5L * 1024 * 1024) // 5MB for wear
         return OkHttpClient.Builder()
             .dns(customDns)
             .addInterceptor { chain ->
@@ -38,6 +45,7 @@ object NetworkModule {
                 chain.proceed(request)
             }
             .addInterceptor(logging)
+            .cache(cache)
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(15, TimeUnit.SECONDS)
             .writeTimeout(15, TimeUnit.SECONDS)

@@ -10,6 +10,7 @@ package pl.dekrate.kofeino.common.sync.adb
  *
  * Thread safety: stateless and thread-safe.
  */
+@Suppress("MagicNumber")
 object AdbSyncProtocol {
     
     private const val LENGTH_FIELD_BYTES = 4
@@ -66,6 +67,7 @@ object AdbSyncProtocol {
      * @return Pair of (parsed frames, remaining bytes).
      *         Parsed frames are (path, payload) pairs.
      */
+    @Suppress("LoopWithTooManyJumpStatements")
     fun parseFrames(buffer: ByteArray): Pair<List<Pair<String, ByteArray>>, ByteArray> {
         if (buffer.size > MAX_BUFFER_BYTES) {
             return emptyList<Pair<String, ByteArray>>() to ByteArray(0)
@@ -129,11 +131,13 @@ object AdbSyncProtocol {
     /**
      * Read an unsigned 32-bit big-endian integer from [buffer] at [offset].
      */
+    @Suppress("UnnecessaryParentheses")
     private fun readUint32(buffer: ByteArray, offset: Int): Int {
-        return ((buffer[offset].toInt() and 0xFF) shl 24) or
-                ((buffer[offset + 1].toInt() and 0xFF) shl 16) or
-                ((buffer[offset + 2].toInt() and 0xFF) shl 8) or
-                (buffer[offset + 3].toInt() and 0xFF)
+        val b0 = buffer[offset].toInt() and 0xFF
+        val b1 = buffer[offset + 1].toInt() and 0xFF
+        val b2 = buffer[offset + 2].toInt() and 0xFF
+        val b3 = buffer[offset + 3].toInt() and 0xFF
+        return (b0 shl 24) or (b1 shl 16) or (b2 shl 8) or b3
     }
 
     /**

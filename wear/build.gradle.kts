@@ -6,6 +6,15 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+import java.util.Properties
+
+// Load keystore properties (local, gitignored)
+val keystorePropertiesFile = rootProject.file("keystore/keystore.properties")
+val keystoreProperties = Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(keystorePropertiesFile.inputStream())
+}
+
 detekt {
     toolVersion = libs.versions.detekt.get()
     config.setFrom(rootProject.file("config/detekt/detekt.yml"))
@@ -54,6 +63,17 @@ android {
         jvmArgs("-Dnet.bytebuddy.experimental=true")
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = keystorePropertiesFile.parentFile.parentFile.resolve(
+                keystoreProperties.getProperty("storeFile", "keystore/release.keystore")
+            )
+            storePassword = keystoreProperties.getProperty("storePassword", "")
+            keyAlias = keystoreProperties.getProperty("keyAlias", "")
+            keyPassword = keystoreProperties.getProperty("keyPassword", "")
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -61,7 +81,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("release")
         }
     }
     compileOptions {
