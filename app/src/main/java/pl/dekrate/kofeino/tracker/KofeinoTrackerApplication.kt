@@ -2,11 +2,9 @@ package pl.dekrate.kofeino.tracker
 
 import android.app.Application
 import android.content.Context
-import androidx.core.content.ContextCompat
 import dagger.hilt.android.HiltAndroidApp
 import pl.dekrate.kofeino.tracker.data.local.DataStorePreferences
 import pl.dekrate.kofeino.tracker.data.local.LanguagePreferences
-import pl.dekrate.kofeino.tracker.data.sync.WearableSyncService
 import pl.dekrate.kofeino.tracker.notification.CaffeineLiveNotificationObserver
 import pl.dekrate.kofeino.tracker.util.LocaleHelper
 import timber.log.Timber
@@ -37,7 +35,6 @@ class KofeinoTrackerApplication : Application() {
             Timber.plant(Timber.DebugTree())
         }
         caffeineNotificationObserver.start()
-        ContextCompat.startForegroundService(this, WearableSyncService.startIntent(this))
     }
 
     override fun attachBaseContext(base: Context) {

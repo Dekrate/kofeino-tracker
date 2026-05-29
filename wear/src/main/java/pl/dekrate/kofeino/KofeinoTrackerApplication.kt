@@ -2,11 +2,8 @@ package pl.dekrate.kofeino
 
 import android.app.Application
 import android.content.Context
-import android.content.Intent
-import androidx.core.content.ContextCompat
 import dagger.hilt.android.HiltAndroidApp
 import pl.dekrate.kofeino.data.local.LanguagePreferences
-import pl.dekrate.kofeino.data.sync.WearableSyncService
 import pl.dekrate.kofeino.notification.WearNotificationObserver
 import pl.dekrate.kofeino.presentation.util.LocaleHelper
 import timber.log.Timber
@@ -21,9 +18,9 @@ import javax.inject.Inject
  * language from startup, without relying on the deprecated
  * [android.content.res.Resources.updateConfiguration] API.
  *
- * On [onCreate] the application starts [WearableSyncService] as a foreground
- * service, which manages the Wearable Data Layer listeners for cross-device
- * synchronisation.
+ * [WearableSyncService] is now started from [pl.dekrate.kofeino.presentation.MainActivity]
+ * (not from Application.onCreate) to comply with Android 12+ foreground service
+ * restrictions.
  */
 @HiltAndroidApp
 class KofeinoTrackerApplication : Application() {
@@ -37,23 +34,6 @@ class KofeinoTrackerApplication : Application() {
             Timber.plant(Timber.DebugTree())
         }
         notificationObserver.start()
-        startSyncService()
-    }
-
-    /**
-     * Starts [WearableSyncService] as a foreground service to manage the
-     * Wearable Data Layer listener lifecycle.
-     */
-    private fun startSyncService() {
-        val intent = Intent(this, WearableSyncService::class.java).apply {
-            action = WearableSyncService.ACTION_START_SYNC
-        }
-        try {
-            ContextCompat.startForegroundService(this, intent)
-            Timber.d("WearableSyncService start requested")
-        } catch (e: IllegalStateException) {
-            Timber.e(e, "Failed to start WearableSyncService")
-        }
     }
 
     override fun attachBaseContext(base: Context) {
