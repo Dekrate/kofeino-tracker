@@ -39,7 +39,9 @@ class MainActivity : ComponentActivity() {
         // to comply with Android 12+ foreground service restrictions.
         ContextCompat.startForegroundService(
             this,
-            Intent(this, WearableSyncService::class.java)
+            Intent(this, WearableSyncService::class.java).apply {
+                action = WearableSyncService.ACTION_START_SYNC
+            }
         )
 
         setContent {

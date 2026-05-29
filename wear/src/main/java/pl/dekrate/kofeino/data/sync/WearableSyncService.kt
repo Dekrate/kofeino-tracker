@@ -77,13 +77,13 @@ class WearableSyncService : Service() {
             action, flags, startId)
 
         try {
-            when (action) {
-                ACTION_START_SYNC -> handleStartSync()
-                ACTION_STOP_SYNC -> handleStopSync()
-                null -> {
-                    Timber.w("WearableSyncService: restarted with null intent — re-registering")
+            when {
+                intent == null -> {
+                    Timber.w("WearableSyncService: restarted by system with null intent — re-registering")
                     handleStartSync()
                 }
+                action == ACTION_START_SYNC -> handleStartSync()
+                action == ACTION_STOP_SYNC -> handleStopSync()
                 else -> {
                     Timber.w("WearableSyncService: unknown action=%s (defaulting to START_STICKY)", action)
                 }

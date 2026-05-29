@@ -10,9 +10,7 @@ import android.content.Intent
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
+
 import pl.dekrate.kofeino.tracker.MainActivity
 import pl.dekrate.kofeino.tracker.R
 import timber.log.Timber
@@ -54,7 +52,6 @@ import javax.inject.Inject
  *                  └── return START_STICKY
  *                     │
  * onDestroy() ─────────┤── wearableDataLayerManager.unregister()
- *                      └── serviceScope.cancel()
  * ```
  *
  * ## Usage
@@ -77,7 +74,6 @@ class WearableSyncService : Service() {
     @Inject
     lateinit var syncStatusTracker: SyncStatusTracker
 
-    private val serviceScope = CoroutineScope(SupervisorJob())
     private val binder = LocalBinder()
 
     // ── Service Lifecycle ─────────────────────────────────────
@@ -93,7 +89,12 @@ class WearableSyncService : Service() {
             intent, flags, startId)
 
         val notification = buildNotification()
-        startForeground(NOTIFICATION_ID, notification)
+        try {
+            startForeground(NOTIFICATION_ID, notification)
+        } catch (e: SecurityException) {
+            Timber.e(e, "Failed to start foreground — notification permission missing")
+            // Service will run as a background service; sync listeners still work
+        }
 
         // Register DataLayer listeners (idempotent — safe to call multiple times)
         wearableDataLayerManager.register()
@@ -109,7 +110,6 @@ class WearableSyncService : Service() {
     override fun onDestroy() {
         Timber.d("WearableSyncService: onDestroy")
         wearableDataLayerManager.unregister()
-        serviceScope.cancel()
         super.onDestroy()
     }
 
