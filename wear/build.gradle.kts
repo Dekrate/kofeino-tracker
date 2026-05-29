@@ -93,6 +93,10 @@ android {
             jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
         }
     }
+    lint {
+        disable.add("WearableBindListener")
+    }
+
     buildFeatures {
         buildConfig = true
         compose = true

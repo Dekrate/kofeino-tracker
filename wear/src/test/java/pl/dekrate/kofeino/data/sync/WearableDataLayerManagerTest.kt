@@ -9,6 +9,7 @@ import com.google.android.gms.wearable.DataItem
 import com.google.android.gms.wearable.MessageClient
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.Node
+import com.google.android.gms.wearable.NodeClient
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -45,6 +46,9 @@ class WearableDataLayerManagerTest {
     private lateinit var capabilityClient: CapabilityClient
 
     @MockK
+    private lateinit var nodeClient: NodeClient
+
+    @MockK
     private lateinit var incomingSyncProcessor: IncomingSyncProcessor
 
     @MockK
@@ -68,7 +72,7 @@ class WearableDataLayerManagerTest {
         every { capabilityClient.removeListener(any<CapabilityClient.OnCapabilityChangedListener>()) } returns mockk()
 
         tileDataStorePreferences = mockk(relaxed = true)
-        manager = WearableDataLayerManager(dataClient, messageClient, capabilityClient, incomingSyncProcessor, syncStatusTracker, fullSyncManager, tileDataStorePreferences)
+        manager = WearableDataLayerManager(dataClient, messageClient, capabilityClient, nodeClient, incomingSyncProcessor, syncStatusTracker, fullSyncManager, tileDataStorePreferences)
     }
 
     @After

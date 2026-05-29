@@ -7,6 +7,9 @@ import com.google.android.gms.wearable.DataEvent
 import com.google.android.gms.wearable.DataEventBuffer
 import com.google.android.gms.wearable.MessageClient
 import com.google.android.gms.wearable.MessageEvent
+import com.google.android.gms.wearable.Node
+import com.google.android.gms.wearable.NodeClient
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -14,6 +17,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import pl.dekrate.kofeino.common.domain.model.TileConfig
 import pl.dekrate.kofeino.common.sync.SyncPaths
+import pl.dekrate.kofeino.common.sync.SyncSessionState
 import pl.dekrate.kofeino.data.local.TileDataStorePreferences
 import timber.log.Timber
 import javax.inject.Inject
@@ -35,6 +39,7 @@ class WearableDataLayerManager @Inject constructor(
     private val dataClient: DataClient,
     private val messageClient: MessageClient,
     private val capabilityClient: CapabilityClient,
+    private val nodeClient: NodeClient,
     private val incomingSyncProcessor: IncomingSyncProcessor,
     private val syncStatusTracker: SyncStatusTracker,
     private val fullSyncManager: FullSyncManager,
@@ -57,6 +62,13 @@ class WearableDataLayerManager @Inject constructor(
     private var isRegistered: Boolean = false
 
     /**
+     * Cached local node ID, used to filter out self-created DataItems
+     * so we do not process our own FullSync messages as incoming.
+     */
+    @Volatile
+    private var localNodeId: String? = null
+
+    /**
      * Handles data item changes from the paired device.
      *
      * **Thread safety:** This callback may fire on a binder thread. Do not add
@@ -70,8 +82,48 @@ class WearableDataLayerManager @Inject constructor(
         try {
             for (event in dataEventBuffer) {
                 val uri = event.dataItem.uri
+                val sourceNodeId = uri.authority
                 when (event.type) {
-                    DataEvent.TYPE_CHANGED -> Timber.d("DataItem changed: $uri")
+                    DataEvent.TYPE_CHANGED -> {
+                        val path = uri.path
+                        val data = event.dataItem.data
+                        Timber.d("DataItem changed: $uri (${data?.size ?: 0}B)")
+
+                        // Skip DataItems originating from this device to avoid
+                        // processing our own FullSync messages.
+                        if (sourceNodeId != null && sourceNodeId == localNodeId) continue
+
+                        // Route FullSync DataItems to FullSyncManager
+                        when {
+                            path?.startsWith(SyncPaths.DATA_ITEM_FULL_SYNC_REQUEST) == true -> {
+                                if (data != null) {
+                                    val messageEvent = object : MessageEvent {
+                                        override fun getRequestId() = 0
+                                        override fun getPath() = SyncPaths.MESSAGE_FULL_SYNC_REQUEST
+                                        override fun getData() = data
+                                        override fun getSourceNodeId() = sourceNodeId ?: ""
+                                        override fun toString() =
+                                            "DataItemRequest{path=$path, size=${data.size}}"
+                                    }
+                                    scope.launch { fullSyncManager.handleFullSyncRequest(messageEvent) }
+                                }
+                            }
+                            path?.startsWith(SyncPaths.DATA_ITEM_FULL_SYNC_RESPONSE) == true -> {
+                                if (data != null) {
+                                    val messageEvent = object : MessageEvent {
+                                        override fun getRequestId() = 0
+                                        override fun getPath() = SyncPaths.MESSAGE_FULL_SYNC_RESPONSE
+                                        override fun getData() = data
+                                        override fun getSourceNodeId() = sourceNodeId ?: ""
+                                        override fun toString() =
+                                            "DataItemResponse{path=$path, size=${data.size}}"
+                                    }
+                                    scope.launch { fullSyncManager.handleFullSyncResponse(messageEvent) }
+                                }
+                            }
+                            else -> { /* unrecognised DataItem — ignore */ }
+                        }
+                    }
                     DataEvent.TYPE_DELETED -> Timber.d("DataItem deleted: $uri")
                     else -> Timber.d("DataItem unknown event type=${event.type}: $uri")
                 }
@@ -191,7 +243,73 @@ class WearableDataLayerManager @Inject constructor(
             capabilityListener = null
         }
 
+        try {
+            capabilityClient.addLocalCapability(SYNC_CAPABILITY_NAME)
+            Timber.d("Local capability '$SYNC_CAPABILITY_NAME' published")
+        } catch (e: Exception) {
+            Timber.w(e, "Failed to publish local capability '$SYNC_CAPABILITY_NAME'")
+        }
+
         isRegistered = successCount > 0
+
+        // Cache the local node ID so we can filter self-created DataItems
+        // and avoid processing our own FullSync messages as incoming.
+        scope.launch {
+            localNodeId = try {
+                nodeClient.localNode.await().id
+            } catch (e: Exception) {
+                Timber.w(e, "Failed to get local node ID")
+                null
+            }
+        }
+
+        // Fallback: Check connected nodes directly via NodeClient when capability
+        // discovery is unavailable (e.g., Samsung bridge doesn't propagate custom capabilities).
+        if (isRegistered) {
+            scope.launch {
+                try {
+                    kotlinx.coroutines.delay(3000) // short delay for GMS to settle
+                    val nodes = nodeClient.connectedNodes.await()
+                    if (nodes.isNotEmpty()) {
+                        Timber.d("Fallback: %d connected node(s) found via NodeClient — simulating capability discovery", nodes.size)
+                        val capabilityInfo = object : CapabilityInfo {
+                            override fun getName(): String = SYNC_CAPABILITY_NAME
+                            override fun getNodes(): Set<Node> = nodes.toSet()
+                        }
+                        handleCapabilityChanged(capabilityInfo)
+                    } else {
+                        Timber.d("Fallback: 0 connected nodes (will retry on capability listener)")
+                    }
+                } catch (e: Exception) {
+                    if (e is kotlinx.coroutines.CancellationException) throw e
+                    Timber.w(e, "Fallback: node check failed")
+                }
+            }
+        }
+
+        // Periodic poll every 30 seconds as a safety net — also resets stale
+        // AwaitingResponse sessions so FullSync can retry when GMS delivery fails.
+        scope.launch {
+            try {
+                kotlinx.coroutines.delay(30000)
+                val nodes = nodeClient.connectedNodes.await()
+                if (nodes.isNotEmpty()) {
+                    // Reset any stale AwaitingResponse session before re-triggering
+                    for (node in nodes) {
+                        fullSyncManager.checkAndResetStaleSession(node.id)
+                    }
+                    Timber.d("Fallback retry: %d connected node(s) via NodeClient", nodes.size)
+                    val capabilityInfo = object : CapabilityInfo {
+                        override fun getName(): String = SYNC_CAPABILITY_NAME
+                        override fun getNodes(): Set<Node> = nodes.toSet()
+                    }
+                    handleCapabilityChanged(capabilityInfo)
+                }
+            } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                Timber.w(e, "Fallback retry: node check failed")
+            }
+        }
         Timber.i("Wearable DataLayer registration complete: $successCount registered, $failureCount failed")
     }
 
@@ -227,6 +345,13 @@ class WearableDataLayerManager @Inject constructor(
         } catch (e: Exception) {
             Timber.w(e, "Failed to unregister CapabilityClient listener")
             failureCount++
+        }
+
+        try {
+            capabilityClient.removeLocalCapability(SYNC_CAPABILITY_NAME)
+            Timber.d("Local capability '$SYNC_CAPABILITY_NAME' unpublished")
+        } catch (e: Exception) {
+            Timber.w(e, "Failed to unpublish local capability '$SYNC_CAPABILITY_NAME'")
         }
 
         isRegistered = false

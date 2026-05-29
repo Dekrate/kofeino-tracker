@@ -53,6 +53,15 @@
             android:exported="false"
             android:foregroundServiceType="dataSync" />
 
+        <!-- Manifest-declared WearableListenerService for reliable message delivery. -->
+        <service
+            android:name=".data.sync.WearableSyncListenerService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.BIND_LISTENER" />
+            </intent-filter>
+        </service>
+
         <!-- Wear Tile Service -->
         <service
             android:name=".presentation.tile.CaffeineTileService"

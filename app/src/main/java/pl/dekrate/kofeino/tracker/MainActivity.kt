@@ -17,6 +17,7 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import pl.dekrate.kofeino.tracker.data.sync.SyncStatusTracker
+import pl.dekrate.kofeino.tracker.data.sync.WearableSyncService
 import pl.dekrate.kofeino.tracker.navigation.AppNavHost
 import javax.inject.Inject
 import pl.dekrate.kofeino.tracker.data.local.DataStorePreferences
@@ -38,6 +39,13 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         requestNotificationPermissions()
+
+        // WearableSyncService must be started from Activity (not Application)
+        // to comply with Android 12+ foreground service restrictions.
+        ContextCompat.startForegroundService(
+            this,
+            WearableSyncService.startIntent(this)
+        )
 
         val themeMode = DataStorePreferences.getThemeMode(this)
 

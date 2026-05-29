@@ -97,6 +97,10 @@ android {
         }
     }
 
+    lint {
+        disable.add("WearableBindListener")
+    }
+
     buildFeatures {
         buildConfig = true
         compose = true

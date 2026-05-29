@@ -1,11 +1,15 @@
 package pl.dekrate.kofeino.tracker.data.sync
 
+import com.google.android.gms.wearable.DataClient
 import com.google.android.gms.wearable.MessageClient
 import com.google.android.gms.wearable.MessageEvent
+import com.google.android.gms.wearable.PutDataRequest
 import com.google.gson.Gson
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -56,6 +60,7 @@ import pl.dekrate.kofeino.tracker.domain.model.DrinkEntity
 @Singleton
 @Suppress("TooGenericExceptionCaught", "SuspendFunSwallowedCancellation")
 class FullSyncManager @Inject constructor(
+    private val dataClient: DataClient,
     private val messageClient: MessageClient,
     private val intakeDao: CaffeineIntakeDao,
     private val drinkDao: DrinkDao,
@@ -78,6 +83,12 @@ class FullSyncManager @Inject constructor(
 
         /** Number of characters to display of the state hash in logs. */
         private const val STATE_HASH_LOG_PREFIX = 16
+
+        /** Maximum retries for full-sync initiation on timeout. */
+        private const val MAX_RETRIES = 3
+
+        /** Delay in ms before retrying after a timeout. */
+        private const val RETRY_DELAY_MS = 15_000L
     }
 
     /** Serialises all sync operations — only one at a time. */
@@ -86,6 +97,13 @@ class FullSyncManager @Inject constructor(
     /** Tracks the current sync session state. */
     @Volatile
     private var sessionState: SyncSessionState = SyncSessionState.Idle
+
+    /**
+     * Signalled by [processIncomingResponse] when a FullSync response arrives.
+     * Used inside [initiateFullSync]'s [withTimeout] to actually wait for the
+     * paired device's response before retrying.
+     */
+    private var pendingResponse: CompletableDeferred<Unit>? = null
 
     /** Background scope for async sync operations. */
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + ioDispatcher)
@@ -182,6 +200,27 @@ class FullSyncManager @Inject constructor(
         }
     }
 
+    /**
+     * Checks if the session is in [SyncSessionState.AwaitingResponse] for the given
+     * [nodeId]. If the session is stale (no response received), resets it to [Idle]
+     * and returns `true` so the caller can re-trigger FullSync.
+     *
+     * This is called by the Fallback retry poller every 30 seconds as a safety net
+     * when GMS fails to deliver messages between paired devices.
+     *
+     * @param nodeId The target node ID to check.
+     * @return `true` if the stale session was reset, `false` if no action was needed.
+     */
+    fun checkAndResetStaleSession(nodeId: String): Boolean {
+        val currentState = sessionState
+        if (currentState is SyncSessionState.AwaitingResponse && currentState.nodeId == nodeId) {
+            Timber.d("FullSync: resetting stale AwaitingResponse for node=%s", nodeId)
+            sessionState = SyncSessionState.Idle
+            return true
+        }
+        return false
+    }
+
     // ------------------------------------------------------------------
     // Internal: Initiate sync (requestor side)
     // ------------------------------------------------------------------
@@ -197,12 +236,13 @@ class FullSyncManager @Inject constructor(
      * 6. Send our changes (reverse direction).
      * 7. Record sync completion.
      */
-    private suspend fun initiateFullSync(nodeId: String) {
+    private suspend fun initiateFullSync(nodeId: String, retryCount: Int = 0) {
         syncStatusTracker.onSyncStarted()
         val sessionId = SyncSessionState.generateSessionId()
         sessionState = SyncSessionState.Requesting(nodeId, sessionId, System.currentTimeMillis())
 
         try {
+            pendingResponse = CompletableDeferred()
             withTimeout(SESSION_TIMEOUT_MS) {  // 30-second timeout for full sync
                 val lastSyncTimestamp = syncStateStore.getLastSyncTimestamp()
                 val intakes = intakeDao.getAllIntakesSnapshot()
@@ -234,22 +274,42 @@ class FullSyncManager @Inject constructor(
                     sourceDeviceId = SOURCE_DEVICE_ID
                 )
                 val requestJson = gson.toJson(request)
-                messageClient.sendMessage(
-                    nodeId,
-                    SyncPaths.MESSAGE_FULL_SYNC_REQUEST,
-                    requestJson.toByteArray()
-                ).await()
 
-                Timber.d("FullSync: request sent to %s (session=%s)", nodeId, sessionId)
+                // Send FullSync request via DataItem (reliable, persistent delivery).
+                sendFullSyncRequestViaDataItem(nodeId, sessionId, requestJson)
 
-                // Transition to AwaitingResponse — the response will arrive
-                // asynchronously via handleFullSyncResponse.
+                // Also try MessageClient (fire-and-forget — may work on stock Wear OS).
+                try {
+                    messageClient.sendMessage(
+                        nodeId,
+                        SyncPaths.MESSAGE_FULL_SYNC_REQUEST,
+                        requestJson.toByteArray()
+                    ).await()
+                    Timber.d("FullSync: request sent to %s (session=%s) via MessageClient", nodeId, sessionId)
+                } catch (e: Exception) {
+                    if (e is CancellationException) throw e
+                    Timber.d("FullSync: MessageClient send failed (expected on Samsung) for %s", nodeId)
+                }
+
+                // Transition to AwaitingResponse — then wait for the response
+                // via pendingResponse, which will be completed by
+                // processIncomingResponse when the paired device replies.
                 sessionState = SyncSessionState.AwaitingResponse(nodeId, sessionId)
+                pendingResponse?.await()
             }
         } catch (e: TimeoutCancellationException) {
-            Timber.w(e, "FullSync: session timed out (30s) for node=%s", nodeId)
-            sessionState = SyncSessionState.Idle
-            syncStatusTracker.onSyncFailed("Timeout: " + (e.message ?: "Unknown error"))
+            if (retryCount < MAX_RETRIES) {
+                Timber.w(e, "FullSync: session timed out (retry %d/%d for node=%s)",
+                    retryCount + 1, MAX_RETRIES, nodeId)
+                sessionState = SyncSessionState.Idle
+                delay(RETRY_DELAY_MS)
+                initiateFullSync(nodeId, retryCount + 1)
+            } else {
+                Timber.w(e, "FullSync: session timed out after %d retries for node=%s",
+                    MAX_RETRIES, nodeId)
+                sessionState = SyncSessionState.Idle
+                syncStatusTracker.onSyncFailed("Timeout after $MAX_RETRIES retries")
+            }
         } catch (e: CancellationException) {
             sessionState = SyncSessionState.Idle
             syncStatusTracker.onSyncFailed("Cancelled")
@@ -258,6 +318,8 @@ class FullSyncManager @Inject constructor(
             sessionState = SyncSessionState.Idle
             syncStatusTracker.onSyncFailed("FullSync initiation failed: " + (e.message ?: "Unknown error"))
             Timber.w(e, "FullSync: initiation failed for node=%s", nodeId)
+        } finally {
+            pendingResponse = null
         }
     }
 
@@ -409,6 +471,10 @@ class FullSyncManager @Inject constructor(
             syncStatusTracker.onSyncCompleted()
             sessionState = SyncSessionState.Idle
 
+            // Signal that the response was received so initiateFullSync's
+            // withTimeout can exit the await() and complete the session.
+            pendingResponse?.complete(Unit)
+
         } catch (e: CancellationException) {
             sessionState = SyncSessionState.Idle
             syncStatusTracker.onSyncFailed("Cancelled")
@@ -423,6 +489,68 @@ class FullSyncManager @Inject constructor(
     // ------------------------------------------------------------------
     // Helpers
     // ------------------------------------------------------------------
+
+    /**
+     * Send a FullSync request via DataClient.putDataItem as a persistent fallback
+     * when MessageClient.sendMessage is not delivered (Samsung GMS bug).
+     */
+    private suspend fun sendFullSyncRequestViaDataItem(
+        nodeId: String,
+        sessionId: String,
+        requestJson: String
+    ): Boolean {
+        return try {
+            // Use a simple path — GMS automatically assigns the source node ID
+            // to the URI authority, which the receiver uses for self-filtering.
+            val putRequest = PutDataRequest.create(SyncPaths.DATA_ITEM_FULL_SYNC_REQUEST)
+                .setData(requestJson.toByteArray())
+                .setUrgent()
+
+            dataClient.putDataItem(putRequest).await()
+            Timber.d("FullSync: request DataItem sent (session=%s, %dB)", sessionId, requestJson.length)
+            true
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Timber.w(e, "FullSync: failed to send request DataItem to %s", nodeId)
+            false
+        }
+    }
+
+    /**
+     * Send a FullSync response batch via DataClient.putDataItem as a persistent fallback
+     * when MessageClient.sendMessage is not delivered (Samsung GMS bug).
+     */
+    private suspend fun sendFullSyncResponseViaDataItem(
+        targetNodeId: String,
+        entityType: SyncEntityType,
+        entities: List<String>,
+        sessionId: String
+    ): Boolean {
+        return try {
+            val payload = SyncEvent.FullSyncResponse(
+                entityType = entityType,
+                entitiesJson = entities,
+                timestamp = System.currentTimeMillis(),
+                sourceDeviceId = SOURCE_DEVICE_ID
+            )
+            val responseJson = gson.toJson(payload)
+
+            val putRequest = PutDataRequest.create(SyncPaths.DATA_ITEM_FULL_SYNC_RESPONSE)
+                .setData(responseJson.toByteArray())
+                .setUrgent()
+
+            dataClient.putDataItem(putRequest).await()
+            Timber.d("FullSync: response DataItem sent (session=%s, type=%s, entities=%d)",
+                sessionId, entityType, entities.size)
+            true
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Timber.w(e, "FullSync: failed to send response DataItem to %s", targetNodeId)
+            false
+        }
+    }
 
     /**
      * Send a batch of entity JSONs as a [SyncEvent.FullSyncResponse] to the
@@ -442,20 +570,26 @@ class FullSyncManager @Inject constructor(
                 sourceDeviceId = SOURCE_DEVICE_ID
             )
             val responseJson = gson.toJson(response)
+            // Send response via DataItem first (reliable, persistent delivery).
+            sendFullSyncResponseViaDataItem(
+                targetNodeId = targetNodeId,
+                entityType = entityType,
+                entities = batch,
+                sessionId = sessionId
+            )
+
+            // Also try MessageClient (fire-and-forget — may work on stock Wear OS).
             try {
                 messageClient.sendMessage(
                     targetNodeId,
                     SyncPaths.MESSAGE_FULL_SYNC_RESPONSE,
                     responseJson.toByteArray()
                 ).await()
-                Timber.d("FullSync: sending batch %d (%d entities) to %s (session=%s)",
+                Timber.d("FullSync: sending batch %d (%d entities) to %s (session=%s) via MessageClient",
                     batchIndex, batch.size, targetNodeId, sessionId)
-            } catch (e: CancellationException) {
-                throw e
             } catch (e: Exception) {
-                Timber.w(e, "FullSync: failed to send batch %d to %s",
-                    batchIndex, targetNodeId)
-                throw e
+                if (e is CancellationException) throw e
+                Timber.d("FullSync: MessageClient send failed (expected on Samsung) for batch %d", batchIndex)
             }
         }
     }
