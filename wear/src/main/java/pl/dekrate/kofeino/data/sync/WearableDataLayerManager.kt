@@ -191,6 +191,13 @@ class WearableDataLayerManager @Inject constructor(
             capabilityListener = null
         }
 
+        try {
+            capabilityClient.addLocalCapability(SYNC_CAPABILITY_NAME)
+            Timber.d("Local capability '$SYNC_CAPABILITY_NAME' published")
+        } catch (e: Exception) {
+            Timber.w(e, "Failed to publish local capability '$SYNC_CAPABILITY_NAME'")
+        }
+
         isRegistered = successCount > 0
         Timber.i("Wearable DataLayer registration complete: $successCount registered, $failureCount failed")
     }
@@ -227,6 +234,13 @@ class WearableDataLayerManager @Inject constructor(
         } catch (e: Exception) {
             Timber.w(e, "Failed to unregister CapabilityClient listener")
             failureCount++
+        }
+
+        try {
+            capabilityClient.removeLocalCapability(SYNC_CAPABILITY_NAME)
+            Timber.d("Local capability '$SYNC_CAPABILITY_NAME' unpublished")
+        } catch (e: Exception) {
+            Timber.w(e, "Failed to unpublish local capability '$SYNC_CAPABILITY_NAME'")
         }
 
         isRegistered = false
