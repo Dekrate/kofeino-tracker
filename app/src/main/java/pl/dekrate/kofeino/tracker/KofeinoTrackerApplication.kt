@@ -30,6 +30,12 @@ class KofeinoTrackerApplication : Application() {
     lateinit var caffeineNotificationObserver: CaffeineLiveNotificationObserver
 
     override fun onCreate() {
+        // Load the SQLCipher native library before any database access.
+        // SQLCipher 4.14.0 does not auto-load the library in any static
+        // initializer, so the app must load it explicitly. Without this,
+        // SQLiteConnection.nativeOpen() throws UnsatisfiedLinkError.
+        System.loadLibrary("sqlcipher")
+
         super.onCreate()
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())

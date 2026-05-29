@@ -34,3 +34,9 @@ common/build/
 keystore/
 *.keystore
 keystore.properties
+
+# SQLCipher AAR extraction artifacts (manually extracted during debugging)
+/AndroidManifest.xml
+/classes.jar
+/proguard.txt
+/res/
