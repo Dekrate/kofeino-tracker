@@ -37,9 +37,7 @@ class KofeinoTrackerApplication : Application() {
         System.loadLibrary("sqlcipher")
 
         super.onCreate()
-        if (BuildConfig.DEBUG) {
-            Timber.plant(Timber.DebugTree())
-        }
+        Timber.plant(Timber.DebugTree())
         caffeineNotificationObserver.start()
     }
 

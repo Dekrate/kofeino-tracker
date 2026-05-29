@@ -4,6 +4,7 @@ import android.content.Context
 import com.google.android.gms.wearable.CapabilityClient
 import com.google.android.gms.wearable.DataClient
 import com.google.android.gms.wearable.MessageClient
+import com.google.android.gms.wearable.NodeClient
 import com.google.android.gms.wearable.Wearable
 import io.mockk.MockKAnnotations
 import io.mockk.every
@@ -35,6 +36,9 @@ class WearableModuleTest {
     @MockK
     private lateinit var mockCapabilityClient: CapabilityClient
 
+    @MockK
+    private lateinit var mockNodeClient: NodeClient
+
     @Before
     fun setUp() {
         MockKAnnotations.init(this, relaxed = true)
@@ -43,6 +47,7 @@ class WearableModuleTest {
         every { Wearable.getMessageClient(context) } returns mockMessageClient
         every { Wearable.getDataClient(context) } returns mockDataClient
         every { Wearable.getCapabilityClient(context) } returns mockCapabilityClient
+        every { Wearable.getNodeClient(context) } returns mockNodeClient
     }
 
     @After
@@ -93,6 +98,23 @@ class WearableModuleTest {
         WearableModule.provideCapabilityClient(context)
 
         verify(exactly = 1) { Wearable.getCapabilityClient(context) }
+    }
+
+    // --- NodeClient ---
+
+    @Test
+    fun `provideNodeClient delegates to Wearable API and returns instance`() {
+        val client = WearableModule.provideNodeClient(context)
+
+        assert(client === mockNodeClient) { "Must return the instance from Wearable API" }
+        verify(exactly = 1) { Wearable.getNodeClient(context) }
+    }
+
+    @Test
+    fun `provideNodeClient passes correct context to Wearable API`() {
+        WearableModule.provideNodeClient(context)
+
+        verify(exactly = 1) { Wearable.getNodeClient(context) }
     }
 
     @Test

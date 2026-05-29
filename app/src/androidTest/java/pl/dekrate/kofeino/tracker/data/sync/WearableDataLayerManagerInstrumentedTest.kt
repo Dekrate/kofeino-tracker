@@ -6,6 +6,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.android.gms.wearable.CapabilityClient
 import com.google.android.gms.wearable.DataClient
 import com.google.android.gms.wearable.MessageClient
+import com.google.android.gms.wearable.NodeClient
 import com.google.android.gms.wearable.Wearable
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -48,6 +49,9 @@ class WearableDataLayerManagerInstrumentedTest {
     @BindValue
     val capabilityClient: CapabilityClient = mockk()
 
+    @BindValue
+    val nodeClient: NodeClient = mockk()
+
     private lateinit var context: Context
 
     @Before
@@ -68,6 +72,7 @@ class WearableDataLayerManagerInstrumentedTest {
         every { Wearable.getMessageClient(any<Context>()) } returns messageClient
         every { Wearable.getDataClient(any<Context>()) } returns dataClient
         every { Wearable.getCapabilityClient(any<Context>()) } returns capabilityClient
+        every { Wearable.getNodeClient(any<Context>()) } returns nodeClient
     }
 
     @After
@@ -77,7 +82,7 @@ class WearableDataLayerManagerInstrumentedTest {
 
     @Test
     fun register_adds_all_three_listeners() {
-        val manager = WearableDataLayerManager(dataClient, messageClient, capabilityClient)
+        val manager = WearableDataLayerManager(dataClient, messageClient, capabilityClient, nodeClient)
         manager.register()
 
         verify(exactly = 1) { dataClient.addListener(any<DataClient.OnDataChangedListener>()) }
@@ -94,7 +99,7 @@ class WearableDataLayerManagerInstrumentedTest {
 
     @Test
     fun unregister_removes_all_three_listeners() {
-        val manager = WearableDataLayerManager(dataClient, messageClient, capabilityClient)
+        val manager = WearableDataLayerManager(dataClient, messageClient, capabilityClient, nodeClient)
         manager.register()
         manager.unregister()
 
@@ -108,7 +113,7 @@ class WearableDataLayerManagerInstrumentedTest {
         every { dataClient.addListener(any()) } throws RuntimeException("Wear OS not available")
         every { messageClient.addListener(any()) } throws RuntimeException("Wear OS not available")
 
-        val manager = WearableDataLayerManager(dataClient, messageClient, capabilityClient)
+        val manager = WearableDataLayerManager(dataClient, messageClient, capabilityClient, nodeClient)
         manager.register() // Must not throw
 
         // CapabilityClient should still succeed
@@ -121,14 +126,17 @@ class WearableDataLayerManagerInstrumentedTest {
         val msgClient = Wearable.getMessageClient(context)
         val dClient = Wearable.getDataClient(context)
         val capClient = Wearable.getCapabilityClient(context)
+        val nodeCl = Wearable.getNodeClient(context)
 
         assertNotNull(msgClient, "MessageClient must not be null")
         assertNotNull(dClient, "DataClient must not be null")
         assertNotNull(capClient, "CapabilityClient must not be null")
+        assertNotNull(nodeCl, "NodeClient must not be null")
 
         // Verify our mocks are returned
         assertSame(messageClient, msgClient)
         assertSame(dataClient, dClient)
         assertSame(capabilityClient, capClient)
+        assertSame(nodeClient, nodeCl)
     }
 }

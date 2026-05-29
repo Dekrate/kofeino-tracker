@@ -39,6 +39,10 @@ object SyncPaths {
     const val MESSAGE_FULL_SYNC_RESPONSE = "$MESSAGE_PATH_PREFIX/full-sync-response"
     const val MESSAGE_SYNC_ACK = "$MESSAGE_PATH_PREFIX/sync-ack"
 
+    // ─── Full‑sync DataItem paths (persistent fallback) ──────────────
+    const val DATA_ITEM_FULL_SYNC_REQUEST = "/full-sync-request"
+    const val DATA_ITEM_FULL_SYNC_RESPONSE = "/full-sync-response"
+
     // ─── Tile configuration ───────────────────────────────────────────
     const val MESSAGE_TILE_CONFIG_CHANGED = "$MESSAGE_PATH_PREFIX/tile-config-changed"
 

@@ -4,6 +4,7 @@ import android.content.Context
 import com.google.android.gms.wearable.CapabilityClient
 import com.google.android.gms.wearable.DataClient
 import com.google.android.gms.wearable.MessageClient
+import com.google.android.gms.wearable.NodeClient
 import com.google.android.gms.wearable.Wearable
 import dagger.Module
 import dagger.Provides
@@ -38,5 +39,11 @@ object WearableModule {
     @Singleton
     fun provideCapabilityClient(@ApplicationContext context: Context): CapabilityClient {
         return Wearable.getCapabilityClient(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideNodeClient(@ApplicationContext context: Context): NodeClient {
+        return Wearable.getNodeClient(context)
     }
 }
